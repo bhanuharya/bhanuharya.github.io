@@ -1,4 +1,8 @@
-# Home Server Agent Infrastructure — Security Posture, Accepted Risks & Roadmap
+---
+layout: post
+title: "Home Server Agent Infrastructure — Security Posture, Accepted Risks & Roadmap"
+date: 2026-08-15
+---
 
 > **Public, sanitized version.** The internal document (OPSEC specifics: network identifiers, hostnames, account details) is kept private on the server.
 > **Owner:** wishnu · **Last reviewed:** 2026-08-15
@@ -44,7 +48,7 @@ Three autonomous Telegram agents run as systemd user units on a home server (lap
 - **Telegram 2FA** enabled; bot tokens are Bot-API auth (independent of account 2FA)
 - **Secrets**: `.env` files only — never in git, never pasted into chat; key-rotation script with backups and value-free verification
 - **Web apps**: CSP, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, no server banner, API docs disabled
-- **Ops**: watchdog every 2 minutes (all 3 agents), nightly encrypted-to-disk backup job, unattended security updates active, battery charge cap, no-login boot, agent skill directory 600-restricted
+- **Ops**: watchdog every 2 minutes (all 3 agents), nightly backup job, unattended security updates active, battery charge cap, no-login boot, agent skill directory 600-restricted
 - **Scanning/OSINT**: disposable Docker containers only — never host-installed tooling
 - **Data hygiene**: market-data pipeline uses official tier-1 sources (central bank, exchange, treasury), self-computed daily changes, sanity gate that suppresses outliers instead of publishing them; crawler output treated as untrusted data
 
