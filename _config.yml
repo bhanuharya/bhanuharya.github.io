@@ -1,6 +1,10 @@
-title: wishnu — projects & security notes
-description: Security engineer · home-lab builder · notes on projects, infrastructure & security posture
-remote_theme: pages-themes/hacker@v0.2.0
-plugins:
-  - jekyll-remote-theme
-show_downloads: false
+title: wishnu
+author: wishnu
+description: >-
+  Security engineer · home-lab builder · notes on projects,
+  infrastructure & security posture
+theme: minima
+minima:
+  skin: dark
+  date_format: "%b %-d, %Y"
+show_excerpts: true
