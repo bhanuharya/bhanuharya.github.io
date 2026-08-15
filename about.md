@@ -8,4 +8,4 @@ Security engineer working in the capital-markets sector, building toward securit
 
 This blog documents personal projects: a self-hosted agent infrastructure, a scanner-orchestration platform, automated research pipelines, and the security posture behind them.
 
-- [The security posture of this site's home infrastructure](/2026/08/15/home-server-agent-security-posture.html)
+Posts are published here as they're written — check back soon, or head [home](/).

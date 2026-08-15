@@ -1,0 +1,28 @@
+---
+layout: default
+---
+{% assign posts = site.posts %}
+{% if posts.size > 0 %}
+  <h1 class="page-heading">Posts</h1>
+  <ul class="post-list">
+    {% for post in posts %}
+      <li>
+        <article class="post-card">
+          <h2 class="post-card-title">
+            <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+          </h2>
+          <time class="post-date" datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%b %-d, %Y' }}</time>
+          {% if site.show_excerpts %}
+            <div class="post-card-excerpt">{{ post.excerpt }}</div>
+          {% endif %}
+        </article>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <section class="hero">
+    <h1 class="hero-title">Notes on security, engineering &amp; self-hosting &mdash; coming soon</h1>
+    <p class="hero-sub">This blog is under construction. Write-ups on projects, infrastructure and security posture will land here shortly.</p>
+    <p><a class="btn" href="{{ '/about/' | relative_url }}">About this site</a></p>
+  </section>
+{% endif %}

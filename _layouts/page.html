@@ -1,0 +1,14 @@
+---
+layout: default
+---
+<article class="page">
+  {% if page.title %}
+    <h1 class="page-title">{{ page.title | escape }}</h1>
+  {% endif %}
+  <div class="page-content">
+    {{ content }}
+  </div>
+  <nav class="post-nav">
+    <a href="{{ '/' | relative_url }}">&larr; Back to home</a>
+  </nav>
+</article>
