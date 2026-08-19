@@ -242,6 +242,39 @@ main.wrap {
   overflow-x: auto;
 }
 
+.about-section {
+  scroll-margin-top: 5rem;
+}
+
+.about-copy p {
+  margin: 0 0 0.8rem;
+}
+
+.about-copy p:last-child {
+  margin-bottom: 0;
+}
+
+.about-links {
+  line-height: 1.8;
+}
+
+.about-signal {
+  margin: -0.45rem 0 1rem 0.9rem;
+  color: var(--muted);
+  font: inherit;
+  white-space: pre;
+}
+
+.signal-frame {
+  display: inline-block;
+  animation: signal-pulse 1.4s steps(2, end) infinite;
+}
+
+@keyframes signal-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
 .closing {
   margin: 1.5rem 0 0;
   font-size: 0.95rem;
