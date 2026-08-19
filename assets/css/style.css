@@ -286,6 +286,19 @@ main.wrap {
   font-weight: 600;
 }
 
+/* Keep the homepage command lines terminal-like without coloring prose. */
+.term-body .prompt {
+  color: var(--cli-green);
+}
+
+.term-body .loc {
+  color: var(--cli-cyan);
+}
+
+.term-body .cmd {
+  color: var(--cli-amber);
+}
+
 .cursor {
   display: inline-block;
   width: 0.55em;
