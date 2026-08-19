@@ -1,14 +1,14 @@
+/* ---------- retro black-and-white Linux terminal theme ---------- */
 :root {
-  --bg: #0d1117;
-  --panel: #161b22;
-  --panel-alt: #1c2128;
-  --border: #30363d;
-  --text: #e6edf3;
-  --muted: #8b949e;
-  --accent: #58a6ff;
-  --accent-dim: #1f6feb;
-  --radius: 10px;
-  --font: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, "Courier New", monospace;
+  --bg: #000000;
+  --panel: #0d0d0d;
+  --panel-alt: #141414;
+  --border: #262626;
+  --border-bright: #4c4c4c;
+  --text: #e6e6e6;
+  --muted: #8a8a8a;
+  --dim: #5c5c5c;
+  --font: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, "DejaVu Sans Mono", monospace;
 }
 
 * {
@@ -24,13 +24,13 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.6;
 }
 
 .wrap {
   width: 100%;
-  max-width: 46rem;
+  max-width: 44rem;
   margin: 0 auto;
   padding: 0 1.25rem;
 }
@@ -42,7 +42,6 @@ body {
   padding: 0.5rem 1rem;
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
 }
 
 .skip-link:focus {
@@ -51,130 +50,209 @@ body {
 }
 
 a {
-  color: var(--accent);
+  color: var(--text);
   text-decoration: none;
 }
 
-a:hover {
+a:hover,
+a:focus {
+  color: #ffffff;
   text-decoration: underline;
 }
 
+a:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* ---------- header / nav ---------- */
 .site-header {
   border-bottom: 1px solid var(--border);
-  background: var(--panel);
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 3.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
 }
 
 .site-title {
   color: var(--text);
   font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 .site-title:hover {
+  color: #ffffff;
   text-decoration: none;
-  color: var(--accent);
 }
 
 .nav-links {
   display: flex;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .nav-links a {
   color: var(--muted);
-  font-size: 0.95rem;
 }
 
 .nav-links a:hover,
 .nav-links a[aria-current="page"] {
   color: var(--text);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 main.wrap {
-  padding-top: 2.5rem;
-  padding-bottom: 3.5rem;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
 }
 
-.hero {
-  text-align: center;
-  padding: 3rem 0 2rem;
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 1.25rem 0;
+  color: var(--dim);
+  font-size: 0.85rem;
 }
 
-.hero-title {
-  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
-  line-height: 1.25;
-  font-weight: 800;
-  margin: 0 0 1rem;
+.site-footer p {
+  margin: 0;
 }
 
-.hero-sub {
+/* ---------- terminal bio (home) ---------- */
+.term {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  margin: 1.25rem 0;
+  overflow: hidden;
+}
+
+.term-bar {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
   color: var(--muted);
-  font-size: 1.05rem;
-  max-width: 34rem;
-  margin: 0 auto 1.75rem;
+  user-select: none;
 }
 
-.btn {
-  display: inline-block;
-  padding: 0.6rem 1.25rem;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  color: var(--accent);
+.term-title {
+  letter-spacing: 0.03em;
+}
+
+.term-body {
+  padding: 1.25rem 1.4rem 1.5rem;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.banner {
+  color: var(--text);
+  white-space: pre;
+  font-size: 12px;
+  line-height: 1.2;
+  margin: 0 0 1.1rem;
+  overflow-x: auto;
+}
+
+.term-body .line {
+  margin: 0 0 0.4rem;
+}
+
+.prompt {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.loc {
+  color: var(--muted);
+}
+
+.dim {
+  color: var(--muted);
+}
+
+.cmd {
+  color: #ffffff;
   font-weight: 600;
 }
 
-.btn:hover {
-  background: var(--accent-dim);
-  border-color: var(--accent-dim);
-  color: #fff;
-  text-decoration: none;
+.cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  background: var(--text);
+  vertical-align: text-bottom;
+  animation: blink 1s steps(1) infinite;
 }
 
-.page-heading {
-  font-size: 1.5rem;
-  margin: 0 0 1.5rem;
+@keyframes blink {
+  50% { opacity: 0; }
 }
 
-.post-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 1rem;
+.cmdlist {
+  margin: 0.2rem 0;
 }
 
-.post-card {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
+.cmdlist .entry {
+  white-space: pre;
+  line-height: 1.7;
 }
 
-.post-card-title {
-  font-size: 1.25rem;
-  line-height: 1.3;
-  margin: 0 0 0.35rem;
+.cmdlist .idx {
+  color: var(--muted);
 }
 
-.post-card-title a {
+.cmdlist a {
   color: var(--text);
 }
 
-.post-card-title a:hover {
-  color: var(--accent);
-  text-decoration: none;
+.cmdlist a:hover {
+  color: #ffffff;
+}
+
+.out {
+  margin: 0.1rem 0 1rem;
+  color: var(--text);
+  border-left: 1px solid var(--border-bright);
+  padding-left: 0.9rem;
+}
+
+.out p {
+  margin: 0 0 0.5rem;
+}
+
+.out p:last-child {
+  margin-bottom: 0;
+}
+
+.ascii-tree {
+  margin: 0;
+  color: var(--muted);
+  font: inherit;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+
+.closing {
+  margin: 1.5rem 0 0;
+  font-size: 0.95rem;
+}
+
+/* ---------- pages / posts ---------- */
+.page-title,
+.post-title {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  margin: 0 0 1.5rem;
 }
 
 .post-date {
@@ -182,35 +260,21 @@ main.wrap {
   color: var(--muted);
   font-size: 0.875rem;
   font-style: normal;
+  margin-bottom: 1rem;
 }
 
-.post-card-excerpt {
-  margin-top: 0.75rem;
+.ascii-head {
   color: var(--muted);
-  font-size: 0.95rem;
-}
-
-.post-card-excerpt p {
-  margin: 0;
-}
-
-.post-header,
-.page-title {
-  margin-bottom: 1.5rem;
-}
-
-.post-title,
-.page-title {
-  font-size: clamp(1.6rem, 4vw, 2.1rem);
-  line-height: 1.25;
-  margin: 0 0 0.5rem;
+  font: inherit;
+  white-space: pre;
+  margin: 0 0 1rem;
+  overflow-x: auto;
 }
 
 .post-content,
 .page-content {
-  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 2px;
   padding: 1.5rem 1.75rem;
 }
 
@@ -227,24 +291,22 @@ main.wrap {
 .post-content img {
   max-width: 100%;
   height: auto;
-  border-radius: var(--radius);
   border: 1px solid var(--border);
 }
 
 .post-content pre {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
   padding: 1rem 1.25rem;
   overflow-x: auto;
   font-size: 0.875rem;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .post-content code {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.875em;
   background: var(--panel-alt);
-  border-radius: 4px;
   padding: 0.15em 0.4em;
 }
 
@@ -256,7 +318,7 @@ main.wrap {
 .post-content blockquote {
   margin: 1.25rem 0;
   padding-left: 1rem;
-  border-left: 3px solid var(--border);
+  border-left: 1px solid var(--border-bright);
   color: var(--muted);
 }
 
@@ -265,114 +327,61 @@ main.wrap {
   font-size: 0.95rem;
 }
 
-.site-footer {
-  border-top: 1px solid var(--border);
-  background: var(--panel);
-  padding: 1.25rem 0;
-  color: var(--muted);
-  font-size: 0.875rem;
+/* ---------- blog listing ---------- */
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.site-footer p {
+.post-list li {
+  margin-bottom: 1.5rem;
+}
+
+.post-card-title {
+  font-size: 1.2rem;
+  line-height: 1.3;
+  margin: 0 0 0.35rem;
+}
+
+.post-card-title a {
+  color: var(--text);
+}
+
+.post-card-title a:hover {
+  color: #ffffff;
+}
+
+.post-card-excerpt {
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.post-card-excerpt p {
   margin: 0;
 }
 
-/* ---------- CLI terminal bio (home) ---------- */
-.term{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  box-shadow:0 0 0 1px #000,0 18px 60px rgba(0,0,0,.55);
-  overflow:hidden;
-  margin:1.5rem 0;
-}
-.term-bar{
-  display:flex;align-items:center;gap:.5rem;
-  padding:.55rem .9rem;background:#0c1210;
-  border-bottom:1px solid var(--border);
-  font-size:12px;color:var(--muted);user-select:none;
-}
-.term-bar .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
-.term-bar .d1{background:#ff5f56}.term-bar .d2{background:#ffbd2e}.term-bar .d3{background:#27c93f}
-.term-title{margin-left:.4rem;letter-spacing:.03em}
-.term-body{padding:1.25rem 1.4rem 1.6rem;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:16px;line-height:1.7}
-.banner{color:var(--accent);white-space:pre;font-size:12px;line-height:1.2;margin:0 0 1.1rem;overflow-x:auto}
-.wip{display:inline-block;border:1px solid var(--amber,#e3b341);color:var(--amber,#e3b341);padding:.2rem .55rem;border-radius:4px;font-size:12px;margin-bottom:1.1rem;letter-spacing:.05em}
-.term-body .line{margin:0 0 .4rem}
-.prompt{color:var(--accent)}
-.loc{color:var(--amber,#e3b341)}
-.dim{color:var(--muted)}
-.grn{color:var(--accent)}
-.txt{color:var(--text)}
-.cmd{color:var(--text);font-weight:600}
-.cursor{display:inline-block;width:.6em;background:var(--accent);animation:blink 1s steps(1) infinite}
-@keyframes blink{50%{opacity:0}}
-.cmdlist{display:grid;gap:.1rem;margin:.4rem 0 .2rem}
-.cmdlist .k{color:var(--accent);min-width:7rem;display:inline-block}
-.out{margin:.1rem 0 .9rem;color:var(--muted);border-left:2px solid var(--border);padding-left:.8rem}
-.skills{display:grid;grid-template-columns:auto auto;gap:.1rem .6rem;margin:.2rem 0 .4rem}
-.skills span:nth-child(odd){color:var(--muted)}
-.skills span:nth-child(even){color:var(--text)}
-.placeholder{color:var(--muted);font-style:italic}
-.ascii-tree{
-  margin:0;
-  color:var(--muted);
-  font:inherit;
-  white-space:pre-wrap;
-  line-height:1.55;
-}
-.ascii-tree::first-line{
-  color:var(--accent);
-}
-
-/* ---------- subtle status / loader (home) ---------- */
-.status-line{
-  display:flex;
-  align-items:center;
-  gap:.6rem;
-  color:var(--muted);
-  margin:.8rem 0 0;
-  font-size:.9rem;
-}
-.indicator{
-  width:9px;height:9px;border-radius:50%;
-  background:#3fb950;flex:none;
-  animation:pulse 2.4s steps(2) infinite;
-}
-@keyframes pulse{50%{opacity:.15}}
-.loader{
-  display:inline-block;
-  position:relative;
-  width:1.05em;height:1.1em;
-  flex:none;
-  color:var(--accent);
-}
-.loader span{
-  position:absolute;left:0;top:0;
-  width:100%;text-align:center;
-  opacity:0;
-  animation:loader-frame .8s steps(1) infinite;
-}
-.loader span:nth-child(1){animation-delay:0s}
-.loader span:nth-child(2){animation-delay:.2s}
-.loader span:nth-child(3){animation-delay:.4s}
-.loader span:nth-child(4){animation-delay:.6s}
-@keyframes loader-frame{
-  0%{opacity:1}
-  25%{opacity:0}
-  100%{opacity:0}
-}
-
 /* ---------- reduced motion ---------- */
-@media (prefers-reduced-motion: reduce){
-  .cursor,
-  .indicator,
-  .loader span{
-    animation:none !important;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  .cursor{opacity:1}
-  .indicator{opacity:1}
-  .loader span{opacity:0}
-  .loader span:nth-child(1){opacity:1}
 }
 
+/* ---------- small screens ---------- */
+@media (max-width: 480px) {
+  .term-body {
+    padding: 1rem 0.9rem 1.2rem;
+    font-size: 14px;
+  }
+  .banner {
+    font-size: 11px;
+  }
+  .post-content,
+  .page-content {
+    padding: 1.1rem 1.1rem;
+  }
+}

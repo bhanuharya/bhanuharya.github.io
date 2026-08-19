@@ -4,12 +4,14 @@ title: About
 permalink: /about/
 ---
 
-I work in information security in the capital-markets sector. The work is mostly quiet: understanding how systems are built, where the assumptions live, and what happens when systems behave unexpectedly.
+<pre class="ascii-head" aria-hidden="true">~ $ cat about.txt</pre>
 
-I have always been drawn to what sits under the surface — the layers between hardware and application, between a network and a service, between an idea and a running system. I spend time on computer systems and infrastructure, application and network security, security operations and threat detection, and the ways artificial intelligence and automation are already changing all of it.
+I'm Harya. I work in information security within the capital-markets sector.
 
-Much of what I build is small: tools, containers, self-hosted services, scripts that turn curiosity into something I can run and inspect. Linux and containers are where I feel most at home, and I like keeping the things I rely on under my own control.
+I'm interested in the things beneath the surface: how computer systems are put together, how applications communicate with infrastructure, where security assumptions are made, and what happens when those assumptions stop holding.
 
-If a system exists, some part of it is a guess someone made. I like finding which parts, and why. That habit — understanding before concluding — is the thread running through most of what I do.
+Outside of day-to-day security work, I spend time exploring computer systems, application and network security, security operations, artificial intelligence, automation, Linux, containers, and self-hosted services.
 
-You can find occasional notes on the [blog](/blog/), and the homepage summarizes where my attention tends to go. Thanks for stopping by.
+I enjoy learning by building and taking things apart. Sometimes that means writing a small script, running a service at home, testing an idea, or following a problem further than expected.
+
+This website is not meant to be a complete resume. It is a place for notes, experiments, observations, and things I find interesting enough to document.

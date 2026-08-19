@@ -1,10 +1,7 @@
 title: harya
 author: harya
 description: >-
-  Security engineer · home-lab builder · notes on projects,
-  infrastructure & security posture
+  Notes and experiments from Harya — security, systems,
+  and self-hosting.
 theme: minima
-minima:
-  skin: dark
-  date_format: "%b %-d, %Y"
 show_excerpts: true

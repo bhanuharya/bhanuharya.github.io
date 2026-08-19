@@ -2,43 +2,36 @@
 layout: default
 ---
 
-<article class="term" style="margin-top: 1rem">
+<article class="term">
   <div class="term-bar">
-    <span class="dot d1"></span>
-    <span class="dot d2"></span>
-    <span class="dot d3"></span>
     <span class="term-title">bhanuharya@sec — zsh</span>
   </div>
 
   <div class="term-body">
-    <pre class="banner">┌──────────────────────────────┐
-│  &gt;_ init_session --status 200│
+    <pre class="banner" aria-hidden="true">┌──────────────────────────────┐
+│  >_ init_session --status 200│
 │  [■■■■■■■■■■■■■■■□□] 85%     │
 └──────────────────────────────┘</pre>
 
     <div class="line">
-      <span class="prompt">bhanuharya@sec</span>
-      <span class="loc">:~$</span>
-      <span class="cmd">whoami</span>
+      <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">whoami</span>
     </div>
 
     <div class="out">
-      I work in information security in the capital-markets sector. Most of my
-      time goes to understanding systems — how they are built, where the
-      assumptions hide, and what happens when something behaves unexpectedly.<br>
-      I care about computer systems, artificial intelligence, infrastructure,
-      and how automation quietly changes the ground rules for both offense and
-      defense.
+      <p>
+        I work in information security within the capital-markets sector.
+        I'm interested in computer systems, infrastructure, artificial
+        intelligence, and the practical side of keeping technology secure.
+      </p>
+      <p class="dim">My interests include:</p>
     </div>
 
     <div class="line">
-      <span class="prompt">bhanuharya@sec</span>
-      <span class="loc">:~$</span>
-      <span class="cmd">cat interests.txt</span>
+      <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">cat interests.txt</span>
     </div>
 
     <div class="out">
-      <pre class="ascii-tree">├── computer systems and infrastructure
+      <pre class="ascii-tree" aria-hidden="true">├── computer systems and infrastructure
 ├── application and network security
 ├── security operations and threat detection
 ├── artificial intelligence and AI security
@@ -48,45 +41,32 @@ layout: default
     </div>
 
     <div class="line">
-      <span class="prompt">bhanuharya@sec</span>
-      <span class="loc">:~$</span>
-      <span class="cmd">ls</span>
+      <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">ls</span>
     </div>
 
     <div class="out">
       <div class="cmdlist">
-        <div>
-          <span class="k">about</span>
-          <span class="dim"># background and interests</span>
+        <div class="entry">
+          <span class="idx">[1]</span>
+          <a href="{{ '/about/' | relative_url }}">about</a>
+          <span class="dim">&nbsp; — more about me</span>
         </div>
-
-        <div>
-          <span class="k">blog</span>
-          <span class="dim"># notes on systems, security, and AI</span>
+        <div class="entry">
+          <span class="idx">[2]</span>
+          <a href="{{ '/blog/' | relative_url }}">blog</a>
+          <span class="dim">&nbsp;&nbsp; — notes and experiments</span>
         </div>
-      </div>
-
-      <div class="status-line">
-        <span class="loader" aria-hidden="true"><span>|</span><span>/</span><span>—</span><span>\</span></span>
-        <span class="indicator" aria-hidden="true"></span>
-        <span>idle · monitoring for signals</span>
       </div>
     </div>
 
-    <div class="line">
-      <span class="prompt">bhanuharya@sec</span>
-      <span class="loc">:~$</span>
-      <span class="cursor" aria-hidden="true">&nbsp;</span>
-    </div>
-
-    <div class="out">
-      <p>
-        A small corner for systems, security, and things built along the way.
-        <a class="grn" href="{{ '/about/' | relative_url }}">about</a>
-        ·
-        <a class="grn" href="{{ '/blog/' | relative_url }}">blog</a>
-      </p>
-      <p class="dim" style="margin-top: .6rem">still learning · still building</p>
+    <div class="line final">
+      <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cursor" aria-hidden="true">&nbsp;</span>
     </div>
   </div>
 </article>
+
+<p class="closing dim">
+  A small corner for systems, security, and other things built along the way.
+  <a href="{{ '/about/' | relative_url }}">about</a> ·
+  <a href="{{ '/blog/' | relative_url }}">blog</a>
+</p>
