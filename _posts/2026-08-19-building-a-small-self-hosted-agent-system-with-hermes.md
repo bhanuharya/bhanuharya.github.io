@@ -139,20 +139,22 @@ I do not consider this setup fully secure, and I would not present it as a refer
 
 It is a personal homelab system with multiple moving parts: agent gateways, model providers, local services, scheduled jobs, shared capabilities, and isolated memories. Each layer introduces its own failure modes, including configuration mistakes, accidental data exposure, prompt injection, provider-side risk, and imperfect isolation.
 
-There are still some measures in place to reduce the risk:
+I know this setup still carries meaningful risk, so I do not treat a private network or a container boundary as proof of safety. I use several layers to reduce the chance and impact of a mistake:
 
 ```text
 ├── private network access rather than public exposure
+├── gateway and proxy layers between clients, agents, and services
+├── contained or disposable runtimes for higher-risk workflows where practical
+├── no unrestricted direct host access for ordinary agent tasks
 ├── separate profiles and isolated memory
-├── limited shared skills and controlled tools
+├── limited shared skills and controlled tool permissions
 ├── read-only and non-intrusive security jobs
-├── disposable execution environments where practical
 ├── no credentials embedded in prompts or source code
 ├── baseline-based reporting to reduce unnecessary activity
-└── manual judgment for sensitive or high-impact actions
+└── manual judgment and approval for sensitive or high-impact actions
 ```
 
-These measures reduce exposure; they do not eliminate risk. The system is still a work in progress, and anyone building something similar should evaluate it against their own threat model instead of copying the design blindly.
+The boundaries are deliberate, but they are not absolute. A proxy can be misconfigured, a container can expose more than intended, and an agent can still make a poor decision inside an apparently safe workflow. The goal is to make failures narrower, more visible, and easier to recover from rather than pretending that self-hosting eliminates risk.
 
 ## The basic architecture
 
