@@ -96,7 +96,7 @@ layout: default
   const output = form.querySelector('[data-cli-output]');
   const blogUrl = "{{ '/blog/' | relative_url }}";
   const aboutUrl = "{{ '/#about' | relative_url }}";
-  const commands = ['about', 'blog', 'clear', 'fortune', 'help', 'ls', 'neofetch', 'status', 'whoami'];
+  const commands = ['about', 'blog', 'clear', 'help', 'ip', 'ls', 'status', 'visitor', 'whoami'];
   let matches = [];
   let matchIndex = -1;
 
@@ -143,7 +143,7 @@ layout: default
 
     switch (command) {
       case 'help':
-        print(['available commands:', '', 'about      read the short bio', 'blog       open the notes and experiments', 'clear      clear this output', 'fortune    receive a small machine thought', 'ls         list the public paths', 'neofetch   inspect the tiny server idea', 'status     check the public site status', 'whoami     identify the person behind the prompt']);
+        print(['available commands:', '', 'about      read the short bio', 'blog       open the notes and experiments', 'clear      clear this output', 'ip         explain the public IP policy', 'ls         list the public paths', 'status     inspect your browser session', 'visitor    show local visitor details', 'whoami     identify the person behind the prompt']);
         break;
       case 'about':
       case 'whoami':
@@ -155,14 +155,12 @@ layout: default
       case 'ls':
         print(['about/', 'blog/']);
         break;
-      case 'neofetch':
-        print(['bhanuharya@sec', '──────────────', 'host:      repurposed laptop', 'os:        Ubuntu Linux', 'network:   private overlay', 'service:   self-hosted agents', 'mood:      quietly operational']);
-        break;
+      case 'visitor':
       case 'status':
-        print(['site:      online', 'mode:      static Jekyll', 'exposure:  intentionally boring', 'operator:  probably nearby']);
+        print(['visitor session:', `language:  ${navigator.language || 'unknown'}`, `timezone:  ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`, `viewport:  ${window.innerWidth}x${window.innerHeight}`, `online:     ${navigator.onLine ? 'yes' : 'no'}`, `local time: ${new Date().toLocaleTimeString()}`]);
         break;
-      case 'fortune':
-        print([['Unused computer detected.', 'Promote to server? [y/N]', '', 'y', 'Good choice.'][Math.floor(Math.random() * 5)]]);
+      case 'ip':
+        print(['public IP lookup: disabled', 'this static page does not send your address to a lookup service', 'no public IP is collected or stored']);
         break;
       case 'clear':
         output.replaceChildren();
