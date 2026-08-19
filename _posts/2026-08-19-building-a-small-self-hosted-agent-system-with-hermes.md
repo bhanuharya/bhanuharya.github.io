@@ -457,7 +457,7 @@ Separate profiles are not only about security. They also make the system easier 
 
 ## What comes next
 
-The setup is still evolving. The next improvements are mostly about reliability and maintainability:
+The setup is still evolving. The next improvements are mostly about improving security, reliability and maintainability:
 
 ```text
 ├── make fallback model lanes more durable
@@ -469,4 +469,4 @@ The setup is still evolving. The next improvements are mostly about reliability 
 
 The main goal is not to build the most complicated agent stack possible. It is to build a small system that is useful every day, cheap enough to leave running, isolated enough to trust, and simple enough to understand when something breaks.
 
-That is the part I find most interesting: not just using an agent, but designing the environment around it.
+That is the part I find most interesting: not just using an agent, but design and secure the environment around it.
