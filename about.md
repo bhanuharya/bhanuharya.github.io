@@ -13,5 +13,3 @@ I'm interested in the things beneath the surface: how computer systems are put t
 Outside of day-to-day security work, I spend time exploring computer systems, application and network security, security operations, artificial intelligence, automation, Linux, containers, and self-hosted services.
 
 I enjoy learning by building and taking things apart. Sometimes that means writing a small script, running a service at home, testing an idea, or following a problem further than expected.
-
-This website is not meant to be a complete resume. It is a place for notes, experiments, observations, and things I find interesting enough to document.
