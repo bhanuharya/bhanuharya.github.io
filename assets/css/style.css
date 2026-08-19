@@ -298,12 +298,14 @@ main.wrap {
   width: 100%;
   border-collapse: collapse;
   margin: 1.25rem 0;
-  background: transparent;
+  background: var(--bg);
+  border: 1px solid var(--text);
+  outline: 1px solid var(--text);
 }
 
 .post-content th,
 .post-content td {
-  border: 1px solid var(--border-bright);
+  border: 1px solid var(--text);
   padding: 0.5rem 0.75rem;
   text-align: left;
   vertical-align: top;
@@ -313,7 +315,7 @@ main.wrap {
   background: var(--panel-alt);
   color: var(--text);
   font-weight: 600;
-  border-bottom: 2px solid var(--border-bright);
+  border-bottom: 2px solid var(--text);
 }
 
 .post-content tbody tr:nth-child(even) {
