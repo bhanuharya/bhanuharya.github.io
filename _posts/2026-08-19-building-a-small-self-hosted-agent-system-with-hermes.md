@@ -55,35 +55,69 @@ The setup runs on a small private Linux host. It is reachable only through a pri
 
 There are several isolated bot profiles. Each profile has its own memory and runtime context, while selected skills and tools are shared across the system.
 
-```text
-                         ┌──────────────────────┐
-                         │      Chat clients    │
-                         │   separate bot entry │
-                         └──────────┬───────────┘
-                                    │
-              ┌─────────────────────┼─────────────────────┐
-              │                     │                     │
-        ┌─────▼─────┐         ┌─────▼─────┐         ┌─────▼─────┐
-        │  Profile A │         │  Profile B │         │  Profile C │
-        │  general   │         │  project   │         │  isolated  │
-        └─────┬─────┘         └─────┬─────┘         └─────┬─────┘
-              │                     │                     │
-        ┌─────▼─────┐         ┌─────▼─────┐         ┌─────▼─────┐
-        │  Memory A  │         │  Memory B  │         │  Memory C  │
-        └────────────┘         └────────────┘         └────────────┘
-              │                     │                     │
-              └─────────────────────┼─────────────────────┘
-                                    │
-                    ┌───────────────▼───────────────┐
-                    │       Shared capabilities      │
-                    │ skills · tools · local services│
-                    └───────────────┬───────────────┘
-                                    │
-                    ┌───────────────▼───────────────┐
-                    │          Task routing          │
-                    │ fast · cheap · specialist · deep│
-                    └───────────────────────────────┘
-```
+<figure class="diagram-wrap">
+<svg class="architecture-diagram" viewBox="0 0 900 520" role="img" aria-labelledby="architecture-title architecture-desc" xmlns="http://www.w3.org/2000/svg">
+  <title id="architecture-title">Hermes multi-profile architecture</title>
+  <desc id="architecture-desc">Chat clients connect to three isolated agent profiles. Each profile has private memory, while selected skills and tools are shared before tasks reach the model router.</desc>
+  <defs>
+    <marker id="arrow-architecture" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#777" />
+    </marker>
+    <style>
+      .arch-box { fill:#0b0b0b; stroke:#bdbdbd; stroke-width:1.5; rx:4; }
+      .arch-shared { fill:#151515; stroke:#f0f0f0; stroke-width:1.5; rx:4; }
+      .arch-text { fill:#f0f0f0; font:16px monospace; text-anchor:middle; }
+      .arch-muted { fill:#999; font:13px monospace; text-anchor:middle; }
+      .arch-line { stroke:#777; stroke-width:1.5; fill:none; marker-end:url(#arrow-architecture); }
+    </style>
+  </defs>
+
+  <rect class="arch-box" x="300" y="20" width="300" height="55" />
+  <text class="arch-text" x="450" y="45">chat clients</text>
+  <text class="arch-muted" x="450" y="64">separate bot entry points</text>
+
+  <line class="arch-line" x1="450" y1="75" x2="450" y2="105" />
+
+  <rect class="arch-box" x="55" y="105" width="230" height="62" />
+  <rect class="arch-box" x="335" y="105" width="230" height="62" />
+  <rect class="arch-box" x="615" y="105" width="230" height="62" />
+  <text class="arch-text" x="170" y="132">profile A</text>
+  <text class="arch-muted" x="170" y="153">general</text>
+  <text class="arch-text" x="450" y="132">profile B</text>
+  <text class="arch-muted" x="450" y="153">project</text>
+  <text class="arch-text" x="730" y="132">profile C</text>
+  <text class="arch-muted" x="730" y="153">isolated</text>
+
+  <line class="arch-line" x1="450" y1="105" x2="170" y2="105" />
+  <line class="arch-line" x1="450" y1="105" x2="730" y2="105" />
+  <line class="arch-line" x1="170" y1="167" x2="170" y2="205" />
+  <line class="arch-line" x1="450" y1="167" x2="450" y2="205" />
+  <line class="arch-line" x1="730" y1="167" x2="730" y2="205" />
+
+  <rect class="arch-box" x="55" y="205" width="230" height="62" />
+  <rect class="arch-box" x="335" y="205" width="230" height="62" />
+  <rect class="arch-box" x="615" y="205" width="230" height="62" />
+  <text class="arch-text" x="170" y="232">memory A</text>
+  <text class="arch-muted" x="170" y="253">private context</text>
+  <text class="arch-text" x="450" y="232">memory B</text>
+  <text class="arch-muted" x="450" y="253">private context</text>
+  <text class="arch-text" x="730" y="232">memory C</text>
+  <text class="arch-muted" x="730" y="253">private context</text>
+
+  <line class="arch-line" x1="170" y1="267" x2="170" y2="310" />
+  <line class="arch-line" x1="450" y1="267" x2="450" y2="310" />
+  <line class="arch-line" x1="730" y1="267" x2="730" y2="310" />
+
+  <rect class="arch-shared" x="180" y="310" width="540" height="70" />
+  <text class="arch-text" x="450" y="338">shared capabilities</text>
+  <text class="arch-muted" x="450" y="360">skills · tools · local services</text>
+
+  <line class="arch-line" x1="450" y1="380" x2="450" y2="420" />
+  <rect class="arch-shared" x="180" y="420" width="540" height="70" />
+  <text class="arch-text" x="450" y="448">task routing</text>
+  <text class="arch-muted" x="450" y="470">fast · cheap · specialist · deep</text>
+</svg>
+</figure>
 
 The important boundary is between shared capabilities and private memory.
 
@@ -206,35 +240,59 @@ No model call is required.
 
 Hermes is the coordination layer, not the entire security stack. Some of the work is handled by separate tools that can be used independently or called as part of a larger workflow.
 
-Two public repositories are part of that tooling layer:
+Two public repositories are part of the tooling used around this setup. They are separate projects rather than components that need an agent to function:
 
 | Repository | Role |
 |---|---|
 | [secure-development-tools](https://github.com/bhanuharya/secure-development-tools) | Security-scan orchestration for source-code, application, secrets, and dependency checks, with findings collected into a single workflow. |
 | [cti-radar](https://github.com/bhanuharya/cti-radar) | A self-hosted CTI and attack-surface correlation dashboard for authorized findings, assets, vulnerabilities, and mitigation tracking. |
 
-Conceptually, the relationship looks like this:
+The relationship is closer to a control plane sitting above several independent tools:
 
-```text
-                         ┌──────────────────┐
-                         │      Hermes      │
-                         │  agent control   │
-                         └────────┬─────────┘
-                                  │
-              ┌───────────────────┼───────────────────┐
-              │                   │                   │
-       ┌──────▼──────┐     ┌──────▼──────┐     ┌──────▼──────┐
-       │ secure-dev  │     │  CTI Radar  │     │ local jobs  │
-       │ tooling     │     │ correlation │     │ and scripts  │
-       └──────┬──────┘     └──────┬──────┘     └──────┬──────┘
-              │                   │                   │
-              └───────────────────┼───────────────────┘
-                                  │
-                         ┌────────▼────────┐
-                         │ findings, logs, │
-                         │ reports, alerts │
-                         └─────────────────┘
-```
+<figure class="diagram-wrap">
+<svg class="architecture-diagram" viewBox="0 0 900 360" role="img" aria-labelledby="tooling-title tooling-desc" xmlns="http://www.w3.org/2000/svg">
+  <title id="tooling-title">Hermes tooling layer</title>
+  <desc id="tooling-desc">Hermes coordinates independent security tools and local jobs, which produce findings, reports, logs, and alerts.</desc>
+  <defs>
+    <marker id="arrow-tooling" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#777" />
+    </marker>
+    <style>
+      .tool-box { fill:#0b0b0b; stroke:#bdbdbd; stroke-width:1.5; rx:4; }
+      .tool-main { fill:#151515; stroke:#f0f0f0; stroke-width:1.5; rx:4; }
+      .tool-text { fill:#f0f0f0; font:16px monospace; text-anchor:middle; }
+      .tool-muted { fill:#999; font:13px monospace; text-anchor:middle; }
+      .tool-line { stroke:#777; stroke-width:1.5; fill:none; marker-end:url(#arrow-tooling); }
+    </style>
+  </defs>
+
+  <rect class="tool-main" x="300" y="20" width="300" height="65" />
+  <text class="tool-text" x="450" y="48">Hermes</text>
+  <text class="tool-muted" x="450" y="69">agent control and routing</text>
+
+  <line class="tool-line" x1="450" y1="85" x2="160" y2="145" />
+  <line class="tool-line" x1="450" y1="85" x2="450" y2="145" />
+  <line class="tool-line" x1="450" y1="85" x2="740" y2="145" />
+
+  <rect class="tool-box" x="35" y="145" width="250" height="70" />
+  <rect class="tool-box" x="325" y="145" width="250" height="70" />
+  <rect class="tool-box" x="615" y="145" width="250" height="70" />
+  <text class="tool-text" x="160" y="173">secure-development-tools</text>
+  <text class="tool-muted" x="160" y="195">scan orchestration</text>
+  <text class="tool-text" x="450" y="173">cti-radar</text>
+  <text class="tool-muted" x="450" y="195">finding correlation</text>
+  <text class="tool-text" x="740" y="173">local jobs</text>
+  <text class="tool-muted" x="740" y="195">scripts and scheduled checks</text>
+
+  <line class="tool-line" x1="160" y1="215" x2="450" y2="280" />
+  <line class="tool-line" x1="450" y1="215" x2="450" y2="280" />
+  <line class="tool-line" x1="740" y1="215" x2="450" y2="280" />
+
+  <rect class="tool-main" x="240" y="280" width="420" height="60" />
+  <text class="tool-text" x="450" y="306">findings · reports · logs · alerts</text>
+  <text class="tool-muted" x="450" y="326">outputs remain useful without an agent</text>
+</svg>
+</figure>
 
 The important design choice is that these tools remain useful without an agent. Hermes can help decide when to use them, interpret their output, or summarize a result, but the underlying scanners and dashboards should not depend on an LLM to function.
 

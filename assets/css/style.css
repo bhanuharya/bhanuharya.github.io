@@ -294,6 +294,21 @@ main.wrap {
   border: 1px solid var(--border);
 }
 
+.diagram-wrap {
+  margin: 1.5rem 0;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-bright);
+  background: var(--bg);
+}
+
+.architecture-diagram {
+  display: block;
+  width: 100%;
+  min-width: 680px;
+  height: auto;
+}
+
 .post-content table {
   width: 100%;
   border-collapse: collapse;
