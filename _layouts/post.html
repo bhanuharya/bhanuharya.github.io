@@ -12,5 +12,11 @@ layout: default
   </div>
   <nav class="post-nav">
     <a href="{{ '/' | relative_url }}">&larr; Back to home</a>
+    {% if page.next %}
+    <a class="post-nav-next" href="{{ page.next.url | relative_url }}">{{ page.next.title | escape }} &rarr;</a>
+    {% endif %}
+    {% if page.previous %}
+    <a class="post-nav-prev" href="{{ page.previous.url | relative_url }}">&larr; {{ page.previous.title | escape }}</a>
+    {% endif %}
   </nav>
 </article>

@@ -22,6 +22,7 @@ html {
   -webkit-text-size-adjust: 100%;
   max-width: 100%;
   overflow-x: clip;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -59,6 +60,7 @@ body {
 a {
   color: var(--text);
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
 a:hover,
@@ -136,6 +138,7 @@ main.wrap {
   border-radius: 2px;
   margin: 1.25rem 0;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--border-bright);
 }
 
 .term-bar {
@@ -181,8 +184,8 @@ main.wrap {
 
 .boot-line {
   display: block;
-  opacity: 0.35;
-  animation: boot-reveal 2.4s steps(1, end) infinite;
+  opacity: 0;
+  animation: boot-reveal 2.4s ease-out forwards;
 }
 
 .boot-line-1 { animation-delay: 0s; }
@@ -190,8 +193,8 @@ main.wrap {
 .boot-line-3 { animation-delay: 0.7s; }
 
 @keyframes boot-reveal {
-  0%, 100% { opacity: 0.35; }
-  20%, 80% { opacity: 1; }
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 .boot-spinner {
@@ -206,7 +209,7 @@ main.wrap {
   position: absolute;
   inset: 0;
   opacity: 0;
-  animation: spinner-frame 1.2s steps(1, end) infinite;
+  animation: spinner-frame 1.2s steps(1, end) 3 forwards;
 }
 
 .boot-spinner span:nth-child(1) { animation-delay: 0s; }
@@ -218,6 +221,30 @@ main.wrap {
   0%, 24% { opacity: 1; }
   25%, 100% { opacity: 0; }
 }
+
+/* ---------- terminal content entrance ---------- */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.term-body > .line,
+.term-body > .out,
+.term-body > section {
+  opacity: 0;
+  animation: fade-in-up 0.4s ease forwards;
+}
+
+.term-body > *:nth-child(3)  { animation-delay: 2.5s; }
+.term-body > *:nth-child(4)  { animation-delay: 2.7s; }
+.term-body > *:nth-child(5)  { animation-delay: 2.9s; }
+.term-body > *:nth-child(6)  { animation-delay: 3.1s; }
+.term-body > *:nth-child(7)  { animation-delay: 3.3s; }
+.term-body > *:nth-child(8)  { animation-delay: 3.5s; }
+.term-body > *:nth-child(9)  { animation-delay: 3.7s; }
+.term-body > *:nth-child(10) { animation-delay: 3.9s; }
+.term-body > *:nth-child(11) { animation-delay: 4.1s; }
+.term-body > *:nth-child(12) { animation-delay: 4.3s; }
 
 .term-body .line {
   margin: 0 0 0.4rem;
@@ -272,6 +299,12 @@ main.wrap {
 }
 
 .cmdlist a:hover {
+  color: #ffffff;
+}
+
+.cmdlist a:focus-visible {
+  outline: 1px solid var(--cli-cyan);
+  outline-offset: 2px;
   color: #ffffff;
 }
 
@@ -473,6 +506,7 @@ main.wrap {
 
 .post-content a {
   color: var(--cli-green);
+  transition: color 0.15s ease;
 }
 
 .post-content a:hover,
@@ -506,6 +540,53 @@ main.wrap {
   background: none;
   padding: 0;
 }
+
+/* ---------- syntax highlighting (Rouge, terminal-themed) ---------- */
+.highlight {
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--cli-cyan);
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.highlight pre {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.highlight .c            { color: var(--muted);   font-style: italic } /* comment */
+.highlight .c1           { color: var(--muted);   font-style: italic }
+.highlight .gd           { color: #f2777a }                          /* generic.deleted */
+.highlight .gi           { color: var(--cli-green) }                  /* generic.inserted */
+.highlight .k            { color: #c678dd }                          /* keyword */
+.highlight .kn           { color: #c678dd }                          /* keyword.namespace */
+.highlight .kp           { color: #c678dd }                          /* keyword pseudo */
+.highlight .kr           { color: #c678dd }                          /* keyword.reserved */
+.highlight .kv           { color: #c678dd }                          /* keyword.var */
+.highlight .kt           { color: #f2777a }                          /* keyword.type */
+.highlight .s            { color: var(--cli-green) }                  /* string */
+.highlight .sr           { color: var(--cli-green) }                  /* string.regex */
+.highlight .si           { color: var(--cli-green) }                  /* string interpo */
+.highlight .nn           { color: #f2777a }                          /* name.exception */
+.highlight .nf           { color: var(--cli-cyan) }                  /* name.function */
+.highlight .nc           { color: var(--cli-cyan) }                  /* name.class */
+.highlight .nb           { color: var(--cli-amber) }                  /* name.builtin */
+.highlight .ni           { color: #f2777a }                          /* name.interval (YAML keys) */
+.highlight .n           { color: var(--text) }                       /* name */
+.highlight .o           { color: #e0af68 }                          /* operator */
+.highlight .p           { color: var(--text) }                       /* punctuation */
+.highlight .m           { color: #d19a66 }                          /* literal.number */
+.highlight .il          { color: #d19a66 }                          /* literal.number integer.long */
+.highlight .gd .x       { color: #f2777a }                          /* deleted code */
+.highlight .gd         { background: rgba(242,119,122,0.15) }
 
 .model-routing {
   margin: 1.25rem 0 1.5rem;
@@ -578,7 +659,29 @@ main.wrap {
 
 .post-nav {
   margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  justify-content: space-between;
   font-size: 0.95rem;
+}
+
+.post-nav a {
+  color: var(--cli-cyan);
+  text-decoration: none;
+}
+
+.post-nav a:hover,
+.post-nav a:focus {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.post-nav .post-nav-prev,
+.post-nav .post-nav-next {
+  font-weight: 600;
 }
 
 /* ---------- blog listing ---------- */
@@ -618,10 +721,17 @@ main.wrap {
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transform: none !important;
+    opacity: 1 !important;
   }
 }
 
