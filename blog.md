@@ -4,8 +4,6 @@ title: Blog
 permalink: /blog/
 ---
 
-Write-ups on security, engineering, and self-hosting land here as they're written.
-
 {% if site.posts.size > 0 %}
 <ul class="post-list">
   {% for post in site.posts %}

@@ -186,20 +186,34 @@ main.wrap {
 .boot-line-2 { animation-delay: 0.35s; }
 .boot-line-3 { animation-delay: 0.7s; }
 
-.boot-spinner {
-  display: inline-block;
-  width: 1ch;
-  animation: spinner-pulse 0.9s steps(2, end) infinite;
-}
-
 @keyframes boot-reveal {
   0%, 100% { opacity: 0.35; }
   20%, 80% { opacity: 1; }
 }
 
-@keyframes spinner-pulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
+.boot-spinner {
+  position: relative;
+  display: inline-block;
+  width: 1ch;
+  height: 1em;
+  vertical-align: -0.15em;
+}
+
+.boot-spinner span {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: spinner-frame 1.2s steps(1, end) infinite;
+}
+
+.boot-spinner span:nth-child(1) { animation-delay: 0s; }
+.boot-spinner span:nth-child(2) { animation-delay: 0.3s; }
+.boot-spinner span:nth-child(3) { animation-delay: 0.6s; }
+.boot-spinner span:nth-child(4) { animation-delay: 0.9s; }
+
+@keyframes spinner-frame {
+  0%, 24% { opacity: 1; }
+  25%, 100% { opacity: 0; }
 }
 
 .term-body .line {
