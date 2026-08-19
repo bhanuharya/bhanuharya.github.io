@@ -324,3 +324,55 @@ main.wrap {
 .ascii-tree::first-line{
   color:var(--accent);
 }
+
+/* ---------- subtle status / loader (home) ---------- */
+.status-line{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  color:var(--muted);
+  margin:.8rem 0 0;
+  font-size:.9rem;
+}
+.indicator{
+  width:9px;height:9px;border-radius:50%;
+  background:#3fb950;flex:none;
+  animation:pulse 2.4s steps(2) infinite;
+}
+@keyframes pulse{50%{opacity:.15}}
+.loader{
+  display:inline-block;
+  position:relative;
+  width:1.05em;height:1.1em;
+  flex:none;
+  color:var(--accent);
+}
+.loader span{
+  position:absolute;left:0;top:0;
+  width:100%;text-align:center;
+  opacity:0;
+  animation:loader-frame .8s steps(1) infinite;
+}
+.loader span:nth-child(1){animation-delay:0s}
+.loader span:nth-child(2){animation-delay:.2s}
+.loader span:nth-child(3){animation-delay:.4s}
+.loader span:nth-child(4){animation-delay:.6s}
+@keyframes loader-frame{
+  0%{opacity:1}
+  25%{opacity:0}
+  100%{opacity:0}
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  .cursor,
+  .indicator,
+  .loader span{
+    animation:none !important;
+  }
+  .cursor{opacity:1}
+  .indicator{opacity:1}
+  .loader span{opacity:0}
+  .loader span:nth-child(1){opacity:1}
+}
+
