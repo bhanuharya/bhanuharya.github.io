@@ -162,6 +162,42 @@ main.wrap {
   overflow-x: auto;
 }
 
+.boot-sequence {
+  min-height: 4.8em;
+  margin: 0 0 1.1rem;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78em;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.boot-line {
+  display: block;
+  opacity: 0.35;
+  animation: boot-reveal 2.4s steps(1, end) infinite;
+}
+
+.boot-line-1 { animation-delay: 0s; }
+.boot-line-2 { animation-delay: 0.35s; }
+.boot-line-3 { animation-delay: 0.7s; }
+
+.boot-spinner {
+  display: inline-block;
+  width: 1ch;
+  animation: spinner-pulse 0.9s steps(2, end) infinite;
+}
+
+@keyframes boot-reveal {
+  0%, 100% { opacity: 0.35; }
+  20%, 80% { opacity: 1; }
+}
+
+@keyframes spinner-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
 .term-body .line {
   margin: 0 0 0.4rem;
 }

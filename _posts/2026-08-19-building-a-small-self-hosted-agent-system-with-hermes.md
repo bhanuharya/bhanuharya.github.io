@@ -56,66 +56,69 @@ The setup runs on a small private Linux host. It is reachable only through a pri
 There are several isolated bot profiles. Each profile has its own memory and runtime context, while selected skills and tools are shared across the system.
 
 <figure class="diagram-wrap">
-<svg class="architecture-diagram" viewBox="0 0 900 520" role="img" aria-labelledby="architecture-title architecture-desc" xmlns="http://www.w3.org/2000/svg">
+<svg class="architecture-diagram" style="display:block;width:100%;height:auto" viewBox="0 0 760 650" role="img" aria-labelledby="architecture-title architecture-desc" xmlns="http://www.w3.org/2000/svg">
   <title id="architecture-title">Hermes multi-profile architecture</title>
   <desc id="architecture-desc">Chat clients connect to three isolated agent profiles. Each profile has private memory, while selected skills and tools are shared before tasks reach the model router.</desc>
   <defs>
-    <marker id="arrow-architecture" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-      <path d="M0,0 L8,4 L0,8 Z" fill="#777" />
+    <marker id="arrow-architecture" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#777" />
     </marker>
     <style>
-      .arch-box { fill:#0b0b0b; stroke:#bdbdbd; stroke-width:1.5; rx:4; }
-      .arch-shared { fill:#151515; stroke:#f0f0f0; stroke-width:1.5; rx:4; }
-      .arch-text { fill:#f0f0f0; font:16px monospace; text-anchor:middle; }
-      .arch-muted { fill:#999; font:13px monospace; text-anchor:middle; }
-      .arch-line { stroke:#777; stroke-width:1.5; fill:none; marker-end:url(#arrow-architecture); }
+      .arch-box { fill:#0b0b0b; stroke:#bdbdbd; stroke-width:1.4; rx:4; }
+      .arch-shared { fill:#151515; stroke:#f0f0f0; stroke-width:1.4; rx:4; }
+      .arch-text { fill:#f0f0f0; font:14px monospace; text-anchor:middle; }
+      .arch-muted { fill:#999; font:11px monospace; text-anchor:middle; }
+      .arch-line { stroke:#777; stroke-width:1.4; fill:none; marker-end:url(#arrow-architecture); }
     </style>
   </defs>
 
-  <rect class="arch-box" x="300" y="20" width="300" height="55" />
-  <text class="arch-text" x="450" y="45">chat clients</text>
-  <text class="arch-muted" x="450" y="64">separate bot entry points</text>
+  <rect class="arch-box" x="280" y="20" width="200" height="55" />
+  <text class="arch-text" x="380" y="44">chat clients</text>
+  <text class="arch-muted" x="380" y="62">separate bot entries</text>
 
-  <line class="arch-line" x1="450" y1="75" x2="450" y2="105" />
+  <rect class="arch-box" x="20" y="130" width="200" height="62" />
+  <rect class="arch-box" x="280" y="130" width="200" height="62" />
+  <rect class="arch-box" x="540" y="130" width="200" height="62" />
+  <text class="arch-text" x="120" y="157">profile A</text>
+  <text class="arch-muted" x="120" y="176">general</text>
+  <text class="arch-text" x="380" y="157">profile B</text>
+  <text class="arch-muted" x="380" y="176">project</text>
+  <text class="arch-text" x="640" y="157">profile C</text>
+  <text class="arch-muted" x="640" y="176">isolated</text>
 
-  <rect class="arch-box" x="55" y="105" width="230" height="62" />
-  <rect class="arch-box" x="335" y="105" width="230" height="62" />
-  <rect class="arch-box" x="615" y="105" width="230" height="62" />
-  <text class="arch-text" x="170" y="132">profile A</text>
-  <text class="arch-muted" x="170" y="153">general</text>
-  <text class="arch-text" x="450" y="132">profile B</text>
-  <text class="arch-muted" x="450" y="153">project</text>
-  <text class="arch-text" x="730" y="132">profile C</text>
-  <text class="arch-muted" x="730" y="153">isolated</text>
+  <line class="arch-line" x1="380" y1="75" x2="380" y2="100" />
+  <line class="arch-line" x1="380" y1="100" x2="120" y2="130" />
+  <line class="arch-line" x1="380" y1="100" x2="380" y2="130" />
+  <line class="arch-line" x1="380" y1="100" x2="640" y2="130" />
 
-  <line class="arch-line" x1="450" y1="105" x2="170" y2="105" />
-  <line class="arch-line" x1="450" y1="105" x2="730" y2="105" />
-  <line class="arch-line" x1="170" y1="167" x2="170" y2="205" />
-  <line class="arch-line" x1="450" y1="167" x2="450" y2="205" />
-  <line class="arch-line" x1="730" y1="167" x2="730" y2="205" />
+  <rect class="arch-box" x="20" y="235" width="200" height="62" />
+  <rect class="arch-box" x="280" y="235" width="200" height="62" />
+  <rect class="arch-box" x="540" y="235" width="200" height="62" />
+  <text class="arch-text" x="120" y="262">memory A</text>
+  <text class="arch-muted" x="120" y="281">private context</text>
+  <text class="arch-text" x="380" y="262">memory B</text>
+  <text class="arch-muted" x="380" y="281">private context</text>
+  <text class="arch-text" x="640" y="262">memory C</text>
+  <text class="arch-muted" x="640" y="281">private context</text>
 
-  <rect class="arch-box" x="55" y="205" width="230" height="62" />
-  <rect class="arch-box" x="335" y="205" width="230" height="62" />
-  <rect class="arch-box" x="615" y="205" width="230" height="62" />
-  <text class="arch-text" x="170" y="232">memory A</text>
-  <text class="arch-muted" x="170" y="253">private context</text>
-  <text class="arch-text" x="450" y="232">memory B</text>
-  <text class="arch-muted" x="450" y="253">private context</text>
-  <text class="arch-text" x="730" y="232">memory C</text>
-  <text class="arch-muted" x="730" y="253">private context</text>
+  <line class="arch-line" x1="120" y1="192" x2="120" y2="235" />
+  <line class="arch-line" x1="380" y1="192" x2="380" y2="235" />
+  <line class="arch-line" x1="640" y1="192" x2="640" y2="235" />
 
-  <line class="arch-line" x1="170" y1="267" x2="170" y2="310" />
-  <line class="arch-line" x1="450" y1="267" x2="450" y2="310" />
-  <line class="arch-line" x1="730" y1="267" x2="730" y2="310" />
+  <rect class="arch-shared" x="100" y="350" width="560" height="70" />
+  <text class="arch-text" x="380" y="378">shared capabilities</text>
+  <text class="arch-muted" x="380" y="399">skills · tools · local services</text>
 
-  <rect class="arch-shared" x="180" y="310" width="540" height="70" />
-  <text class="arch-text" x="450" y="338">shared capabilities</text>
-  <text class="arch-muted" x="450" y="360">skills · tools · local services</text>
+  <line class="arch-line" x1="120" y1="297" x2="120" y2="330" />
+  <line class="arch-line" x1="120" y1="330" x2="380" y2="350" />
+  <line class="arch-line" x1="380" y1="297" x2="380" y2="350" />
+  <line class="arch-line" x1="640" y1="297" x2="640" y2="330" />
+  <line class="arch-line" x1="640" y1="330" x2="380" y2="350" />
 
-  <line class="arch-line" x1="450" y1="380" x2="450" y2="420" />
-  <rect class="arch-shared" x="180" y="420" width="540" height="70" />
-  <text class="arch-text" x="450" y="448">task routing</text>
-  <text class="arch-muted" x="450" y="470">fast · cheap · specialist · deep</text>
+  <rect class="arch-shared" x="100" y="470" width="560" height="70" />
+  <text class="arch-text" x="380" y="498">task routing</text>
+  <text class="arch-muted" x="380" y="519">fast · cheap · specialist · deep</text>
+  <line class="arch-line" x1="380" y1="420" x2="380" y2="470" />
 </svg>
 </figure>
 
