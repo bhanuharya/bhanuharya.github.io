@@ -4,7 +4,7 @@ title: Blog
 permalink: /blog/
 ---
 
-<p class="page-lead dim">notes and experiments on security, systems, and self-hosting.</p>
+<p class="page-lead dim">notes and experiments on security, systems, and self hosting.</p>
 
 {% if site.posts.size > 0 %}
 <ul class="post-list">
@@ -31,5 +31,5 @@ permalink: /blog/
   {% endfor %}
 </ul>
 {% else %}
-<p class="dim" style="margin-top:1rem">no posts yet — check back soon :-)</p>
+<p class="dim" style="margin-top:1rem">no posts yet. check back soon :-)</p>
 {% endif %}
