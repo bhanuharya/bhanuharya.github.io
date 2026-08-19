@@ -4,12 +4,14 @@ title: About
 permalink: /about/
 ---
 
-<pre class="ascii-head" aria-hidden="true">~ $ cat about.txt</pre>
+<pre class="ascii-head" aria-hidden="true">harya@sec:~$ cat about.txt</pre>
 
-I'm Harya. I work in information security within the capital-markets sector.
+<p>i’m harya. i work in infosec, with nearly five years of experience across capital markets and financial services.</p>
 
-I'm interested in the things beneath the surface: how computer systems are put together, how applications communicate with infrastructure, where security assumptions are made, and what happens when those assumptions stop holding.
+<p>i studied compsci at institut teknologi bandung. my interests include ai, privacy, open-source software, self-hosting, music, and tinkering with computers.</p>
 
-Outside of day-to-day security work, I spend time exploring computer systems, application and network security, security operations, artificial intelligence, automation, Linux, containers, and self-hosted services.
+<p>this site is a small space for notes, experiments, and things i find worth documenting.</p>
 
-I enjoy learning by building and taking things apart. Sometimes that means writing a small script, running a service at home, testing an idea, or following a problem further than expected.
+<pre class="ascii-head" aria-hidden="true">harya@sec:~$ exit</pre>
+
+<p><a href="https://github.com/bhanuharya">github.com/bhanuharya</a></p>
