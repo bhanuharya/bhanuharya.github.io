@@ -16,7 +16,7 @@ This post is an overview of the design and the decisions behind it. It intention
 
 ## The hardware
 
-I could not afford a small fleet of cloud VMs, so the entire thing runs on an old ThinkPad from my college years. It is not exactly enterprise infrastructure, but it is quiet, cheap, and good enough for a personal lab.
+I could have rented a small fleet of cloud VMs, but an unused ThinkPad at home already had plenty of computing power and no plans for the evening. So I promoted it to server. It is not exactly enterprise infrastructure, but it is quiet, cheap, and good enough for a personal lab.
 
 | Component | Specification |
 |---|---|
