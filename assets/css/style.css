@@ -8,6 +8,9 @@
   --text: #e6e6e6;
   --muted: #8a8a8a;
   --dim: #5c5c5c;
+  --cli-cyan: #7dcfff;
+  --cli-amber: #e0af68;
+  --cli-green: #9ece6a;
   --font: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, "DejaVu Sans Mono", monospace;
 }
 
@@ -372,11 +375,15 @@ main.wrap {
 }
 
 .post-content h2 {
+  color: var(--cli-amber);
   font-size: 1.3rem;
   margin-top: 2rem;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--cli-amber);
 }
 
 .post-content h3 {
+  color: var(--cli-cyan);
   font-size: 1.1rem;
   margin-top: 1.75rem;
 }
@@ -430,10 +437,11 @@ main.wrap {
 }
 
 .post-content table {
-  display: block;
+  display: table;
   width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: visible;
+  table-layout: auto;
   border-collapse: collapse;
   margin: 1.25rem 0;
   background: var(--bg);
@@ -453,13 +461,22 @@ main.wrap {
 
 .post-content thead th {
   background: var(--panel-alt);
-  color: var(--text);
+  color: var(--cli-cyan);
   font-weight: 600;
-  border-bottom: 2px solid var(--text);
+  border-bottom: 2px solid var(--cli-cyan);
 }
 
 .post-content tbody tr:nth-child(even) {
   background: var(--panel);
+}
+
+.post-content a {
+  color: var(--cli-green);
+}
+
+.post-content a:hover,
+.post-content a:focus {
+  color: #c7f9cc;
 }
 
 .post-content table code {
@@ -470,6 +487,7 @@ main.wrap {
 .post-content pre {
   background: var(--bg);
   border: 1px solid var(--border);
+  border-left: 2px solid var(--cli-cyan);
   padding: 1rem 1.25rem;
   overflow-x: auto;
   font-size: 0.875rem;
