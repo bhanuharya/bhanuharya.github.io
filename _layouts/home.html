@@ -1,58 +1,158 @@
+```html
 ---
 layout: default
 ---
-<article class="term" style="margin-top:1rem">
+
+<article class="term" style="margin-top: 1rem">
   <div class="term-bar">
     <span class="dot d1"></span>
     <span class="dot d2"></span>
     <span class="dot d3"></span>
     <span class="term-title">bhanuharya@sec — zsh</span>
   </div>
+
   <div class="term-body">
-    <pre class="banner">  _  _           _                      
- | || |__ _ _ _ (_)_ _  __ _ _ _  __ _
- | __ / _` | ' \| | ' \/ _` | '_|/ _` |
- |_||_\__,_|_||_|_|_||_\__,_|_|  \__,_|</pre>
-
-    <div><span class="wip">// WORK IN PROGRESS — under construction</span></div>
-
-    <div class="line"><span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">whoami</span></div>
-    <div class="out">Wishnumurti Ramadhana Bhanuharya — information security professional.<br>fintech · capital markets · banking. SOC build + secure SDLC + OJK-regulated infra.<br>self-hoster. tool-builder. intends to break things responsibly.</div>
-
-    <div class="line"><span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">cat skills.txt</span></div>
-    <div class="out"><div class="skills">
-      <span>offensive</span><span>recon · ai red-teaming · vuln research</span>
-      <span>defensive</span><span>detection · triage · netsec</span>
-      <span>engineering</span><span>python · bash · agent infra · self-hosted svc</span>
-      <span>domains</span><span>appsec · cloud/tailnet · automation</span>
-    </div></div>
-
-    <div class="line"><span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">cat resume.txt</span></div>
-    <div class="out"><div class="cmdlist">
-      <div><span class="k">now</span><span>IT Security @ Mirae Asset Sekuritas — local + global SOC buildout, secure SDLC</span></div>
-      <div><span class="k">prev</span><span>IS Security @ Mandiri Sekuritas · Network Sec @ NTT DATA · Ent Sec @ OVO</span></div>
-      <div><span class="k">edu</span><span>S.T. Informatics @ Institut Teknologi Bandung (B.Sc.)</span></div>
-      <div><span class="k">cert</span><span>PCNSE · ISC² CC · Akamai WAAP</span></div>
-    </div></div>
-
-    <div class="line"><span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">ls projects/</span></div>
-    <div class="out"><span class="placeholder">./not-yet-published&nbsp;&nbsp; (empty — in progress, check back soon)</span></div>
-
-    <div class="line"><span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">blog</span></div>
-    <div class="out"><span class="dim">[coming soon]</span> — write-ups will land at <a class="grn" href="{{ '/about/' | relative_url }}">/about</a> · see <a class="grn" href="{{ '/feed.xml' | relative_url }}">rss</a></div>
-
-    <div class="line"><span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">help</span></div>
-    <div class="out"><div class="cmdlist">
-      <div><span class="k">blog</span><span class="dim"># future write-ups</span></div>
-      <div><span class="k">resume</span><span class="dim"># work · edu · certs</span></div>
-      <div><span class="k">about</span><span class="dim"># more about me</span></div>
-      <div><span class="k">github</span><span class="dim"># github.com/bhanuharya</span></div>
-    </div></div>
-
-    <div class="line"><span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span><span class="cursor">&nbsp;</span></div>
+    <pre class="banner">┌──────────────────────────────┐
+│  &gt;_ init_session --status 200│
+│  [■■■■■■■■■■■■■■■□□] 85%     │
+└──────────────────────────────┘</pre>
 
     <div>
-      <p>The usual website is being rebuilt as a terminal. For now: <a class="grn" href="{{ '/about/' | relative_url }}">about</a> · future <a class="grn" href="{{ '/#blog'|relative_url }}">blog</a>. Posts will appear here when written.</p>
+      <span class="wip">// WORK IN PROGRESS — under construction</span>
+    </div>
+
+    <div class="line">
+      <span class="prompt">bhanuharya@sec</span>
+      <span class="loc">:~$</span>
+      <span class="cmd">whoami</span>
+    </div>
+
+    <div class="out">
+      Information security practitioner interested in computer systems,
+      artificial intelligence, and the ways technology can fail, adapt,
+      and be made more secure.<br>
+      Exploring security across applications, infrastructure, networks,
+      and the systems connecting them.
+    </div>
+
+    <div class="line">
+      <span class="prompt">bhanuharya@sec</span>
+      <span class="loc">:~$</span>
+      <span class="cmd">cat interests.txt</span>
+    </div>
+
+    <div class="out">
+      <div class="skills">
+        <span>systems</span>
+        <span>computer architecture · Linux · networks · cloud infrastructure</span>
+
+        <span>infosec</span>
+        <span>application security · attack surface mapping · vulnerability research</span>
+
+        <span>defense</span>
+        <span>security monitoring · detection engineering · log analysis · incident triage</span>
+
+        <span>ai</span>
+        <span>AI security · agentic systems · model behavior · security automation</span>
+
+        <span>building</span>
+        <span>Python · Bash · APIs · containers · self-hosted services</span>
+      </div>
+    </div>
+
+    <div class="line">
+      <span class="prompt">bhanuharya@sec</span>
+      <span class="loc">:~$</span>
+      <span class="cmd">cat current.txt</span>
+    </div>
+
+    <div class="out">
+      <div class="cmdlist">
+        <div>
+          <span class="k">focus</span>
+          <span>understanding systems from the application layer to the underlying infrastructure</span>
+        </div>
+
+        <div>
+          <span class="k">work</span>
+          <span>security operations · secure SDLC · infrastructure security · security assessments</span>
+        </div>
+
+        <div>
+          <span class="k">research</span>
+          <span>AI systems · offensive security · threat detection · automation</span>
+        </div>
+
+        <div>
+          <span class="k">side</span>
+          <span>self-hosting services, building small tools, and taking systems apart to understand them</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line">
+      <span class="prompt">bhanuharya@sec</span>
+      <span class="loc">:~$</span>
+      <span class="cmd">ls projects/</span>
+    </div>
+
+    <div class="out">
+      <span class="placeholder">
+        ./not-yet-published&nbsp;&nbsp; (notes, tools, and experiments in progress)
+      </span>
+    </div>
+
+    <div class="line">
+      <span class="prompt">bhanuharya@sec</span>
+      <span class="loc">:~$</span>
+      <span class="cmd">blog</span>
+    </div>
+
+    <div class="out">
+      <span class="dim">[coming soon]</span>
+      — notes on systems, security, AI, and things built along the way.
+    </div>
+
+    <div class="line">
+      <span class="prompt">bhanuharya@sec</span>
+      <span class="loc">:~$</span>
+      <span class="cmd">help</span>
+    </div>
+
+    <div class="out">
+      <div class="cmdlist">
+        <div>
+          <span class="k">about</span>
+          <span class="dim"># background and interests</span>
+        </div>
+
+        <div>
+          <span class="k">projects</span>
+          <span class="dim"># tools, notes, and experiments</span>
+        </div>
+
+        <div>
+          <span class="k">github</span>
+          <span class="dim"># github.com/bhanuharya</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line">
+      <span class="prompt">bhanuharya@sec</span>
+      <span class="loc">:~$</span>
+      <span class="cursor">&nbsp;</span>
+    </div>
+
+    <div>
+      <p>
+        A small corner for systems, security, experiments, and things worth
+        documenting.
+        <a class="grn" href="{{ '/about/' | relative_url }}">about</a>
+        ·
+        <a class="grn" href="{{ '/#blog' | relative_url }}">blog</a>
+      </p>
     </div>
   </div>
 </article>
+```
