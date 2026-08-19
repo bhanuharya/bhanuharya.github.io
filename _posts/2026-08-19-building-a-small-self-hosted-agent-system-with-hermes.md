@@ -467,25 +467,35 @@ Separate profiles are not only about security. They also make the system easier 
 
 ## Managing model lanes and usage
 
-Running a self-hosted agent system is also an exercise in managing model usage. A capable model is useful, but sending every task to the most expensive or heavily limited lane is neither efficient nor necessary.
+Model management is an engineering problem, not just a model-selection problem.
 
-I route work according to the task rather than treating model choice as a fixed identity:
+| Constraint | Why it matters |
+|---|---|
+| Cost and token budgets | Repeated context can make cheap calls expensive |
+| Provider rate limits | A lane may become unavailable or restricted |
+| Context size | Large prompts reduce efficiency and may exceed limits |
+| Cache behavior | Stable prompts and reusable context improve cost and latency |
+| Fallback quality | A reachable fallback may still lack the required capability |
+
+The routing principle is:
 
 ```text
-deterministic task ───────► local script or tool
-routine reasoning ────────► fast general model
-delegated implementation ─► efficient coding model
-specialist analysis ──────► domain-focused lane
-high-impact reasoning ────► stronger model with review
+deterministic task
+        │
+        ▼
+local tool or script
+        │
+        ├── routine task ───────► cheaper model lane
+        │
+        ├── specialist task ────► specialist model
+        │
+        └── high-impact task ───► stronger model + verification
+                                      │
+                                      ▼
+                              tested fallback lane
 ```
 
-The practical constraints are cost, token budgets, provider rate limits, context size, and cache behavior. A route that looks cheap per request can become expensive when it repeatedly resends the same context or exhausts a weekly allowance. I therefore pay attention to both the visible cost of a call and the operational cost of the lane around it.
-
-Cache efficiency matters as much as raw model speed. Stable instructions, reusable skill context, and predictable prompt prefixes make repeated work cheaper and faster. Avoiding unnecessary rewrites of that stable context also helps preserve cache hits.
-
-Fallbacks are part of the design rather than an emergency afterthought. A fallback lane should be tested for availability, capability, and limits instead of being selected only because it is technically reachable. The goal is graceful degradation: use a simpler local tool where possible, move to a cheaper lane for routine work, and reserve stronger models for tasks that justify the additional cost and scrutiny.
-
-This turns model management into an engineering problem involving budgets, token accounting, cache-aware prompt design, rate-limit monitoring, and explicit routing rules.
+Stable instructions, reusable skill context, explicit routing rules, and tested fallbacks help the system remain efficient when costs, limits, or provider availability change.
 
 ## Securing search, fetch, and crawl workflows
 
