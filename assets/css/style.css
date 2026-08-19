@@ -314,3 +314,13 @@ main.wrap {
 .skills span:nth-child(odd){color:var(--muted)}
 .skills span:nth-child(even){color:var(--text)}
 .placeholder{color:var(--muted);font-style:italic}
+.ascii-tree{
+  margin:0;
+  color:var(--muted);
+  font:inherit;
+  white-space:pre-wrap;
+  line-height:1.55;
+}
+.ascii-tree::first-line{
+  color:var(--accent);
+}
