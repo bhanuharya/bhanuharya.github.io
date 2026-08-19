@@ -276,3 +276,41 @@ main.wrap {
 .site-footer p {
   margin: 0;
 }
+
+/* ---------- CLI terminal bio (home) ---------- */
+.term{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:0 0 0 1px #000,0 18px 60px rgba(0,0,0,.55);
+  overflow:hidden;
+  margin:1.5rem 0;
+}
+.term-bar{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.55rem .9rem;background:#0c1210;
+  border-bottom:1px solid var(--border);
+  font-size:12px;color:var(--muted);user-select:none;
+}
+.term-bar .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.term-bar .d1{background:#ff5f56}.term-bar .d2{background:#ffbd2e}.term-bar .d3{background:#27c93f}
+.term-title{margin-left:.4rem;letter-spacing:.03em}
+.term-body{padding:1.25rem 1.4rem 1.6rem;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:14px;line-height:1.55}
+.banner{color:var(--accent);white-space:pre;font-size:12px;line-height:1.2;margin:0 0 1.1rem;overflow-x:auto}
+.wip{display:inline-block;border:1px solid var(--amber,#e3b341);color:var(--amber,#e3b341);padding:.2rem .55rem;border-radius:4px;font-size:12px;margin-bottom:1.1rem;letter-spacing:.05em}
+.term-body .line{margin:0 0 .4rem}
+.prompt{color:var(--accent)}
+.loc{color:var(--amber,#e3b341)}
+.dim{color:var(--muted)}
+.grn{color:var(--accent)}
+.txt{color:var(--text)}
+.cmd{color:var(--text);font-weight:600}
+.cursor{display:inline-block;width:.6em;background:var(--accent);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.cmdlist{display:grid;gap:.1rem;margin:.4rem 0 .2rem}
+.cmdlist .k{color:var(--accent);min-width:7rem;display:inline-block}
+.out{margin:.1rem 0 .9rem;color:var(--muted);border-left:2px solid var(--border);padding-left:.8rem}
+.skills{display:grid;grid-template-columns:auto auto;gap:.1rem .6rem;margin:.2rem 0 .4rem}
+.skills span:nth-child(odd){color:var(--muted)}
+.skills span:nth-child(even){color:var(--text)}
+.placeholder{color:var(--muted);font-style:italic}
