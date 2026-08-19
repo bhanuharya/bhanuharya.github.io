@@ -294,6 +294,37 @@ main.wrap {
   border: 1px solid var(--border);
 }
 
+.post-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  background: transparent;
+}
+
+.post-content th,
+.post-content td {
+  border: 1px solid var(--border-bright);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.post-content thead th {
+  background: var(--panel-alt);
+  color: var(--text);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-bright);
+}
+
+.post-content tbody tr:nth-child(even) {
+  background: var(--panel);
+}
+
+.post-content table code {
+  background: transparent;
+  padding: 0;
+}
+
 .post-content pre {
   background: var(--bg);
   border: 1px solid var(--border);
