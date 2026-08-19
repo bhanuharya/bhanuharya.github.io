@@ -17,10 +17,14 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
+  max-width: 100%;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font);
@@ -363,10 +367,32 @@ main.wrap {
   border: 1px solid var(--border);
 }
 
+.term-body,
+.post,
+.post-content,
+.page-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.post-content,
+.page-content {
+  overflow-wrap: anywhere;
+}
+
+.post-content svg,
+.page-content svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
 .diagram-wrap {
   margin: 1.5rem 0;
+  width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
   border: 1px solid var(--border-bright);
   background: var(--bg);
 }
@@ -374,12 +400,16 @@ main.wrap {
 .architecture-diagram {
   display: block;
   width: 100%;
-  min-width: 680px;
+  max-width: 100%;
   height: auto;
+  min-width: 0;
 }
 
 .post-content table {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   margin: 1.25rem 0;
   background: var(--bg);
@@ -393,6 +423,8 @@ main.wrap {
   padding: 0.5rem 0.75rem;
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .post-content thead th {
@@ -489,6 +521,51 @@ main.wrap {
 }
 
 /* ---------- small screens ---------- */
+@media (max-width: 600px) {
+  body {
+    font-size: 15px;
+  }
+
+  .wrap {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .post-content,
+  .page-content {
+    padding: 1rem;
+  }
+
+  .post-title,
+  .page-title {
+    font-size: 1.3rem;
+  }
+
+  .post-content table {
+    font-size: 0.82rem;
+  }
+
+  .post-content th,
+  .post-content td {
+    padding: 0.55rem;
+    overflow-wrap: anywhere;
+  }
+
+  .post-content pre,
+  .post-content code,
+  .page-content pre,
+  .page-content code {
+    max-width: 100%;
+  }
+
+  .post-content pre {
+    padding: 0.8rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    overflow-wrap: anywhere;
+  }
+}
+
 @media (max-width: 480px) {
   .term-body {
     padding: 1rem 0.9rem 1.2rem;
@@ -496,9 +573,5 @@ main.wrap {
   }
   .banner {
     font-size: 11px;
-  }
-  .post-content,
-  .page-content {
-    padding: 1.1rem 1.1rem;
   }
 }

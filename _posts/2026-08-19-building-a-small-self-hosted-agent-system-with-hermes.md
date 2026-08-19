@@ -56,7 +56,7 @@ The setup runs on a small private Linux host. It is reachable only through a pri
 There are several isolated bot profiles. Each profile has its own memory and runtime context, while selected skills and tools are shared across the system.
 
 <figure class="diagram-wrap">
-<svg class="architecture-diagram" style="display:block;width:100%;height:auto" viewBox="0 0 760 650" role="img" aria-labelledby="architecture-title architecture-desc" xmlns="http://www.w3.org/2000/svg">
+<svg class="architecture-diagram" style="display:block;width:100%;height:auto" preserveAspectRatio="xMidYMid meet" viewBox="0 0 760 650" role="img" aria-labelledby="architecture-title architecture-desc" xmlns="http://www.w3.org/2000/svg">
   <title id="architecture-title">Hermes multi-profile architecture</title>
   <desc id="architecture-desc">Chat clients connect to three isolated agent profiles. Each profile has private memory, while selected skills and tools are shared before tasks reach the model router.</desc>
   <defs>
@@ -253,7 +253,7 @@ Two public repositories are part of the tooling used around this setup. They are
 The relationship is closer to a control plane sitting above several independent tools:
 
 <figure class="diagram-wrap">
-<svg class="architecture-diagram" viewBox="0 0 900 360" role="img" aria-labelledby="tooling-title tooling-desc" xmlns="http://www.w3.org/2000/svg">
+<svg class="architecture-diagram" preserveAspectRatio="xMidYMid meet" viewBox="0 0 900 360" role="img" aria-labelledby="tooling-title tooling-desc" xmlns="http://www.w3.org/2000/svg">
   <title id="tooling-title">Hermes tooling layer</title>
   <desc id="tooling-desc">Hermes coordinates independent security tools and local jobs, which produce findings, reports, logs, and alerts.</desc>
   <defs>
