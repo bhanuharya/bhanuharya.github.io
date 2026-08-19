@@ -495,34 +495,6 @@ agent produces candidates
 
 It is not perfect, but it is often more useful than asking the original model to confidently judge its own answer.
 
-## What I have learned so far
-
-The most important lessons have been architectural rather than model-specific.
-
-### Memory needs ownership
-
-Shared skills are convenient. Shared memory is risky.
-
-Every profile should have a clear owner for its memory, and that ownership should be visible in the filesystem and service configuration. If two profiles can silently write to the same memory files, isolation is only an assumption.
-
-### Deterministic work should remain deterministic
-
-If a shell script, database query, or scheduled check can do the job reliably, there is no reason to place an LLM in the middle of it.
-
-Agents are most useful where interpretation, planning, synthesis, or judgment is actually required.
-
-### Routing rules should be explicit
-
-A small routing policy is easier to understand and debug than a second model trying to decide which model should handle every request.
-
-### Baselines reduce noise
-
-Monitoring everything all the time creates too much output. Comparing current state with a known baseline makes changes easier to notice and easier to review.
-
-### Isolation is also a productivity feature
-
-Separate profiles are not only about security. They also make the system easier to reason about. A project agent can stay focused on project context, while a general agent remains clean and reusable.
-
 ## Managing model lanes and usage
 
 Model management is an engineering problem, not just a model-selection problem.
@@ -619,6 +591,34 @@ Some of the controls I use or consider important are:
 Prompt injection is only one part of the problem. Content poisoning can also happen when a source is outdated, copied from another source, selectively edited, or deliberately written to produce a misleading conclusion. Multiple sources, timestamps, primary documentation, and explicit uncertainty are more useful defenses than pretending that retrieved text is automatically trustworthy.
 
 The security boundary therefore sits between retrieval and action. Search, fetch, and crawl tools may collect evidence, but they should not silently authorize tool calls, disclose secrets, modify systems, or expand the task's scope.
+
+## What I have learned so far
+
+The most important lessons have been architectural rather than model-specific.
+
+### Memory needs ownership
+
+Shared skills are convenient. Shared memory is risky.
+
+Every profile should have a clear owner for its memory, and that ownership should be visible in the filesystem and service configuration. If two profiles can silently write to the same memory files, isolation is only an assumption.
+
+### Deterministic work should remain deterministic
+
+If a shell script, database query, or scheduled check can do the job reliably, there is no reason to place an LLM in the middle of it.
+
+Agents are most useful where interpretation, planning, synthesis, or judgment is actually required.
+
+### Routing rules should be explicit
+
+A small routing policy is easier to understand and debug than a second model trying to decide which model should handle every request.
+
+### Baselines reduce noise
+
+Monitoring everything all the time creates too much output. Comparing current state with a known baseline makes changes easier to notice and easier to review.
+
+### Isolation is also a productivity feature
+
+Separate profiles are not only about security. They also make the system easier to reason about. A project agent can stay focused on project context, while a general agent remains clean and reusable.
 
 ## What comes next
 

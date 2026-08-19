@@ -172,6 +172,24 @@ main.wrap {
   overflow-x: auto;
 }
 
+.banner-status,
+.banner-progress {
+  animation: banner-pulse 1.8s steps(2, end) infinite;
+}
+
+.banner-status {
+  color: var(--cli-green);
+}
+
+.banner-progress {
+  color: var(--cli-cyan);
+}
+
+@keyframes banner-pulse {
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
+}
+
 .boot-sequence {
   min-height: 4.8em;
   margin: 0 0 1.1rem;
