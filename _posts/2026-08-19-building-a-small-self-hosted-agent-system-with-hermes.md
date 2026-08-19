@@ -29,6 +29,72 @@ I could have rented a small fleet of cloud VMs, but an unused ThinkPad at home a
 
 The point is not that this hardware is impressive. The point is that a useful agent environment does not need a rack of servers to be worth building. It needs clear boundaries, sensible defaults, and enough capacity to run the workloads that actually matter.
 
+## Measuring the host
+
+A laptop can be a perfectly reasonable small server when its workload is understood and measured. I keep an eye on load, memory, storage, uptime, and temperature rather than treating the machine as an invisible appliance. A small health check is usually more useful than guessing from the hardware specification:
+
+```bash
+#!/usr/bin/env bash
+
+printf '== uptime and load ==\n'
+uptime
+
+printf '\n== memory ==\n'
+free -h
+
+printf '\n== root filesystem ==\n'
+df -h /
+
+printf '\n== processors ==\n'
+printf 'logical CPUs: '; nproc
+
+printf '\n== temperatures ==\n'
+if command -v sensors >/dev/null 2>&1; then
+  sensors | grep -E '(:|Core|Package|Tctl|Tdie)' || sensors
+else
+  for zone in /sys/class/thermal/thermal_zone*/temp; do
+    [ -r "$zone" ] || continue
+    printf '%s: ' "${zone%/temp}"
+    awk '{ printf "%.1f°C\n", $1 / 1000 }' "$zone"
+  done
+fi
+```
+
+The output is intentionally ordinary: it can be saved to a log, inspected during troubleshooting, or checked before starting a heavier job. Temperature readings depend on the laptop firmware and kernel drivers, so an absent sensor is not automatically a fault. Sustained thermal throttling, repeated memory pressure, a nearly full disk, or load that remains high while the system is otherwise idle are more useful signals than a single number.
+
+## Keeping services available
+
+A laptop server also needs a recovery policy. User-facing services are managed as `systemd` units with an explicit restart rule rather than relying on a terminal session remaining open. A generic unit can look like this:
+
+```ini
+[Unit]
+Description=example self-hosted service
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+ExecStart=/path/to/service --serve
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+The executable, arguments, user, and working directory should be specific to the service and kept least-privileged. After installing a unit, the useful checks are:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now example.service
+systemctl status example.service --no-pager
+journalctl -u example.service -n 50 --no-pager
+```
+
+`Restart=on-failure` handles ordinary crashes, but it is not a complete monitoring system. I still check logs, disk space, temperatures, and network reachability. Automatic restart should recover a transient failure, not hide a repeated configuration error or an unhealthy machine. Sleep settings, battery health, firmware updates, and planned reboots also matter when a laptop is expected to stay available.
+
 ## Operating system and network boundary
 
 The host runs Ubuntu 24.04 LTS. Linux keeps the system understandable: services are explicit, logs are inspectable, scheduled work is visible, and most of the environment can be managed with ordinary tools rather than a large control plane.
@@ -468,6 +534,18 @@ Separate profiles are not only about security. They also make the system easier 
 ## Managing model lanes and usage
 
 Model management is an engineering problem, not just a model-selection problem.
+
+### Models I use in this system
+
+The system does not need one model to handle every task. I usually keep three practical lanes:
+
+| Model | Typical use |
+|---|---|
+| GPT-5.6 Luna | Bounded interactive work, market synthesis, and tasks where a strong answer matters more than minimizing every token |
+| DeepSeek V4 Flash | Routine implementation, iterative repository work, delegated coding, and tasks where speed and cost matter |
+| DeepSeek V4 Pro | Security review, difficult debugging, architecture decisions, and authentication or infrastructure changes |
+
+This is not a rigid ranking. A smaller model is often the better choice when the task is clear and repeatable, while a stronger lane is justified when a wrong answer would create security, operational, or financial consequences. Hermes remains responsible for checking important results rather than treating a worker's completion message as proof.
 
 | Constraint | Why it matters |
 |---|---|
