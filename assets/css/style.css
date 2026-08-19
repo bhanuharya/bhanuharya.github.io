@@ -405,6 +405,10 @@ main.wrap {
   min-width: 0;
 }
 
+.architecture-diagram-mobile {
+  display: none;
+}
+
 .post-content table {
   display: block;
   width: 100%;
@@ -542,13 +546,33 @@ main.wrap {
   }
 
   .post-content table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
     font-size: 0.82rem;
+  }
+
+  .post-content table thead,
+  .post-content table tbody {
+    display: table;
+    width: max-content;
+    min-width: 34rem;
   }
 
   .post-content th,
   .post-content td {
     padding: 0.55rem;
     overflow-wrap: anywhere;
+  }
+
+  .architecture-diagram-wide {
+    display: none !important;
+  }
+
+  .architecture-diagram-mobile {
+    display: block !important;
+    min-width: 0;
   }
 
   .post-content pre,
