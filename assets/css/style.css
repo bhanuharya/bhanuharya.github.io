@@ -432,7 +432,8 @@ main.wrap {
   min-width: 0;
 }
 
-.architecture-diagram-mobile {
+.post-content svg.architecture-diagram-mobile,
+.page-content svg.architecture-diagram-mobile {
   display: none;
 }
 
