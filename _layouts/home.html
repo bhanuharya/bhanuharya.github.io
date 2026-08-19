@@ -74,8 +74,127 @@ layout: default
       </div>
     </div>
 
-    <div class="line final">
-      <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cursor" aria-hidden="true">&nbsp;</span>
-    </div>
+    <form class="visitor-cli" data-visitor-cli autocomplete="off">
+      <div class="line visitor-cli-line">
+        <label class="prompt" for="visitor-command">harya/wishnu</label><span class="loc">:~$</span>
+        <input id="visitor-command" name="command" type="text" spellcheck="false" autocapitalize="none" autocomplete="off" aria-autocomplete="list" aria-controls="visitor-suggestions" aria-describedby="visitor-cli-help">
+      </div>
+      <div id="visitor-cli-help" class="visitor-cli-help">tab: complete · enter: run · type <span>help</span> for commands</div>
+      <div id="visitor-suggestions" class="visitor-suggestions" role="listbox" aria-label="Command suggestions"></div>
+      <div class="visitor-cli-output" data-cli-output aria-live="polite"></div>
+    </form>
   </div>
 </article>
+
+<script>
+(() => {
+  const form = document.querySelector('[data-visitor-cli]');
+  if (!form) return;
+
+  const input = form.querySelector('#visitor-command');
+  const suggestions = form.querySelector('#visitor-suggestions');
+  const output = form.querySelector('[data-cli-output]');
+  const blogUrl = "{{ '/blog/' | relative_url }}";
+  const aboutUrl = "{{ '/#about' | relative_url }}";
+  const commands = ['about', 'blog', 'clear', 'fortune', 'help', 'ls', 'neofetch', 'status', 'whoami'];
+  let matches = [];
+  let matchIndex = -1;
+
+  const print = (lines, links = []) => {
+    const block = document.createElement('pre');
+    block.className = 'visitor-cli-block';
+    block.textContent = lines.join('\n');
+    output.appendChild(block);
+
+    links.forEach(({ label, href }) => {
+      const link = document.createElement('a');
+      link.href = href;
+      link.textContent = label;
+      output.appendChild(link);
+    });
+    output.scrollIntoView({ block: 'nearest' });
+  };
+
+  const renderSuggestions = () => {
+    suggestions.replaceChildren();
+    matches.forEach((command, index) => {
+      const item = document.createElement('span');
+      item.className = 'visitor-suggestion';
+      item.setAttribute('role', 'option');
+      item.textContent = command;
+      if (index === matchIndex) item.classList.add('is-selected');
+      suggestions.appendChild(item);
+    });
+  };
+
+  const complete = () => {
+    const value = input.value.trim().toLowerCase();
+    matches = commands.filter((command) => command.startsWith(value));
+    if (!matches.length) return;
+    matchIndex = (matchIndex + 1) % matches.length;
+    input.value = matches[matchIndex];
+    renderSuggestions();
+  };
+
+  const run = () => {
+    const command = input.value.trim().toLowerCase();
+    if (!command) return;
+    output.replaceChildren();
+
+    switch (command) {
+      case 'help':
+        print(['available commands:', '', 'about      read the short bio', 'blog       open the notes and experiments', 'clear      clear this output', 'fortune    receive a small machine thought', 'ls         list the public paths', 'neofetch   inspect the tiny server idea', 'status     check the public site status', 'whoami     identify the person behind the prompt']);
+        break;
+      case 'about':
+      case 'whoami':
+        print(['harya / wishnu', 'information security, systems, and the forces around them.'], [{ label: 'open about →', href: aboutUrl }]);
+        break;
+      case 'blog':
+        print(['notes and experiments live here:'], [{ label: 'open blog →', href: blogUrl }]);
+        break;
+      case 'ls':
+        print(['about/', 'blog/']);
+        break;
+      case 'neofetch':
+        print(['bhanuharya@sec', '──────────────', 'host:      repurposed laptop', 'os:        Ubuntu Linux', 'network:   private overlay', 'service:   self-hosted agents', 'mood:      quietly operational']);
+        break;
+      case 'status':
+        print(['site:      online', 'mode:      static Jekyll', 'exposure:  intentionally boring', 'operator:  probably nearby']);
+        break;
+      case 'fortune':
+        print([['Unused computer detected.', 'Promote to server? [y/N]', '', 'y', 'Good choice.'][Math.floor(Math.random() * 5)]]);
+        break;
+      case 'clear':
+        output.replaceChildren();
+        break;
+      default:
+        print([`command not found: ${command}`, 'type help to see available commands']);
+    }
+
+    input.value = '';
+    matches = [];
+    matchIndex = -1;
+    renderSuggestions();
+  };
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      complete();
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      run();
+    } else if (event.key === 'Escape') {
+      matches = [];
+      matchIndex = -1;
+      renderSuggestions();
+    }
+  });
+
+  input.addEventListener('input', () => {
+    matches = commands.filter((command) => command.startsWith(input.value.trim().toLowerCase()));
+    matchIndex = -1;
+    renderSuggestions();
+  });
+})();
+</script>

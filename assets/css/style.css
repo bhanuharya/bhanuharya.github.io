@@ -308,6 +308,86 @@ main.wrap {
   color: #ffffff;
 }
 
+.visitor-cli {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.visitor-cli-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.visitor-cli input {
+  flex: 1 1 10rem;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  line-height: inherit;
+}
+
+.visitor-cli input:focus {
+  border-bottom-color: var(--cli-cyan);
+}
+
+.visitor-cli-help {
+  margin: 0.2rem 0 0 0.1rem;
+  color: var(--dim);
+  font-size: 0.75rem;
+}
+
+.visitor-cli-help span,
+.visitor-suggestion {
+  color: var(--cli-cyan);
+}
+
+.visitor-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  min-height: 1.25rem;
+  margin: 0.35rem 0 0 0.1rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.visitor-suggestion.is-selected {
+  color: var(--bg);
+  background: var(--cli-cyan);
+}
+
+.visitor-cli-output {
+  margin: 0.75rem 0 0;
+  border-left: 1px solid var(--border-bright);
+  padding-left: 0.9rem;
+  color: var(--muted);
+}
+
+.visitor-cli-output:empty {
+  display: none;
+}
+
+.visitor-cli-block {
+  margin: 0 0 0.35rem;
+  color: var(--text);
+  font: inherit;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.visitor-cli-output a {
+  color: var(--cli-cyan);
+}
+
 .out {
   margin: 0.1rem 0 1rem;
   color: var(--text);

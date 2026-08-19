@@ -31,36 +31,28 @@ The point is not that this hardware is impressive. The point is that a useful ag
 
 ## Measuring the host
 
-A laptop can be a perfectly reasonable small server when its workload is understood and measured. I keep an eye on load, memory, storage, uptime, and temperature rather than treating the machine as an invisible appliance. A small health check is usually more useful than guessing from the hardware specification:
+A laptop can be a perfectly reasonable small server when its workload is understood and measured. I keep an eye on load, memory, storage, uptime, and temperature rather than treating the machine as an invisible appliance. A recent sanitized snapshot looked like this:
 
-```bash
-#!/usr/bin/env bash
+```text
+== uptime and load ==
+up 5 days, 15 hours, 41 minutes
+load average: 0.45, 0.50, 0.46
 
-printf '== uptime and load ==\n'
-uptime
+== memory ==
+Mem: 30Gi total · 6.5Gi used · 4.7Gi free · 19Gi cache · 24Gi available
 
-printf '\n== memory ==\n'
-free -h
+== root filesystem ==
+212G total · 118G used · 84G available · 59% used
 
-printf '\n== root filesystem ==\n'
-df -h /
+== processors ==
+logical CPUs: 12
 
-printf '\n== processors ==\n'
-printf 'logical CPUs: '; nproc
-
-printf '\n== temperatures ==\n'
-if command -v sensors >/dev/null 2>&1; then
-  sensors | grep -E '(:|Core|Package|Tctl|Tdie)' || sensors
-else
-  for zone in /sys/class/thermal/thermal_zone*/temp; do
-    [ -r "$zone" ] || continue
-    printf '%s: ' "${zone%/temp}"
-    awk '{ printf "%.1f°C\n", $1 / 1000 }' "$zone"
-  done
-fi
+== temperatures ==
+thermal zone 0: 44.0°C
+thermal zone 1: 46.0°C
 ```
 
-The output is intentionally ordinary: it can be saved to a log, inspected during troubleshooting, or checked before starting a heavier job. Temperature readings depend on the laptop firmware and kernel drivers, so an absent sensor is not automatically a fault. Sustained thermal throttling, repeated memory pressure, a nearly full disk, or load that remains high while the system is otherwise idle are more useful signals than a single number.
+The output is intentionally ordinary: it can be saved to a log, inspected during troubleshooting, or checked before starting a heavier job. The values above are a point-in-time example rather than a promise of constant capacity. Temperature readings depend on the laptop firmware and kernel drivers, so an absent sensor is not automatically a fault. Sustained thermal throttling, repeated memory pressure, a nearly full disk, or load that remains high while the system is otherwise idle are more useful signals than a single number.
 
 ## Keeping services available
 
