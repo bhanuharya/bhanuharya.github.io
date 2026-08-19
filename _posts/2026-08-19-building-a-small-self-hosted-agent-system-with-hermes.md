@@ -465,18 +465,84 @@ Monitoring everything all the time creates too much output. Comparing current st
 
 Separate profiles are not only about security. They also make the system easier to reason about. A project agent can stay focused on project context, while a general agent remains clean and reusable.
 
-## What comes next
+## Managing model lanes and usage
 
-The setup is still evolving. The next improvements are mostly about improving security, reliability and maintainability:
+Running a self-hosted agent system is also an exercise in managing model usage. A capable model is useful, but sending every task to the most expensive or heavily limited lane is neither efficient nor necessary.
+
+I route work according to the task rather than treating model choice as a fixed identity:
 
 ```text
-├── make fallback model lanes more durable
-├── keep architecture documentation synchronized with reality
-├── improve health checks for gateways and model lanes
-├── add better observability around scheduled jobs
-└── document the system without publishing sensitive details
+deterministic task ───────► local script or tool
+routine reasoning ────────► fast general model
+delegated implementation ─► efficient coding model
+specialist analysis ──────► domain-focused lane
+high-impact reasoning ────► stronger model with review
 ```
 
-The main goal is not to build the most complicated agent stack possible. It is to build a small system that is useful every day, cheap enough to leave running, isolated enough to trust, and simple enough to understand when something breaks.
+The practical constraints are cost, token budgets, provider rate limits, context size, and cache behavior. A route that looks cheap per request can become expensive when it repeatedly resends the same context or exhausts a weekly allowance. I therefore pay attention to both the visible cost of a call and the operational cost of the lane around it.
 
-That is the part I find most interesting: not just using an agent, but design and secure the environment around it.
+Cache efficiency matters as much as raw model speed. Stable instructions, reusable skill context, and predictable prompt prefixes make repeated work cheaper and faster. Avoiding unnecessary rewrites of that stable context also helps preserve cache hits.
+
+Fallbacks are part of the design rather than an emergency afterthought. A fallback lane should be tested for availability, capability, and limits instead of being selected only because it is technically reachable. The goal is graceful degradation: use a simpler local tool where possible, move to a cheaper lane for routine work, and reserve stronger models for tasks that justify the additional cost and scrutiny.
+
+This turns model management into an engineering problem involving budgets, token accounting, cache-aware prompt design, rate-limit monitoring, and explicit routing rules.
+
+## Securing search, fetch, and crawl workflows
+
+Web retrieval is useful, but search results, fetched pages, and crawled documents are untrusted input. A page can contain instructions aimed at the agent, misleading content designed to poison a summary, or text that tries to change the scope of the original task.
+
+I treat the retrieval layer as a data pipeline, not as an extension of the agent's instruction set:
+
+```text
+user intent
+    │
+    ▼
+search / fetch / crawl
+    │
+    ▼
+untrusted source content
+    │
+    ▼
+extract · limit · label · preserve provenance
+    │
+    ▼
+reason about the content as data
+    │
+    ▼
+answer only within the original task scope
+```
+
+The important rule is that retrieved content can describe instructions without becoming instructions. A web page saying “ignore previous instructions,” requesting credentials, or asking the agent to call another tool is still just page content. It does not have authority over the workflow.
+
+Some of the controls I use or consider important are:
+
+```text
+├── treat search results and page text as untrusted data
+├── keep user intent separate from retrieved content
+├── preserve source URLs and provenance for claims
+├── limit crawl depth, page size, and request scope
+├── avoid sending credentials or private context to arbitrary pages
+├── do not execute scripts, downloads, or page instructions by default
+├── isolate browser and fetch tooling where practical
+└── require human judgment before sensitive external actions
+```
+
+Prompt injection is only one part of the problem. Content poisoning can also happen when a source is outdated, copied from another source, selectively edited, or deliberately written to produce a misleading conclusion. Multiple sources, timestamps, primary documentation, and explicit uncertainty are more useful defenses than pretending that retrieved text is automatically trustworthy.
+
+The security boundary therefore sits between retrieval and action. Search, fetch, and crawl tools may collect evidence, but they should not silently authorize tool calls, disclose secrets, modify systems, or expand the task's scope.
+
+## What comes next
+
+The setup is still evolving. The next priorities are improving its security, reliability, and maintainability:
+
+```text
+├── make model fallbacks more resilient
+├── keep the architecture documentation aligned with the actual system
+├── improve health checks for gateways and model lanes
+├── add better observability for scheduled jobs
+└── continue documenting the system without exposing sensitive details
+```
+
+The goal is not to build the most complicated agent stack possible. It is to build a small system that is useful every day, inexpensive to keep running, carefully isolated, and simple enough to troubleshoot when something breaks.
+
+What interests me most is not only using agents, but designing and securing the environment around them.
