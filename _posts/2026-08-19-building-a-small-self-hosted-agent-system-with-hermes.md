@@ -52,6 +52,10 @@ profile isolation · authentication · tool constraints
 
 The network setup is intentionally unremarkable. There is no need for a public-facing agent endpoint for this kind of personal system, so public exposure is disabled and access stays inside the private overlay.
 
+Tailscale can use a Google identity for authentication, which means the Google account's two-factor authentication becomes part of the access path for trusted devices. That is useful, but it is still only one layer: device approval, service authentication, and least-privilege permissions remain important after a device joins the tailnet.
+
+Keys and tokens are treated as credentials, not as convenient configuration strings. Authentication keys should be scoped as narrowly as possible, rotated when their purpose ends, and revoked if they are exposed. API tokens and service credentials stay outside prompts, blog posts, and source code; they belong in environment-level secret storage or another controlled local mechanism. The goal is to make credential lifetime and ownership visible rather than letting long-lived secrets quietly spread across scripts and services.
+
 The topology is roughly:
 
 ```text

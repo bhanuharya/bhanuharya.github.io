@@ -552,18 +552,21 @@ main.wrap {
   }
 
   .post-content table {
-    display: block;
+    display: table;
     width: 100%;
     max-width: 100%;
-    overflow-x: auto;
+    overflow: visible;
+    table-layout: auto;
     font-size: 0.82rem;
   }
 
   .post-content table thead,
   .post-content table tbody {
-    display: table;
-    width: max-content;
-    min-width: 34rem;
+    display: table-header-group;
+  }
+
+  .post-content table tbody {
+    display: table-row-group;
   }
 
   .post-content th,
