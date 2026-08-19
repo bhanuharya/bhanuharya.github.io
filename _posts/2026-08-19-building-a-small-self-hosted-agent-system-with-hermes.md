@@ -170,9 +170,9 @@ There are several isolated bot profiles. Each profile has its own memory and run
 </figure>
 
 <figure class="diagram-wrap diagram-wrap-mobile">
-<svg class="architecture-diagram architecture-diagram-mobile" preserveAspectRatio="xMidYMid meet" viewBox="0 0 320 1030" role="img" aria-labelledby="architecture-mobile-title architecture-mobile-desc" xmlns="http://www.w3.org/2000/svg">
+<svg class="architecture-diagram architecture-diagram-mobile" preserveAspectRatio="xMidYMid meet" viewBox="0 0 320 520" role="img" aria-labelledby="architecture-mobile-title architecture-mobile-desc" xmlns="http://www.w3.org/2000/svg">
   <title id="architecture-mobile-title">Hermes mobile architecture</title>
-  <desc id="architecture-mobile-desc">A vertical view of chat clients, isolated profiles and private memories, shared capabilities, and task routing.</desc>
+  <desc id="architecture-mobile-desc">Chat clients branch to three isolated agent profiles, each with private memory, before converging on shared capabilities and task routing.</desc>
   <defs>
     <marker id="arrow-architecture-mobile" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
       <path d="M0,0 L7,3.5 L0,7 Z" fill="#777" />
@@ -180,51 +180,61 @@ There are several isolated bot profiles. Each profile has its own memory and run
     <style>
       .mobile-box { fill:#0b0b0b; stroke:#bdbdbd; stroke-width:1.4; rx:4; }
       .mobile-shared { fill:#151515; stroke:#f0f0f0; stroke-width:1.4; rx:4; }
-      .mobile-text { fill:#f0f0f0; font:14px monospace; text-anchor:middle; }
-      .mobile-muted { fill:#999; font:11px monospace; text-anchor:middle; }
+      .mobile-text { fill:#f0f0f0; font:13px monospace; text-anchor:middle; }
+      .mobile-muted { fill:#999; font:10px monospace; text-anchor:middle; }
       .mobile-line { stroke:#777; stroke-width:1.4; fill:none; marker-end:url(#arrow-architecture-mobile); }
+      .mobile-branch { stroke:#777; stroke-width:1.4; fill:none; }
     </style>
   </defs>
-  <rect class="mobile-box" x="30" y="20" width="260" height="58" />
-  <text class="mobile-text" x="160" y="45">chat clients</text>
-  <text class="mobile-muted" x="160" y="64">separate bot entries</text>
-  <line class="mobile-line" x1="160" y1="78" x2="160" y2="112" />
 
-  <rect class="mobile-box" x="30" y="112" width="260" height="58" />
-  <text class="mobile-text" x="160" y="138">profile A</text>
-  <text class="mobile-muted" x="160" y="157">general</text>
-  <line class="mobile-line" x1="160" y1="170" x2="160" y2="204" />
-  <rect class="mobile-box" x="30" y="204" width="260" height="58" />
-  <text class="mobile-text" x="160" y="230">memory A</text>
-  <text class="mobile-muted" x="160" y="249">private context</text>
-  <line class="mobile-line" x1="160" y1="262" x2="160" y2="296" />
+  <rect class="mobile-box" x="40" y="18" width="240" height="56" />
+  <text class="mobile-text" x="160" y="42">chat clients</text>
+  <text class="mobile-muted" x="160" y="61">separate bot entries</text>
 
-  <rect class="mobile-box" x="30" y="296" width="260" height="58" />
-  <text class="mobile-text" x="160" y="322">profile B</text>
-  <text class="mobile-muted" x="160" y="341">project</text>
-  <line class="mobile-line" x1="160" y1="354" x2="160" y2="388" />
-  <rect class="mobile-box" x="30" y="388" width="260" height="58" />
-  <text class="mobile-text" x="160" y="414">memory B</text>
-  <text class="mobile-muted" x="160" y="433">private context</text>
-  <line class="mobile-line" x1="160" y1="446" x2="160" y2="480" />
+  <line class="mobile-line" x1="160" y1="74" x2="160" y2="104" />
+  <line class="mobile-branch" x1="53" y1="104" x2="267" y2="104" />
+  <line class="mobile-line" x1="53" y1="104" x2="53" y2="130" />
+  <line class="mobile-line" x1="160" y1="104" x2="160" y2="130" />
+  <line class="mobile-line" x1="267" y1="104" x2="267" y2="130" />
 
-  <rect class="mobile-box" x="30" y="480" width="260" height="58" />
-  <text class="mobile-text" x="160" y="506">profile C</text>
-  <text class="mobile-muted" x="160" y="525">isolated</text>
-  <line class="mobile-line" x1="160" y1="538" x2="160" y2="572" />
-  <rect class="mobile-box" x="30" y="572" width="260" height="58" />
-  <text class="mobile-text" x="160" y="598">memory C</text>
-  <text class="mobile-muted" x="160" y="617">private context</text>
-  <line class="mobile-line" x1="160" y1="630" x2="160" y2="674" />
+  <rect class="mobile-box" x="5" y="130" width="96" height="54" />
+  <text class="mobile-text" x="53" y="153">profile A</text>
+  <text class="mobile-muted" x="53" y="171">general</text>
+  <line class="mobile-line" x1="53" y1="184" x2="53" y2="210" />
+  <rect class="mobile-box" x="5" y="210" width="96" height="54" />
+  <text class="mobile-text" x="53" y="233">memory A</text>
+  <text class="mobile-muted" x="53" y="251">private</text>
 
-  <rect class="mobile-shared" x="30" y="674" width="260" height="70" />
-  <text class="mobile-text" x="160" y="703">shared capabilities</text>
-  <text class="mobile-muted" x="160" y="725">skills · tools · local services</text>
-  <line class="mobile-line" x1="160" y1="744" x2="160" y2="788" />
+  <rect class="mobile-box" x="112" y="130" width="96" height="54" />
+  <text class="mobile-text" x="160" y="153">profile B</text>
+  <text class="mobile-muted" x="160" y="171">project</text>
+  <line class="mobile-line" x1="160" y1="184" x2="160" y2="210" />
+  <rect class="mobile-box" x="112" y="210" width="96" height="54" />
+  <text class="mobile-text" x="160" y="233">memory B</text>
+  <text class="mobile-muted" x="160" y="251">private</text>
 
-  <rect class="mobile-shared" x="30" y="788" width="260" height="70" />
-  <text class="mobile-text" x="160" y="817">task routing</text>
-  <text class="mobile-muted" x="160" y="839">fast · cheap · specialist · deep</text>
+  <rect class="mobile-box" x="219" y="130" width="96" height="54" />
+  <text class="mobile-text" x="267" y="153">profile C</text>
+  <text class="mobile-muted" x="267" y="171">isolated</text>
+  <line class="mobile-line" x1="267" y1="184" x2="267" y2="210" />
+  <rect class="mobile-box" x="219" y="210" width="96" height="54" />
+  <text class="mobile-text" x="267" y="233">memory C</text>
+  <text class="mobile-muted" x="267" y="251">private</text>
+
+  <line class="mobile-branch" x1="53" y1="264" x2="53" y2="290" />
+  <line class="mobile-branch" x1="160" y1="264" x2="160" y2="290" />
+  <line class="mobile-branch" x1="267" y1="264" x2="267" y2="290" />
+  <line class="mobile-branch" x1="53" y1="290" x2="267" y2="290" />
+  <line class="mobile-line" x1="160" y1="290" x2="160" y2="316" />
+
+  <rect class="mobile-shared" x="30" y="316" width="260" height="62" />
+  <text class="mobile-text" x="160" y="342">shared capabilities</text>
+  <text class="mobile-muted" x="160" y="361">skills · tools · local services</text>
+  <line class="mobile-line" x1="160" y1="378" x2="160" y2="414" />
+
+  <rect class="mobile-shared" x="30" y="414" width="260" height="62" />
+  <text class="mobile-text" x="160" y="440">task routing</text>
+  <text class="mobile-muted" x="160" y="459">fast · cheap · specialist · deep</text>
 </svg>
 </figure>
 
