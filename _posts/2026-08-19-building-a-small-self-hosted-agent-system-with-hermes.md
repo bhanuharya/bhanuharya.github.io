@@ -479,21 +479,30 @@ Model management is an engineering problem, not just a model-selection problem.
 
 The routing principle is:
 
-```text
-deterministic task
-        │
-        ▼
-local tool or script
-        │
-        ├── routine task ───────► cheaper model lane
-        │
-        ├── specialist task ────► specialist model
-        │
-        └── high-impact task ───► stronger model + verification
-                                      │
-                                      ▼
-                              tested fallback lane
-```
+<div class="model-routing" aria-label="Model routing principle">
+  <div class="routing-node routing-source">deterministic task</div>
+  <div class="routing-arrow" aria-hidden="true">▼</div>
+  <div class="routing-node routing-local">local tool or script</div>
+  <div class="routing-branches">
+    <div class="routing-branch">
+      <span class="routing-label">routine task</span>
+      <span class="routing-connector" aria-hidden="true">→</span>
+      <strong>cheaper model lane</strong>
+    </div>
+    <div class="routing-branch">
+      <span class="routing-label">specialist task</span>
+      <span class="routing-connector" aria-hidden="true">→</span>
+      <strong>specialist model</strong>
+    </div>
+    <div class="routing-branch">
+      <span class="routing-label">high-impact task</span>
+      <span class="routing-connector" aria-hidden="true">→</span>
+      <strong>stronger model + verification</strong>
+    </div>
+  </div>
+  <div class="routing-arrow" aria-hidden="true">▼</div>
+  <div class="routing-node routing-fallback">tested fallback lane</div>
+</div>
 
 Stable instructions, reusable skill context, explicit routing rules, and tested fallbacks help the system remain efficient when costs, limits, or provider availability change.
 
