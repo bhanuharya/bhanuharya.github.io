@@ -1,30 +1,47 @@
-# Blog rebuild spec
+# Site spec — as built
 
-Make this GitHub Pages Jekyll site look and behave like a real blog. Work in this repo only. Commit and push to main when done.
+This document describes the current Jekyll site after the rebuild and refinements. It supersedes the initial empty-state requirements.
 
-## Current state
-- Jekyll site, `_config.yml` uses `theme: minima` with `minima.skin: dark`, `show_excerpts: true`
-- `about.md` exists (layout: page)
-- `.github/workflows/jekyll-gh-pages.yml` — GitHub Actions deploy (DO NOT modify)
-- `_posts/` is now EMPTY (the security-posture post was removed deliberately — the site must look good with zero posts)
+## Identity
 
-## Requirements
+- `_config.yml` keeps `title: bhanuharya@sec` and `author: harya`; added `url`, `baseurl`, `lang` (no global `permalink` — pretty URLs intentionally not set so existing `*.html` post URLs are preserved).
+- No Gemfile required for Pages; remains GitHub Pages-safe (minima theme, plain CSS, no unsupported gems). Local build uses `github-pages` gem if available, otherwise CI builds.
 
-1. **Blog homepage** — build a proper blog index (layout: home or custom): 
-   - Posts listed newest-first with title, date, and excerpt
-   - Looks GREAT with zero posts: a clean hero/welcome state (e.g. "Notes on security, engineering & self-hosting — coming soon") instead of an empty page
-2. **Post layout** — clean article page: title, date, body, back-to-home link
-3. **Design** — mobile-first, dark theme (keep the current dark vibe: bg #0d1117-ish, accent #58a6ff-ish), good typography (system font stack), subtle borders, rounded cards. No external font/CDN dependencies.
-4. **Keep it GitHub-Pages-safe**: no custom Jekyll gems beyond what github-pages supports; plain CSS in assets/; override minima via `_includes`/`assets` if needed, or use a custom layout approach. Do not add a Gemfile unless required — if Ruby/Jekyll is available locally, verify with `bundle exec jekyll build`; otherwise be careful to write valid Jekyll.
-5. **About page** — keep `about.md` (layout: page), ensure it links back home.
-6. **README.md** — update to reflect the blog (how to write a post: add `_posts/YYYY-MM-DD-title.md` with front matter `layout: post`, `title`, `date`).
-7. **Sanitized**: no real names beyond "wishnu", no IP addresses, no hostnames, no credentials, no repo-internal paths.
+## Layouts
 
-## Constraints
-- Do NOT modify `.github/workflows/jekyll-gh-pages.yml`
-- Do NOT modify `_config.yml` site identity fields (title/author) — keep them as-is
-- Commit with a clear message and push to main (the GitHub Actions workflow will build it)
+- `default` — HTML shell with skip link, canonical URL, Open Graph / Twitter meta, JSON-LD (WebSite for pages, BlogPosting for posts), RSS link, header nav (Blog, About), footer with RSS and privacy note.
+- `home` — terminal article (banner, boot sequence decor only), whoami / interests / about, ls navigation, accessible visitor CLI (tab/arrow completion, enter to run, esc to dismiss, aria-expanded/activedescendant, button suggestions), noscript fallback, plus "Latest note" section showing newest post with reading time and tags. Includes visually-hidden h1 for SEO/a11y.
+- `post` — title, meta (date, reading time, author), tags, progressive TOC from h2/h3 (hidden until JS populates; dedupes slugs, handles empty slugs, hidden via `<noscript>` when JS disabled), content, post nav (Back to blog + Home + next/previous).
+- `page` — title, content, nav (Back to home, Blog).
+- `404.html` — terminal-styled not-found with links home/blog.
+
+## Content
+
+- `index.md` — layout home (terminal + latest).
+- `blog.md` — `/blog/` with lead, post cards (title, date, reading time, tags, excerpt, CTA). Empty state kept.
+- `about.md` — `/about/` standalone about page; `#about` anchor still exists on home for deep link.
+- `_posts/2026-08-19-...` — existing Hermes article retained, with tags and sanitized content.
+- `_drafts/next-article-template.md` — working template retained.
+
+## Design
+
+- Dark terminal theme (bg #000, panel #0d0d0d) with restrained cli accents.
+- Body monospace globally; `.post-content` and `.page-content` use system sans-serif for readability.
+- Decorative animations only (banner pulse, boot reveal ~0.36s); primary content visible immediately (no 2.5–4.3s delay).
+- Tables: desktop as table, mobile as block with horizontal scroll; preserves borders.
+- Code: `pre` keeps `white-space: pre` with horizontal scroll and touch scrolling; inline code wraps; no aggressive break-word for blocks.
+- Diagrams via `.diagram-wrap`; wide/mobile SVG swap at 640px.
+- Touch targets: nav links 44px, input 44px, suggestion buttons 32px, visible focus outlines.
+- Spacing standardized via wrap max 44rem, consistent card/panel padding, prose line-height 1.72.
+
+## Constraints honored
+
+- `.github/workflows/jekyll-gh-pages.yml` untouched.
+- No external fonts/CDN, no analytics.
+- Sanitized: no secrets/IPs/hostnames in content.
 
 ## Verification
-- `bundle exec jekyll build` locally if Ruby is available (check `which ruby`), else validate front matter by inspection
-- Confirm the home page renders an empty-state hero when `_posts/` is empty
+
+- `bundle exec jekyll build` where Ruby available; otherwise inspect front matter and generated HTML for one h1 per page, canonical/OG tags, valid internal links. No local Ruby/Jekyll required — GitHub Actions (`actions/jekyll-build-pages@v1`) is the authoritative build on push to `main`.
+- Manual checks: keyboard nav, reduced-motion, no-JS fallback (TOC hidden via `<noscript>` when JS disabled), mobile at 320/375/414/768.
+- Ignored: `session-*.md`, `_site/`, `.jekyll-cache/`, `.bundle/`, `vendor/` (see `.gitignore`).

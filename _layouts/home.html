@@ -2,7 +2,9 @@
 layout: default
 ---
 
-<article class="term">
+<h1 class="visually-hidden">harya — information security, systems, and self-hosting</h1>
+
+<article class="term" aria-label="Terminal introduction">
   <div class="term-bar">
     <span class="term-title">bhanuharya@sec — zsh</span>
   </div>
@@ -48,16 +50,17 @@ layout: default
 └── tinkering with things that probably did not need tinkering</pre>
     </div>
 
-    <section id="about" class="about-section">
+    <section id="about" class="about-section" aria-labelledby="about-heading">
       <div class="line">
         <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">cat about.txt</span>
       </div>
 
       <div class="out about-copy">
-        <p>i’m harya. i work in infosec, with nearly five years of experience across capital markets and financial services.</p>
-        <p>i studied computer science/informatics at bandung institute of technology (itb). my interests include AI, privacy, open-source software, self-hosting, music, and tinkering with computers.</p>
-        <p>this site is a small space for notes, experiments, and things i find worth documenting.</p>
-        <p class="about-links"><a href="https://github.com/bhanuharya">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti">linkedin.com/in/wishnumurti</a></p>
+        <h2 id="about-heading" class="visually-hidden">about</h2>
+        <p>i’m harya. i work in infosec, mostly around capital markets and financial services. nearly five years so far.</p>
+        <p>i studied computer science/informatics at bandung institute of technology (itb). my interests include ai, privacy, open-source, self-hosting, music, and computers.</p>
+        <p>this site is for notes, experiments, and things i want to remember :-)</p>
+        <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
       </div>
 
       <pre class="about-signal" aria-hidden="true"><span>.[</span><span class="signal-frame">=</span><span>] ready</span></pre>
@@ -69,22 +72,49 @@ layout: default
 
     <div class="out">
       <div class="cmdlist">
-        <div class="entry"><span class="idx">[1]</span> <a href="{{ '/#about' | relative_url }}">about</a><span class="dim"> — more about me</span></div>
+        <div class="entry"><span class="idx">[1]</span> <a href="{{ '/about/' | relative_url }}">about</a><span class="dim"> — more about me</span></div>
         <div class="entry"><span class="idx">[2]</span> <a href="{{ '/blog/' | relative_url }}">blog</a><span class="dim">  — notes and experiments</span></div>
       </div>
     </div>
 
-    <form class="visitor-cli" data-visitor-cli autocomplete="off">
+    <form class="visitor-cli" data-visitor-cli autocomplete="off" novalidate>
       <div class="line visitor-cli-line">
         <label class="prompt" for="visitor-command">visitor@sec</label><span class="loc">:~$</span>
-        <input id="visitor-command" name="command" type="text" spellcheck="false" autocapitalize="none" autocomplete="off" aria-autocomplete="list" aria-controls="visitor-suggestions" aria-describedby="visitor-cli-help">
+        <input id="visitor-command" name="command" type="text" spellcheck="false" autocapitalize="none" autocomplete="off" maxlength="64" aria-autocomplete="list" aria-controls="visitor-suggestions" aria-describedby="visitor-cli-help visitor-privacy" placeholder="type help">
       </div>
-      <div id="visitor-cli-help" class="visitor-cli-help">tab: complete · enter: run · type <span>help</span> for commands</div>
+      <div id="visitor-cli-help" class="visitor-cli-help">tab / ↑↓ : complete · enter : run · esc : dismiss · type <span>help</span> for commands</div>
       <div id="visitor-suggestions" class="visitor-suggestions" role="listbox" aria-label="Command suggestions"></div>
       <div class="visitor-cli-output" data-cli-output aria-live="polite"></div>
+      <p id="visitor-privacy" class="visitor-privacy dim">runs locally in your browser. no input is sent anywhere. hosting logs might still exist, but not from this page :-)</p>
+      <noscript><p class="dim" style="margin-top:0.5rem">javascript is off — use the links above: <a href="{{ '/about/' | relative_url }}">about</a> · <a href="{{ '/blog/' | relative_url }}">blog</a></p></noscript>
     </form>
   </div>
 </article>
+
+{% assign latest = site.posts.first %}
+<section class="latest" aria-labelledby="latest-heading">
+  <div class="latest-head">
+    <h2 id="latest-heading" class="latest-title">latest note</h2>
+    <a class="latest-all" href="{{ '/blog/' | relative_url }}">view all →</a>
+  </div>
+  {% if latest %}
+    <article class="latest-card">
+      <h3 class="latest-card-title"><a href="{{ latest.url | relative_url }}">{{ latest.title | escape }}</a></h3>
+      <div class="latest-meta">
+        <time datetime="{{ latest.date | date_to_xmlschema }}">{{ latest.date | date: '%b %-d, %Y' }}</time>
+        {% assign words = latest.content | number_of_words %}
+        {% assign mins = words | divided_by: 200 %}
+        {% if mins == 0 %}{% assign mins = 1 %}{% endif %}
+        <span aria-hidden="true"> · </span><span>{{ mins }} min read</span>
+        {% if latest.tags and latest.tags.size > 0 %}<span aria-hidden="true"> · </span><span class="latest-tags">{{ latest.tags | join: ', ' }}</span>{% endif %}
+      </div>
+      <div class="latest-excerpt">{{ latest.excerpt | strip_html | truncatewords: 28 }}</div>
+      <a class="latest-cta" href="{{ latest.url | relative_url }}">read →</a>
+    </article>
+  {% else %}
+    <p class="dim">no posts yet — check back soon :-)</p>
+  {% endif %}
+</section>
 
 <script>
 (() => {
@@ -95,7 +125,7 @@ layout: default
   const suggestions = form.querySelector('#visitor-suggestions');
   const output = form.querySelector('[data-cli-output]');
   const blogUrl = "{{ '/blog/' | relative_url }}";
-  const aboutUrl = "{{ '/#about' | relative_url }}";
+  const aboutUrl = "{{ '/about/' | relative_url }}";
   const commands = ['about', 'blog', 'clear', 'help', 'ip', 'ls', 'status', 'visitor', 'whoami'];
   let matches = [];
   let matchIndex = -1;
@@ -105,7 +135,6 @@ layout: default
     block.className = 'visitor-cli-block';
     block.textContent = lines.join('\n');
     output.appendChild(block);
-
     links.forEach(({ label, href }) => {
       const link = document.createElement('a');
       link.href = href;
@@ -115,23 +144,49 @@ layout: default
     output.scrollIntoView({ block: 'nearest' });
   };
 
+  const updateAria = () => {
+    if (matches.length) {
+      input.setAttribute('aria-expanded', 'true');
+      const activeId = matchIndex >= 0 ? `suggestion-${matchIndex}` : '';
+      if (activeId) input.setAttribute('aria-activedescendant', activeId);
+      else input.removeAttribute('aria-activedescendant');
+    } else {
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+    }
+  };
+
   const renderSuggestions = () => {
     suggestions.replaceChildren();
     matches.forEach((command, index) => {
-      const item = document.createElement('span');
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.id = `suggestion-${index}`;
       item.className = 'visitor-suggestion';
       item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', index === matchIndex ? 'true' : 'false');
       item.textContent = command;
       if (index === matchIndex) item.classList.add('is-selected');
+      item.addEventListener('click', () => {
+        input.value = command;
+        matches = [];
+        matchIndex = -1;
+        renderSuggestions();
+        updateAria();
+        input.focus();
+      });
       suggestions.appendChild(item);
     });
+    updateAria();
   };
 
-  const complete = () => {
-    const value = input.value.trim().toLowerCase();
-    matches = commands.filter((command) => command.startsWith(value));
+  const complete = (reverse) => {
+    const raw = input.value.trim().toLowerCase();
+    const filtered = commands.filter((c) => c.startsWith(raw));
+    if (filtered.length) matches = filtered;
     if (!matches.length) return;
-    matchIndex = (matchIndex + 1) % matches.length;
+    if (reverse) matchIndex = (matchIndex - 1 + matches.length) % matches.length;
+    else matchIndex = (matchIndex + 1) % matches.length;
     input.value = matches[matchIndex];
     renderSuggestions();
   };
@@ -140,7 +195,6 @@ layout: default
     const command = input.value.trim().toLowerCase();
     if (!command) return;
     output.replaceChildren();
-
     switch (command) {
       case 'help':
         print(['available commands:', '', 'about      read the short bio', 'blog       open the notes and experiments', 'clear      clear this output', 'ip         explain the public IP policy', 'ls         list the public paths', 'status     inspect your browser session', 'visitor    show local visitor details', 'whoami     identify the person behind the prompt']);
@@ -160,7 +214,7 @@ layout: default
         print(['visitor session:', `language:  ${navigator.language || 'unknown'}`, `timezone:  ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`, `viewport:  ${window.innerWidth}x${window.innerHeight}`, `online:     ${navigator.onLine ? 'yes' : 'no'}`, `local time: ${new Date().toLocaleTimeString()}`]);
         break;
       case 'ip':
-        print(['public IP lookup: disabled', 'this static page does not send your address to a lookup service', 'no public IP is collected or stored']);
+        print(['public IP lookup: disabled', 'this page does not fetch your address from a lookup service', 'no address is sent from this page; hosting/CDN access logs may still exist separately']);
         break;
       case 'clear':
         output.replaceChildren();
@@ -168,17 +222,30 @@ layout: default
       default:
         print([`command not found: ${command}`, 'type help to see available commands']);
     }
-
     input.value = '';
     matches = [];
     matchIndex = -1;
     renderSuggestions();
   };
 
+  form.addEventListener('submit', (e) => { e.preventDefault(); run(); });
+
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Tab') {
+      if (matches.length === 0) {
+        const v = input.value.trim().toLowerCase();
+        matches = commands.filter((c) => c.startsWith(v));
+        matchIndex = -1;
+      }
+      if (matches.length) { event.preventDefault(); complete(event.shiftKey); }
+    } else if (event.key === 'ArrowDown') {
       event.preventDefault();
-      complete();
+      if (!matches.length) { matches = [...commands]; matchIndex = -1; }
+      complete(false);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!matches.length) { matches = [...commands]; matchIndex = 0; }
+      complete(true);
     } else if (event.key === 'Enter') {
       event.preventDefault();
       run();
@@ -190,9 +257,15 @@ layout: default
   });
 
   input.addEventListener('input', () => {
-    matches = commands.filter((command) => command.startsWith(input.value.trim().toLowerCase()));
+    const v = input.value.trim().toLowerCase();
+    if (!v) { matches = []; matchIndex = -1; renderSuggestions(); return; }
+    matches = commands.filter((c) => c.startsWith(v));
     matchIndex = -1;
     renderSuggestions();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!form.contains(e.target)) { matches = []; matchIndex = -1; renderSuggestions(); }
   });
 })();
 </script>

@@ -3,5 +3,8 @@ author: harya
 description: >-
   Notes and experiments from Harya — security, systems,
   and self-hosting.
+url: "https://bhanuharya.github.io"
+baseurl: ""
 theme: minima
 show_excerpts: true
+lang: en

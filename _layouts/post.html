@@ -4,14 +4,35 @@ layout: default
 <article class="post">
   <header class="post-header">
     <h1 class="post-title">{{ page.title | escape }}</h1>
-    <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%b %-d, %Y' }}</time>
-    {% if page.author %}<p class="post-author">by {{ page.author }}</p>{% endif %}
+    <div class="post-meta">
+      <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%b %-d, %Y' }}</time>
+      {% assign words = content | number_of_words %}
+      {% assign mins = words | divided_by: 200 %}
+      {% if mins == 0 %}{% assign mins = 1 %}{% endif %}
+      <span class="post-meta-sep" aria-hidden="true"> · </span><span class="post-reading">{{ mins }} min read</span>
+      {% if page.author %}<span class="post-meta-sep" aria-hidden="true"> · </span><span class="post-author">by {{ page.author }}</span>{% endif %}
+    </div>
+    {% if page.tags and page.tags.size > 0 %}
+    <div class="post-tags" aria-label="Tags">
+      {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+    </div>
+    {% endif %}
   </header>
+  {% if content contains '<h2' %}
+  <details class="toc" open hidden data-toc-wrapper>
+    <summary>on this page</summary>
+    <nav aria-label="Table of contents" class="toc-nav" data-toc></nav>
+    <p class="toc-fallback">Table of contents requires JavaScript. Headings remain readable in-page.</p>
+  </details>
+  <noscript><style>.toc[data-toc-wrapper]{display:none!important}</style></noscript>
+  {% endif %}
   <div class="post-content">
     {{ content }}
   </div>
-  <nav class="post-nav">
-    <a href="{{ '/' | relative_url }}">&larr; Back to home</a>
+  <nav class="post-nav" aria-label="Post navigation">
+    <a href="{{ '/blog/' | relative_url }}">&larr; back to blog</a>
+    <span class="post-nav-spacer"></span>
+    <a href="{{ '/' | relative_url }}">home</a>
     {% if page.next %}
     <a class="post-nav-next" href="{{ page.next.url | relative_url }}">{{ page.next.title | escape }} &rarr;</a>
     {% endif %}
@@ -20,3 +41,55 @@ layout: default
     {% endif %}
   </nav>
 </article>
+<script>
+(function(){
+  var nav=document.querySelector('[data-toc]');
+  var wrapper=document.querySelector('[data-toc-wrapper]');
+  var content=document.querySelector('.post-content');
+  if(!nav||!content) return;
+  var headings=content.querySelectorAll('h2, h3');
+  if(!headings.length) { if(wrapper) wrapper.remove(); return; }
+  if(wrapper) wrapper.hidden=false;
+  var fallback=wrapper?wrapper.querySelector('.toc-fallback'):null;
+  if(fallback) fallback.hidden=true;
+  var list=document.createElement('ol');
+  var seen={};
+  var existingIds={};
+  document.querySelectorAll('[id]').forEach(function(el){ existingIds[el.id]=true; });
+  headings.forEach(function(h, idx){
+    var originalId=h.id;
+    var base='';
+    if(!h.id){
+      base=h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+      if(!base) base='heading-'+(idx+1);
+      var candidate=base;
+      var n=2;
+      while(seen[candidate] || (existingIds[candidate] && candidate!==originalId) || document.getElementById(candidate)){
+        candidate=base+'-'+n;
+        n++;
+      }
+      h.id=candidate;
+    } else {
+      // duplicate existing id in document (e.g. two raw HTML headings with same id)
+      if(seen[h.id]){
+        base=h.id;
+        var cand=base;
+        var m=2;
+        while(seen[cand] || document.getElementById(cand)!==h){
+          cand=base+'-'+m;
+          m++;
+        }
+        h.id=cand;
+      }
+    }
+    seen[h.id]=true;
+    existingIds[h.id]=true;
+    var li=document.createElement('li');
+    li.className = h.tagName==='H3' ? 'toc-h3' : 'toc-h2';
+    var a=document.createElement('a');
+    a.href='#'+h.id; a.textContent=h.textContent.trim();
+    li.appendChild(a); list.appendChild(li);
+  });
+  nav.appendChild(list);
+})();
+</script>
