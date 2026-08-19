@@ -2,6 +2,7 @@
 layout: post
 title: "Building a Small Self-Hosted Agent System with Hermes"
 date: 2026-08-19
+author: bhanuharya
 tags: [agents, self-hosting, automation, security]
 ---
 
@@ -27,6 +28,48 @@ I could not afford a small fleet of cloud VMs, so the entire thing runs on an ol
 | Network exposure | Private overlay network only |
 
 The point is not that this hardware is impressive. The point is that a useful agent environment does not need a rack of servers to be worth building. It needs clear boundaries, sensible defaults, and enough capacity to run the workloads that actually matter.
+
+## Operating system and network boundary
+
+The host runs Ubuntu 24.04 LTS. Linux keeps the system understandable: services are explicit, logs are inspectable, scheduled work is visible, and most of the environment can be managed with ordinary tools rather than a large control plane.
+
+Networking is handled through Tailscale as a private overlay. The services are reachable from trusted devices on the tailnet rather than being exposed directly to the public internet. This makes remote access practical without opening every agent gateway, dashboard, or local service to the wider internet.
+
+Tailscale is not treated as a complete security boundary. It controls network reachability, but it does not replace authentication, least privilege, service-level hardening, or careful tool permissions. The useful boundary is layered:
+
+```text
+Linux host
+    │
+    ▼
+Tailscale private overlay
+    │
+    ▼
+allowlisted gateways and services
+    │
+    ▼
+profile isolation · authentication · tool constraints
+```
+
+The network setup is intentionally unremarkable. There is no need for a public-facing agent endpoint for this kind of personal system, so public exposure is disabled and access stays inside the private overlay.
+
+The topology is roughly:
+
+```text
+trusted device
+      │
+      │  encrypted Tailscale connection
+      ▼
+private overlay network
+      │
+      ▼
+Linux homelab host
+      ├── Hermes gateways and bot profiles
+      ├── local web interfaces
+      ├── scheduled security jobs
+      └── supporting services and containers
+```
+
+The host can still reach the ordinary network for updates, package downloads, and selected external APIs. The important distinction is that outbound connectivity is not the same as inbound public exposure. Services are bound and allowlisted deliberately, while the overlay provides the path for trusted remote access.
 
 ## A necessary disclaimer
 

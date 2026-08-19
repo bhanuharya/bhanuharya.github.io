@@ -333,7 +333,13 @@ main.wrap {
   color: var(--muted);
   font-size: 0.875rem;
   font-style: normal;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.post-author {
+  color: var(--muted);
+  font-size: 0.875rem;
+  margin: 0 0 1rem;
 }
 
 .ascii-head {
