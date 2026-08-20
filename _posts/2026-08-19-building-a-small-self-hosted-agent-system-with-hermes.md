@@ -14,6 +14,14 @@ Over time, it became less like a single chatbot and more like a small operating 
 
 This post is an overview of the design and the decisions behind it. It intentionally leaves out hostnames, addresses, bot identifiers, filesystem paths, schedules, credentials, provider configuration, and details that would make the environment easier to identify or attack.
 
+## In brief
+
+I built Hermes because I wanted an assistant that could do more than answer questions. Hermes is the open-source agent software that connects AI models with tools, files, memory, and scheduled tasks. I wanted something that could work with files, run checks, remember useful context, and help with the small systems I maintain.
+
+I use it for a mix of things: preparing financial digests, running read-only security checks, watching service health, and helping with software projects. Different tasks can use different AI models, but from my side it still feels like one assistant.
+
+It runs on a repurposed laptop using Ubuntu Linux. Linux is the operating system that manages the laptop’s hardware and services. I connect to Hermes through the terminal and private messaging. The setup is small, imperfect, and deliberately limited. It helps reduce repetitive work, but I still keep the important decisions and sensitive actions under human review.
+
 ## The hardware
 
 I could have rented a small fleet of cloud VMs, but an unused ThinkPad at home already had plenty of computing power and no plans for the evening. So I promoted it to server. It is not exactly enterprise infrastructure, but it is quiet, cheap, and good enough for a personal lab.
