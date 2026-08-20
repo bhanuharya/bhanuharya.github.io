@@ -338,6 +338,25 @@ main.wrap {
   50% { opacity: 0; }
 }
 
+/* typing animation states */
+.term-body .line .cmd {
+  color: var(--cli-amber);
+}
+
+.term-body .cursor.is-done {
+  display: none;
+}
+
+/* output reveal animation */
+.out.is-revealing {
+  animation: out-fade-in 0.3s ease forwards;
+}
+
+@keyframes out-fade-in {
+  0% { opacity: 0; transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .cmdlist {
   margin: 0.2rem 0;
 }

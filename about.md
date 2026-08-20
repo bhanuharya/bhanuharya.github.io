@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-i’m harya. i work in information security, mostly around financial systems and the infrastructure behind them.
+i work in information security, mostly around financial systems and the infrastructure behind them.
 
 i got into security during my early college years, mostly by tinkering with linux and computer systems. i was curious about how things worked, why they broke, and what happened when they were used in ways their builders did not expect.
 

@@ -57,7 +57,7 @@ layout: default
 
       <div class="out about-copy">
         <h2 id="about-heading" class="visually-hidden">about</h2>
-        <p>i’m harya. i work in information security, mostly around financial systems and the infrastructure behind them. i got into security by tinkering with linux and computers, and never really stopped.</p>
+        <p>i work in information security, mostly around financial systems and the infrastructure behind them. i got into security by tinkering with linux and computers, and never really stopped.</p>
         <p>i studied computer science/informatics at bandung institute of technology (itb). my interests include ai, privacy, open source, self hosting, music, and computers.</p>
         <p>this site is for notes, experiments, and things i want to remember :-)</p>
         <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
@@ -267,5 +267,119 @@ layout: default
   document.addEventListener('click', (e) => {
     if (!form.contains(e.target)) { matches = []; matchIndex = -1; renderSuggestions(); }
   });
+})();
+</script>
+
+<script>
+// --- terminal typing animation ---
+(function() {
+  var termBody = document.querySelector('.term-body');
+  if (!termBody) return;
+
+  var lines = termBody.querySelectorAll('.line');
+  if (!lines.length) return;
+
+  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion || !('IntersectionObserver' in window)) return;
+
+  var typingSpeed = 22;
+  var lineDelay = 100;
+  var outputDelay = 120;
+  var bootWait = 250;
+  var started = false;
+
+  // Build pairs: each .line + its associated output elements
+  var pairs = [];
+  lines.forEach(function(line) {
+    var cmdSpan = line.querySelector('.cmd');
+    if (!cmdSpan) return; // skip visitor-cli line (has input, not .cmd)
+
+    var parent = line.parentElement;
+    var fullText = cmdSpan.textContent.trim();
+    cmdSpan.setAttribute('data-text', fullText);
+    cmdSpan.textContent = '';
+
+    // Add blinking cursor after the command
+    var cursor = document.createElement('span');
+    cursor.className = 'cursor';
+    cursor.setAttribute('aria-hidden', 'true');
+    line.appendChild(cursor);
+
+    // Collect associated output elements
+    var outs = [];
+    if (parent === termBody) {
+      var el = line.nextElementSibling;
+      while (el && !el.classList.contains('line') && !el.classList.contains('visitor-cli')) {
+        if (el.classList.contains('out')) outs.push(el);
+        el = el.nextElementSibling;
+      }
+    } else if (parent.classList.contains('about-section')) {
+      var sectionOut = parent.querySelector('.out');
+      var sectionSignal = parent.querySelector('.about-signal');
+      if (sectionOut) outs.push(sectionOut);
+      if (sectionSignal) outs.push(sectionSignal);
+    }
+
+    // Initially hide outputs
+    outs.forEach(function(o) { o.style.opacity = '0'; });
+
+    pairs.push({ line: line, cmdSpan: cmdSpan, cursor: cursor, fullText: fullText, outs: outs });
+  });
+
+  if (!pairs.length) return;
+
+  function typeCommand(pair, callback) {
+    var cmdSpan = pair.cmdSpan;
+    var cursor = pair.cursor;
+    var fullText = pair.fullText;
+    var i = 0;
+    cursor.classList.add('is-typing');
+
+    function type() {
+      if (i < fullText.length) {
+        cmdSpan.textContent += fullText[i];
+        i++;
+        var jitter = Math.floor(Math.random() * 16) - 8;
+        setTimeout(type, typingSpeed + jitter);
+      } else {
+        cursor.classList.remove('is-typing');
+        cursor.classList.add('is-done');
+        setTimeout(callback, lineDelay);
+      }
+    }
+    type();
+  }
+
+  function revealOutputs(outs, callback) {
+    if (!outs.length) { callback(); return; }
+    outs.forEach(function(o) {
+      o.classList.add('is-revealing');
+      o.addEventListener('animationend', function handler() {
+        o.removeEventListener('animationend', handler);
+        o.style.opacity = '1';
+      }, { once: true });
+      o.style.opacity = '1';
+    });
+    setTimeout(callback, outputDelay);
+  }
+
+  function runSequence(index) {
+    if (index >= pairs.length) return;
+    var pair = pairs[index];
+    typeCommand(pair, function() {
+      revealOutputs(pair.outs, function() {
+        runSequence(index + 1);
+      });
+    });
+  }
+
+  var observer = new IntersectionObserver(function(entries) {
+    if (entries[0].isIntersecting && !started) {
+      started = true;
+      setTimeout(function() { runSequence(0); }, bootWait);
+    }
+  }, { threshold: 0.15 });
+
+  observer.observe(termBody);
 })();
 </script>
