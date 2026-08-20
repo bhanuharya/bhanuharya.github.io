@@ -20,8 +20,6 @@ more broadly, i’m interested in how security decisions get made. that means lo
 
 outside work, i’m interested in privacy, open source, self hosting, music, and computers. i still spend too much time tinkering with things that probably did not need tinkering :-)
 
-i like being part of the internet, but i try not to put everything about myself on it. i’m active on twitter and information security stack exchange, and i keep some of my code and experiments on github.
-
 this site is for notes, experiments, and things i want to remember.
 
 <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
