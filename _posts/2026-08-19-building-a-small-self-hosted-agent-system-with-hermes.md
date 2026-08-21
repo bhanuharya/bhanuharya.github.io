@@ -16,7 +16,7 @@ This post is an overview of the design and the decisions behind it. It intention
 
 ## In brief
 
-I built Hermes because I wanted an assistant that could do more than answer questions. Hermes is the open-source agent software that connects AI models with tools, files, memory, and scheduled tasks. I wanted something that could work with files, run checks, remember useful context, and help with the small systems I maintain.
+I built this because I wanted an assistant that could do more than answer questions. Hermes is the open-source agent software that connects AI models with tools, files, memory, and scheduled tasks. It lets me work with files, run checks, remember useful context, and help with the small systems I maintain.
 
 I use it for a mix of things: preparing financial digests, running read-only security checks, watching service health, and helping with software projects. Different tasks can use different AI models, but from my side it still feels like one assistant.
 
