@@ -6,7 +6,15 @@ layout: default
 
 <article class="term" aria-label="Terminal introduction">
   <div class="term-bar">
-    <span class="term-title">bhanuharya@sec : zsh</span>
+    <div class="term-controls" aria-hidden="true">
+      <span class="term-dot term-dot-close" title="Close"></span>
+      <span class="term-dot term-dot-min" title="Minimize"></span>
+      <span class="term-dot term-dot-max" title="Expand"></span>
+    </div>
+    <span class="term-title">bhanuharya@sec : zsh (tty1)</span>
+    <div class="term-actions">
+      <span class="term-badge">online</span>
+    </div>
   </div>
 
   <div class="term-body">
@@ -78,13 +86,13 @@ layout: default
     </div>
 
     <form class="visitor-cli" data-visitor-cli autocomplete="off" novalidate>
+      <div class="visitor-history" data-visitor-history aria-live="polite"></div>
       <div class="line visitor-cli-line">
         <label class="prompt" for="visitor-command">visitor@sec</label><span class="loc">:~$</span>
-        <input id="visitor-command" name="command" type="text" spellcheck="false" autocapitalize="none" autocomplete="off" maxlength="64" aria-autocomplete="list" aria-controls="visitor-suggestions" aria-describedby="visitor-cli-help visitor-privacy" placeholder="type help">
+        <input id="visitor-command" role="combobox" name="command" type="text" spellcheck="false" autocapitalize="none" autocomplete="off" maxlength="128" aria-autocomplete="list" aria-controls="visitor-suggestions" aria-describedby="visitor-cli-help visitor-privacy" placeholder="type help or search...">
       </div>
-      <div id="visitor-cli-help" class="visitor-cli-help">tab / ↑↓ : complete · enter : run · esc : dismiss · type <span>help</span> for commands</div>
+      <div id="visitor-cli-help" class="visitor-cli-help">tab / ↑↓ : history &amp; complete · enter : run · esc : dismiss · type <span>help</span> for commands</div>
       <div id="visitor-suggestions" class="visitor-suggestions" role="listbox" aria-label="Command suggestions"></div>
-      <div class="visitor-cli-output" data-cli-output aria-live="polite"></div>
       <p id="visitor-privacy" class="visitor-privacy dim">runs locally in your browser. no input is sent anywhere. hosting logs might still exist, but not from this page :-)</p>
       <noscript><p class="dim" style="margin-top:0.5rem">javascript is off. use the links above: <a href="{{ '/about/' | relative_url }}">about</a> · <a href="{{ '/blog/' | relative_url }}">blog</a></p></noscript>
     </form>
@@ -123,25 +131,70 @@ layout: default
 
   const input = form.querySelector('#visitor-command');
   const suggestions = form.querySelector('#visitor-suggestions');
-  const output = form.querySelector('[data-cli-output]');
+  const historyContainer = form.querySelector('[data-visitor-history]');
   const blogUrl = "{{ '/blog/' | relative_url }}";
   const aboutUrl = "{{ '/about/' | relative_url }}";
-  const commands = ['about', 'blog', 'clear', 'help', 'ip', 'ls', 'status', 'visitor', 'whoami'];
+  const startTime = Date.now();
+
+  const sitePosts = [
+    {% for p in site.posts %}
+    {
+      title: {{ p.title | jsonify }},
+      url: {{ p.url | relative_url | jsonify }},
+      date: "{{ p.date | date: '%b %-d, %Y' }}",
+      tags: {{ p.tags | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ];
+
+  const commands = [
+    'about', 'cat', 'clear', 'date', 'echo', 'fetch', 'help', 'history',
+    'interests', 'ip', 'latest', 'ls', 'matrix', 'neofetch', 'outside_work',
+    'posts', 'search', 'skills', 'status', 'sudo', 'theme', 'tree', 'uptime', 'visitor', 'whoami'
+  ];
+
+  const files = ['about.txt', 'interests.txt', 'outside_work.txt', 'skills.txt', 'sys_config.json'];
+
+  let history = [];
+  let historyIdx = -1;
   let matches = [];
   let matchIndex = -1;
 
-  const print = (lines, links = []) => {
-    const block = document.createElement('pre');
-    block.className = 'visitor-cli-block';
-    block.textContent = lines.join('\n');
-    output.appendChild(block);
-    links.forEach(({ label, href }) => {
-      const link = document.createElement('a');
-      link.href = href;
-      link.textContent = label;
-      output.appendChild(link);
-    });
-    output.scrollIntoView({ block: 'nearest' });
+  const escapeHtml = (str) => {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  };
+
+  const appendEntry = (cmdText, lines = [], links = []) => {
+    const entry = document.createElement('div');
+    entry.className = 'visitor-history-entry';
+
+    const cmdLine = document.createElement('div');
+    cmdLine.className = 'line';
+    cmdLine.innerHTML = `<span class="prompt">visitor@sec</span><span class="loc">:~$</span> <span class="cmd">${escapeHtml(cmdText)}</span>`;
+    entry.appendChild(cmdLine);
+
+    if (lines.length || links.length) {
+      const out = document.createElement('div');
+      out.className = 'visitor-cli-output';
+
+      if (lines.length) {
+        const block = document.createElement('pre');
+        block.className = 'visitor-cli-block';
+        block.textContent = lines.join('\n');
+        out.appendChild(block);
+      }
+
+      links.forEach(({ label, href }) => {
+        const link = document.createElement('a');
+        link.href = href;
+        link.textContent = label;
+        out.appendChild(link);
+      });
+      entry.appendChild(out);
+    }
+
+    historyContainer.appendChild(entry);
+    entry.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
 
   const updateAria = () => {
@@ -180,48 +233,331 @@ layout: default
     updateAria();
   };
 
-  const complete = (reverse) => {
-    const raw = input.value.trim().toLowerCase();
-    const filtered = commands.filter((c) => c.startsWith(raw));
-    if (filtered.length) matches = filtered;
-    if (!matches.length) return;
-    if (reverse) matchIndex = (matchIndex - 1 + matches.length) % matches.length;
-    else matchIndex = (matchIndex + 1) % matches.length;
-    input.value = matches[matchIndex];
-    renderSuggestions();
-  };
-
   const run = () => {
-    const command = input.value.trim().toLowerCase();
-    if (!command) return;
-    output.replaceChildren();
-    switch (command) {
-      case 'help':
-        print(['available commands:', '', 'about      read the short bio', 'blog       open the notes and experiments', 'clear      clear this output', 'ip         explain the public IP policy', 'ls         list the public paths', 'status     inspect your browser session', 'visitor    show local visitor details', 'whoami     identify the person behind the prompt']);
-        break;
-      case 'about':
-      case 'whoami':
-        print(['harya / wishnu', 'information security, systems, and the forces around them.'], [{ label: 'open about →', href: aboutUrl }]);
-        break;
-      case 'blog':
-        print(['notes and experiments live here:'], [{ label: 'open blog →', href: blogUrl }]);
-        break;
-      case 'ls':
-        print(['about/', 'blog/']);
-        break;
-      case 'visitor':
-      case 'status':
-        print(['visitor session:', `language:  ${navigator.language || 'unknown'}`, `timezone:  ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`, `viewport:  ${window.innerWidth}x${window.innerHeight}`, `online:     ${navigator.onLine ? 'yes' : 'no'}`, `local time: ${new Date().toLocaleTimeString()}`]);
-        break;
-      case 'ip':
-        print(['public IP lookup: disabled', 'this page does not fetch your address from a lookup service', 'no address is sent from this page; hosting/CDN access logs may still exist separately']);
-        break;
-      case 'clear':
-        output.replaceChildren();
-        break;
-      default:
-        print([`command not found: ${command}`, 'type help to see available commands']);
+    const raw = input.value.trim();
+    if (!raw) return;
+
+    history.push(raw);
+    historyIdx = history.length;
+
+    const parts = raw.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    if (cmd === 'clear') {
+      historyContainer.replaceChildren();
+      input.value = '';
+      matches = [];
+      matchIndex = -1;
+      renderSuggestions();
+      return;
     }
+
+    switch (cmd) {
+      case 'help':
+      case '?':
+        appendEntry(raw, [
+          'AVAILABLE COMMANDS:',
+          '  whoami / about       Identify the author and background',
+          '  skills / stack       View technical capabilities and toolset',
+          '  interests            Display research and engineering focus',
+          '  outside_work         View offline pursuits and hobbies',
+          '  neofetch / fetch     Display system info dashboard',
+          '  posts / blog         List all published notes and articles',
+          '  latest               Show newest note and summary',
+          '  search <keyword>     Search notes and tags (e.g. search agent)',
+          '  ls [-la]             List virtual filesystem entries',
+          '  cat <filename>       Print file contents (e.g. cat skills.txt)',
+          '  tree                 Display filesystem hierarchy',
+          '  theme <name>         Switch theme (matrix | amber | cyber | monochrome | default)',
+          '  matrix               Trigger digital rain sequence',
+          '  history              Show command history',
+          '  date / uptime        Display local/UTC time and uptime',
+          '  ip / status          Session privacy and environment info',
+          '  clear                Clear the terminal scrollback'
+        ]);
+        break;
+
+      case 'whoami':
+        appendEntry(raw, [
+          'harya / wishnu',
+          'information security, low-level systems, and self-hosted AI agents.'
+        ], [{ label: 'view full bio (/about/) →', href: aboutUrl }]);
+        break;
+
+      case 'about':
+        appendEntry(raw, [
+          'Security practitioner working around financial systems and infrastructure.',
+          'Undergraduate CS at ITB (designed a Python compiler for 32-bit RISC-V).',
+          'Curiosity: Cloud/Network Security, AI Defenders, Compilers, Linux, Self-Hosting.'
+        ], [{ label: 'open about page →', href: aboutUrl }]);
+        break;
+
+      case 'skills':
+      case 'stack':
+        appendEntry(raw, [
+          '┌───────────────────┬───────────────────────────────────────────┐',
+          '│ DOMAIN            │ TOOLS & CAPABILITIES                      │',
+          '├───────────────────┼───────────────────────────────────────────┤',
+          '│ Security          │ WAF, Network, IR, AppSec, IAM, Governance │',
+          '│ Systems & Linux   │ Ubuntu, Kernel tuning, Homelab, Systemd   │',
+          '│ AI & Agents       │ Hermes, Tool calling, Routing, Fallbacks  │',
+          '│ Low-Level         │ RISC-V, Python compilers, C/Assembly      │',
+          '└───────────────────┴───────────────────────────────────────────┘'
+        ]);
+        break;
+
+      case 'interests':
+        appendEntry(raw, [
+          '├── infosec & network security',
+          '├── privacy & self-hosting',
+          '├── Linux & open-source infrastructure',
+          '├── AI agent architectures & safety',
+          '├── financial markets & systems',
+          '└── security & intelligence'
+        ]);
+        break;
+
+      case 'outside_work':
+        appendEntry(raw, [
+          '├── music',
+          '└── tinkering with systems that probably did not need tinkering'
+        ]);
+        break;
+
+      case 'neofetch':
+      case 'fetch':
+        const theme = window.getSiteTheme ? window.getSiteTheme() : 'default';
+        const minsUptime = Math.floor((Date.now() - startTime) / 60000);
+        const secsUptime = Math.floor(((Date.now() - startTime) % 60000) / 1000);
+        appendEntry(raw, [
+          '       ___       bhanuharya@sec',
+          '     /     \\     --------------',
+          '    | () () |    OS: Ubuntu 24.04 LTS x86_64',
+          '     \\  _  /     Host: ThinkPad homelab (Ryzen 5 PRO)',
+          '      \\___/      Kernel: Linux 6.8.0-generic',
+          `                 Uptime: session ${minsUptime}m ${secsUptime}s`,
+          '                 Shell: zsh 5.9 (visitor-cli)',
+          `                 Theme: ${theme}`,
+          '                 Focus: Security / Low-Level / AI Agents'
+        ]);
+        break;
+
+      case 'ls':
+        if (args.includes('-l') || args.includes('-la')) {
+          appendEntry(raw, [
+            'total 32',
+            'drwxr-xr-x  2 visitor sec  4096 Aug 19 00:00 about/',
+            'drwxr-xr-x  2 visitor sec  4096 Aug 19 00:00 blog/',
+            '-rw-r--r--  1 visitor sec  2287 Aug 19 00:00 about.txt',
+            '-rw-r--r--  1 visitor sec   420 Aug 19 00:00 interests.txt',
+            '-rw-r--r--  1 visitor sec   380 Aug 19 00:00 skills.txt',
+            '-rw-r--r--  1 visitor sec   150 Aug 19 00:00 outside_work.txt',
+            '-rw-r--r--  1 visitor sec   218 Aug 19 00:00 sys_config.json'
+          ]);
+        } else {
+          appendEntry(raw, [
+            'about/  blog/  about.txt  interests.txt  skills.txt  outside_work.txt  sys_config.json'
+          ]);
+        }
+        break;
+
+      case 'cat':
+        if (!args) {
+          appendEntry(raw, ['usage: cat <filename>', 'available: ' + files.join(', ')]);
+        } else {
+          const target = args.toLowerCase();
+          if (target === 'about.txt') {
+            appendEntry(raw, [
+              'i work in information security, mostly around financial systems and infrastructure.',
+              'undergraduate work involved designing a python compiler for a 32 bit risc v processor.',
+              'outside work: privacy, open source, self hosting, music, and computers.'
+            ], [{ label: 'read more on /about/ →', href: aboutUrl }]);
+          } else if (target === 'interests.txt') {
+            appendEntry(raw, [
+              '├── infosec & network security',
+              '├── privacy',
+              '├── Linux & open source',
+              '├── AI & agentic systems',
+              '└── financial markets & security'
+            ]);
+          } else if (target === 'skills.txt') {
+            appendEntry(raw, [
+              'security: waf, firewalls, network isolation, incident response, iam',
+              'systems: linux (ubuntu/debian), systemd, virtualization, homelab',
+              'agents: hermes agent framework, tool calling, memory management',
+              'languages: python, c, bash, sql, riscv assembly'
+            ]);
+          } else if (target === 'outside_work.txt') {
+            appendEntry(raw, [
+              '├── music',
+              '└── tinkering with things that probably did not need tinkering'
+            ]);
+          } else if (target === 'sys_config.json') {
+            appendEntry(raw, [
+              '{',
+              '  "author": "bhanuharya",',
+              '  "env": "production",',
+              '  "analytics": false,',
+              '  "tracking": false,',
+              '  "security_mode": "strict"',
+              '}'
+            ]);
+          } else {
+            appendEntry(raw, [`cat: ${args}: No such file or directory`]);
+          }
+        }
+        break;
+
+      case 'tree':
+        appendEntry(raw, [
+          '.',
+          '├── about/',
+          '│   └── index.html',
+          '├── blog/',
+          ...sitePosts.map(p => `│   └── ${p.title}`),
+          '├── about.txt',
+          '├── interests.txt',
+          '├── skills.txt',
+          '└── outside_work.txt'
+        ]);
+        break;
+
+      case 'matrix':
+      case 'cmatrix':
+        const matrixChars = '01#$*+-%!><[]{}ABCDEF';
+        let matrixLines = [];
+        for (let i = 0; i < 5; i++) {
+          let line = '';
+          for (let j = 0; j < 34; j++) {
+            line += matrixChars[Math.floor(Math.random() * matrixChars.length)] + ' ';
+          }
+          matrixLines.push(line);
+        }
+        appendEntry(raw, ['[ MATRIX STREAM INITIALIZED ]', ...matrixLines, '[ STREAM COMPLETE ]']);
+        break;
+
+      case 'posts':
+      case 'blog':
+        if (sitePosts.length) {
+          const lines = ['published notes and experiments:'];
+          const links = sitePosts.map(p => ({ label: `→ [${p.date}] ${p.title}`, href: p.url }));
+          appendEntry(raw, lines, links);
+        } else {
+          appendEntry(raw, ['no notes published yet.']);
+        }
+        break;
+
+      case 'latest':
+        if (sitePosts.length) {
+          appendEntry(raw, [
+            `LATEST NOTE: ${sitePosts[0].title}`,
+            `Date: ${sitePosts[0].date}`,
+            `Tags: ${sitePosts[0].tags ? sitePosts[0].tags.join(', ') : 'none'}`
+          ], [{ label: 'read note →', href: sitePosts[0].url }]);
+        } else {
+          appendEntry(raw, ['no notes published yet.']);
+        }
+        break;
+
+      case 'search':
+        if (!args) {
+          appendEntry(raw, ['usage: search <keyword>', 'example: search agent']);
+        } else {
+          const q = args.toLowerCase();
+          const hits = sitePosts.filter(p =>
+            p.title.toLowerCase().includes(q) ||
+            (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
+          );
+          if (hits.length) {
+            const lines = [`found ${hits.length} note(s) matching "${q}":`];
+            const links = hits.map(p => ({ label: `→ [${p.date}] ${p.title}`, href: p.url }));
+            appendEntry(raw, lines, links);
+          } else {
+            appendEntry(raw, [`no notes found matching "${q}".`]);
+          }
+        }
+        break;
+
+      case 'theme':
+        if (!args || args === 'list') {
+          appendEntry(raw, [
+            'available themes: default, matrix, amber, cyber, monochrome',
+            'usage: theme <name> (e.g. theme matrix)'
+          ]);
+        } else {
+          const t = args.toLowerCase();
+          const valid = ['default', 'matrix', 'amber', 'cyber', 'monochrome'];
+          if (valid.includes(t)) {
+            if (window.setSiteTheme) window.setSiteTheme(t);
+            appendEntry(raw, [`theme changed to: ${t}`]);
+          } else {
+            appendEntry(raw, [`unknown theme: ${t}`, 'available: ' + valid.join(', ')]);
+          }
+        }
+        break;
+
+      case 'history':
+        if (!history.length) {
+          appendEntry(raw, ['no command history.']);
+        } else {
+          const lines = history.map((c, i) => `  ${(i + 1).toString().padStart(3, ' ')}  ${c}`);
+          appendEntry(raw, ['COMMAND HISTORY:', ...lines]);
+        }
+        break;
+
+      case 'date':
+        appendEntry(raw, [
+          `Local: ${new Date().toString()}`,
+          `UTC:   ${new Date().toUTCString()}`
+        ]);
+        break;
+
+      case 'uptime':
+        const sec = Math.floor((Date.now() - startTime) / 1000);
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        appendEntry(raw, [`session uptime: ${m}m ${s}s (host: github-pages)`]);
+        break;
+
+      case 'status':
+      case 'visitor':
+        appendEntry(raw, [
+          'visitor session:',
+          `  language:  ${navigator.language || 'unknown'}`,
+          `  timezone:  ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'unknown'}`,
+          `  viewport:  ${window.innerWidth}x${window.innerHeight}`,
+          `  online:     ${navigator.onLine ? 'yes' : 'no'}`,
+          `  theme:      ${window.getSiteTheme ? window.getSiteTheme() : 'default'}`
+        ]);
+        break;
+
+      case 'ip':
+        appendEntry(raw, [
+          'public IP lookup: disabled',
+          'this site does not query third-party IP lookups or store user identifiers.',
+          'hosting/CDN logs may exist separately at the network edge.'
+        ]);
+        break;
+
+      case 'echo':
+        appendEntry(raw, [args]);
+        break;
+
+      case 'sudo':
+      case 'su':
+        appendEntry(raw, [
+          `visitor is not in the sudoers file. This incident will be reported.`
+        ]);
+        break;
+
+      default:
+        appendEntry(raw, [
+          `command not found: ${cmd}`,
+          'type help to see available commands'
+        ]);
+    }
+
     input.value = '';
     matches = [];
     matchIndex = -1;
@@ -232,20 +568,30 @@ layout: default
 
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Tab') {
-      if (matches.length === 0) {
-        const v = input.value.trim().toLowerCase();
-        matches = commands.filter((c) => c.startsWith(v));
-        matchIndex = -1;
+      const v = input.value.trim().toLowerCase();
+      const pool = [...commands, ...files.map(f => 'cat ' + f), ...['theme matrix', 'theme amber', 'theme cyber', 'theme default', 'theme monochrome']];
+      matches = pool.filter((c) => c.startsWith(v));
+      if (matches.length) {
+        event.preventDefault();
+        matchIndex = (matchIndex + (event.shiftKey ? -1 : 1) + matches.length) % matches.length;
+        input.value = matches[matchIndex];
+        renderSuggestions();
       }
-      if (matches.length) { event.preventDefault(); complete(event.shiftKey); }
-    } else if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      if (!matches.length) { matches = [...commands]; matchIndex = -1; }
-      complete(false);
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      if (!matches.length) { matches = [...commands]; matchIndex = 0; }
-      complete(true);
+      if (history.length && historyIdx > 0) {
+        historyIdx--;
+        input.value = history[historyIdx];
+      }
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (historyIdx < history.length - 1) {
+        historyIdx++;
+        input.value = history[historyIdx];
+      } else {
+        historyIdx = history.length;
+        input.value = '';
+      }
     } else if (event.key === 'Enter') {
       event.preventDefault();
       run();
@@ -253,6 +599,7 @@ layout: default
       matches = [];
       matchIndex = -1;
       renderSuggestions();
+      input.blur();
     }
   });
 

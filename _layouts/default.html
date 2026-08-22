@@ -7,11 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#000000">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   {% assign seo_title = page.title | default: site.title %}
   {% assign seo_description = page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
   <title>{% if page.title %}{{ page.title | escape }} · {{ site.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
   <meta name="description" content="{{ seo_description | escape }}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">
+  <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ '/feed.xml' | relative_url }}">
   <meta property="og:site_name" content="{{ site.title | escape }}">
@@ -19,11 +21,13 @@
   <meta property="og:description" content="{{ seo_description | escape }}">
   <meta property="og:url" content="{{ page.url | absolute_url }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
+  <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
   {% if page.date %}<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">{% endif %}
   {% if page.tags %}<meta property="article:tag" content="{{ page.tags | join: ', ' | escape }}">{% endif %}
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ seo_title | escape }}">
   <meta name="twitter:description" content="{{ seo_description | escape }}">
+  <meta name="twitter:image" content="{{ '/assets/og-image.png' | absolute_url }}">
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
   {
@@ -47,15 +51,29 @@
   }
   </script>
   {% endif %}
+  <script>
+    (function(){
+      var t = localStorage.getItem('term-theme') || 'default';
+      if (t !== 'default') document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#content">Skip to content</a>
   <header class="site-header">
     <nav class="wrap nav" aria-label="Main">
       <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title | escape }}</a>
-      <div class="nav-links">
-        <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' or page.layout == 'post' %} aria-current="page"{% endif %}>blog</a>
-        <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>about</a>
+      <div class="nav-actions">
+        <div class="nav-links">
+          <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' or page.layout == 'post' %} aria-current="page"{% endif %}>blog</a>
+          <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>about</a>
+        </div>
+        <button type="button" class="theme-toggle" id="theme-btn" aria-label="Switch terminal theme" title="Switch terminal theme (press 't')">
+          <span class="theme-name">thm:default</span>
+        </button>
+        <button type="button" class="help-toggle" id="shortcut-btn" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (press '?')">
+          <span>[?]</span>
+        </button>
       </div>
     </nav>
   </header>
@@ -65,8 +83,124 @@
   <footer class="site-footer">
     <div class="wrap footer-inner">
       <p>&copy; {{ site.time | date: '%Y' }} {{ site.title | escape }}. Built with Jekyll on GitHub Pages. <a href="{{ '/feed.xml' | relative_url }}">rss</a></p>
-      <p class="footer-note">no intentional analytics or tracking. just static files and a tiny terminal :-)</p>
+      <p class="footer-note">no intentional analytics or tracking. just static files and a tiny terminal :-) · press <kbd style="font:inherit;color:var(--cli-amber)">?</kbd> for shortcuts</p>
     </div>
   </footer>
+
+  <div id="shortcut-modal" class="shortcut-modal" hidden role="dialog" aria-modal="true" aria-labelledby="shortcut-title">
+    <div class="shortcut-box">
+      <div class="shortcut-header">
+        <span id="shortcut-title">&gt;_ KEYBOARD SHORTCUTS</span>
+        <button type="button" class="shortcut-close-btn" id="shortcut-close">esc</button>
+      </div>
+      <table class="shortcut-table">
+        <tbody>
+          <tr><td class="shortcut-key">g then h</td><td class="shortcut-desc">go to home</td></tr>
+          <tr><td class="shortcut-key">g then b</td><td class="shortcut-desc">go to blog</td></tr>
+          <tr><td class="shortcut-key">g then a</td><td class="shortcut-desc">go to about</td></tr>
+          <tr><td class="shortcut-key">/</td><td class="shortcut-desc">focus terminal prompt</td></tr>
+          <tr><td class="shortcut-key">t</td><td class="shortcut-desc">cycle theme (matrix/amber/etc)</td></tr>
+          <tr><td class="shortcut-key">?</td><td class="shortcut-desc">toggle shortcuts modal</td></tr>
+          <tr><td class="shortcut-key">esc</td><td class="shortcut-desc">close modal / blur prompt</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    var themes = ['default', 'matrix', 'amber', 'cyber', 'monochrome'];
+    var themeBtn = document.getElementById('theme-btn');
+    var themeLabel = themeBtn ? themeBtn.querySelector('.theme-name') : null;
+    var modal = document.getElementById('shortcut-modal');
+    var shortcutBtn = document.getElementById('shortcut-btn');
+    var closeBtn = document.getElementById('shortcut-close');
+
+    function updateThemeUI(t) {
+      if (themeLabel) themeLabel.textContent = 'thm:' + t;
+    }
+
+    function setTheme(t) {
+      if (t === 'default') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', t);
+      }
+      localStorage.setItem('term-theme', t);
+      updateThemeUI(t);
+    }
+
+    var currentTheme = localStorage.getItem('term-theme') || 'default';
+    updateThemeUI(currentTheme);
+
+    function cycleTheme() {
+      var curr = localStorage.getItem('term-theme') || 'default';
+      var nextIdx = (themes.indexOf(curr) + 1) % themes.length;
+      setTheme(themes[nextIdx]);
+    }
+
+    if (themeBtn) themeBtn.addEventListener('click', cycleTheme);
+
+    function toggleModal(open) {
+      if (!modal) return;
+      var show = open !== undefined ? open : modal.hidden;
+      modal.hidden = !show;
+    }
+
+    if (shortcutBtn) shortcutBtn.addEventListener('click', function() { toggleModal(true); });
+    if (closeBtn) closeBtn.addEventListener('click', function() { toggleModal(false); });
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) toggleModal(false);
+      });
+    }
+
+    var lastKey = '';
+    var lastKeyTime = 0;
+
+    document.addEventListener('keydown', function(e) {
+      var activeTag = document.activeElement ? document.activeElement.tagName : '';
+      var isInput = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
+
+      if (e.key === 'Escape') {
+        if (modal && !modal.hidden) {
+          toggleModal(false);
+          e.preventDefault();
+        } else if (isInput) {
+          document.activeElement.blur();
+        }
+        return;
+      }
+
+      if (isInput) return;
+
+      var now = Date.now();
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        toggleModal();
+      } else if (e.key === 't') {
+        e.preventDefault();
+        cycleTheme();
+      } else if (e.key === '/') {
+        var cliInput = document.getElementById('visitor-command');
+        if (cliInput) {
+          e.preventDefault();
+          cliInput.focus();
+        }
+      } else if (e.key === 'g') {
+        lastKey = 'g';
+        lastKeyTime = now;
+      } else if (lastKey === 'g' && (now - lastKeyTime < 1000)) {
+        if (e.key === 'h') { window.location.href = "{{ '/' | relative_url }}"; }
+        else if (e.key === 'b') { window.location.href = "{{ '/blog/' | relative_url }}"; }
+        else if (e.key === 'a') { window.location.href = "{{ '/about/' | relative_url }}"; }
+        lastKey = '';
+      }
+    });
+
+    window.setSiteTheme = setTheme;
+    window.getSiteTheme = function() { return localStorage.getItem('term-theme') || 'default'; };
+  })();
+  </script>
 </body>
 </html>

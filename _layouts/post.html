@@ -1,6 +1,10 @@
 ---
 layout: default
 ---
+<div class="page-prompt" aria-hidden="true">
+  <span class="prompt">bhanuharya@sec</span><span class="loc">:~/posts$</span> <span class="cmd">less {{ page.title | slugify }}.md</span>
+</div>
+
 <article class="post">
   <header class="post-header">
     <h1 class="post-title">{{ page.title | escape }}</h1>
@@ -90,6 +94,38 @@ layout: default
     a.href='#'+h.id; a.textContent=h.textContent.trim();
     li.appendChild(a); list.appendChild(li);
   });
-  nav.appendChild(list);
-})();
-</script>
+    nav.appendChild(list);
+  })();
+
+  // --- Copy code button for snippets ---
+  (function() {
+    if (!navigator.clipboard) return;
+    var codeBlocks = document.querySelectorAll('.post-content .highlight, .post-content pre');
+    codeBlocks.forEach(function(block) {
+      if (block.tagName === 'PRE' && block.closest('.highlight')) return;
+      if (block.closest('.diagram-wrap')) return;
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'code-copy-btn';
+      btn.setAttribute('aria-label', 'Copy code to clipboard');
+      btn.innerHTML = '<span class="copy-text">copy</span>';
+
+      btn.addEventListener('click', function() {
+        var code = block.querySelector('code') || block;
+        var text = (code.innerText || code.textContent).trim();
+        navigator.clipboard.writeText(text).then(function() {
+          btn.innerHTML = '<span class="copy-text copy-success">copied!</span>';
+          setTimeout(function() {
+            btn.innerHTML = '<span class="copy-text">copy</span>';
+          }, 2000);
+        }).catch(function() {
+          btn.innerHTML = '<span class="copy-text">failed</span>';
+        });
+      });
+
+      block.style.position = 'relative';
+      block.appendChild(btn);
+    });
+  })();
+  </script>
