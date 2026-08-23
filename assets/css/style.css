@@ -1379,6 +1379,17 @@ main.wrap {
   .routing-branch strong {
     overflow-wrap: anywhere;
   }
+
+  .pulsar-wrap {
+    margin: 1rem 0 0.25rem;
+  }
+  .pulsar-canvas {
+    height: 130px;
+  }
+  .pulsar-caption {
+    font-size: 0.68rem;
+    padding: 0.25rem 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1392,6 +1403,10 @@ main.wrap {
   }
   .banner {
     font-size: 11px;
+  }
+
+  .pulsar-canvas {
+    height: 105px;
   }
 
   .post-content pre,
@@ -1412,6 +1427,9 @@ main.wrap {
   .term-body {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+  }
+  .pulsar-canvas {
+    height: 95px;
   }
 }
 
@@ -1856,7 +1874,7 @@ main.wrap {
   background: #000000;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  margin: 1.25rem 0;
+  margin: 1.25rem 0 0.5rem;
   overflow: hidden;
   position: relative;
   transition: border-color 0.2s ease;
@@ -1869,7 +1887,7 @@ main.wrap {
 .pulsar-canvas {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 180px;
   background: #000000;
   cursor: crosshair;
 }
@@ -1883,7 +1901,7 @@ main.wrap {
   font-family: var(--font);
   background: #050505;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 }
 
