@@ -9,7 +9,7 @@
   var animFrameId = null;
   var isRunning = false;
   var isVisible = true;
-  var linesCount = 46;
+  var customLinesCount = null;
   var time = 0;
   var mouseX = -1;
   var mouseY = -1;
@@ -22,7 +22,8 @@
   var lineSeeds = [];
   function initSeeds(count) {
     lineSeeds = [];
-    for (var i = 0; i < count; i++) {
+    var total = Math.max(count || 64, 64);
+    for (var i = 0; i < total; i++) {
       lineSeeds.push({
         freq1: 0.02 + Math.random() * 0.02,
         freq2: 0.04 + Math.random() * 0.03,
@@ -33,6 +34,13 @@
         peakWidth: 0.14 + Math.random() * 0.06
       });
     }
+  }
+
+  function getEffectiveLines(width) {
+    if (customLinesCount !== null) return customLinesCount;
+    if (width <= 420) return 26;
+    if (width <= 640) return 32;
+    return 44;
   }
 
   function getThemeStrokeColor() {
@@ -48,9 +56,9 @@
   function resizeCanvas() {
     if (!canvas || !container) return;
     var rect = container.getBoundingClientRect();
-    var dpr = window.devicePixelRatio || 1;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var w = rect.width || 640;
-    var h = container.clientHeight || 220;
+    var h = canvas.clientHeight || (w <= 420 ? 105 : (w <= 640 ? 130 : 180));
 
     canvas.width = Math.floor(w * dpr);
     canvas.height = Math.floor(h * dpr);
@@ -71,17 +79,20 @@
 
     time += 0.02;
 
-    // Smooth mouse interpolation
+    // Smooth mouse / touch interpolation
     mouseX += (mouseTargetX - mouseX) * 0.1;
     mouseY += (mouseTargetY - mouseY) * 0.1;
 
-    var padTop = 18;
-    var padBottom = 22;
-    var usableH = h - padTop - padBottom;
-    var stepY = usableH / Math.max(1, linesCount - 1);
+    var effLines = getEffectiveLines(w);
+    var padTop = Math.max(8, Math.floor(h * 0.08));
+    var padBottom = Math.max(10, Math.floor(h * 0.12));
+    var usableH = Math.max(20, h - padTop - padBottom);
+    var stepY = usableH / Math.max(1, effLines - 1);
     var xStep = Math.max(2, Math.floor(w / 120));
+    var maxBaseAmp = Math.min(usableH * 0.28, w <= 480 ? 13 : (w <= 640 ? 18 : 25));
+    var interactRadius = Math.min(120, Math.max(50, w * 0.28));
 
-    for (var i = 0; i < linesCount; i++) {
+    for (var i = 0; i < effLines; i++) {
       var seed = lineSeeds[i] || lineSeeds[0];
       var baseY = padTop + i * stepY;
 
@@ -102,16 +113,16 @@
 
         var rawWave = (wave1 * 0.55 + wave2 * 0.35 + wave3 * 0.25) * seed.noiseScale;
 
-        // Mouse perturbation on wave
+        // Mouse / touch perturbation on wave
         var mouseDist = Math.hypot(x - mouseX, baseY - mouseY);
         var mouseEffect = 0;
-        if (mouseX >= 0 && mouseDist < 120) {
-          var mFactor = (1 - mouseDist / 120);
-          mouseEffect = Math.sin(mouseDist * 0.1 - time * 4) * 18 * mFactor;
+        if (mouseX >= 0 && mouseDist < interactRadius) {
+          var mFactor = (1 - mouseDist / interactRadius);
+          mouseEffect = Math.sin(mouseDist * 0.1 - time * 4) * (maxBaseAmp * 0.7) * mFactor;
         }
 
-        var rowWeight = Math.sin((i / Math.max(1, linesCount - 1)) * Math.PI);
-        var maxAmp = 28 * rowWeight;
+        var rowWeight = Math.sin((i / Math.max(1, effLines - 1)) * Math.PI);
+        var maxAmp = maxBaseAmp * rowWeight;
         var elevation = (rawWave * maxAmp * bell) + (mouseEffect * bell);
 
         var y = baseY - elevation;
@@ -127,7 +138,7 @@
       ctx.fill();
 
       // Stroke the wave line
-      ctx.lineWidth = (i % 2 === 0) ? 1.4 : 1.1;
+      ctx.lineWidth = (w <= 480) ? (i % 2 === 0 ? 1.2 : 1.0) : (i % 2 === 0 ? 1.4 : 1.1);
       ctx.strokeStyle = strokeColor;
       ctx.stroke();
     }
@@ -154,17 +165,17 @@
     container = containerEl || document.querySelector('[data-pulsar-waves]');
     if (!container) return;
 
-    if (options.lines) linesCount = options.lines;
+    if (options.lines) customLinesCount = options.lines;
     if (options.color) colorMode = options.color;
 
-    initSeeds(linesCount);
+    initSeeds(100);
 
     canvas = container.querySelector('canvas');
     if (!canvas) {
       canvas = document.createElement('canvas');
       canvas.className = 'pulsar-canvas';
       canvas.setAttribute('aria-label', 'Joy Division PSR B1919+21 Pulsar Wave Simulation');
-      container.appendChild(canvas);
+      container.insertBefore(canvas, container.firstChild);
     }
 
     ctx = canvas.getContext('2d');
@@ -241,8 +252,12 @@
     stop: stop,
     toggle: toggle,
     setLines: function(n) {
-      linesCount = Math.max(10, Math.min(100, parseInt(n, 10) || 46));
-      initSeeds(linesCount);
+      if (n) {
+        customLinesCount = Math.max(10, Math.min(100, parseInt(n, 10) || 44));
+      } else {
+        customLinesCount = null;
+      }
+      initSeeds(100);
       resizeCanvas();
     },
     setColor: function(c) {
