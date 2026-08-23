@@ -13,6 +13,7 @@
   var loadPromise = null;
   var lineTimer = null;
   var lineIndex = -1;
+  var lineInterval = 35;
   var reducedMotion = window.matchMedia
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -25,8 +26,8 @@
 
   function clearLineClasses() {
     if (!svg) return;
-    svg.querySelectorAll('.is-signal-active, .is-signal-trail').forEach(function(path) {
-      path.classList.remove('is-signal-active', 'is-signal-trail');
+    svg.querySelectorAll('.is-signal-visible, .is-signal-active, .is-signal-trail').forEach(function(path) {
+      path.classList.remove('is-signal-visible', 'is-signal-active', 'is-signal-trail');
     });
   }
 
@@ -37,39 +38,35 @@
     }
   }
 
-  function showNextLine() {
-    var paths = getVisiblePaths();
-    if (!paths.length) return;
-
-    var trail = svg.querySelector('.is-signal-trail');
-    if (trail) trail.classList.remove('is-signal-trail');
-
-    var active = svg.querySelector('.is-signal-active');
-    if (active) {
-      active.classList.remove('is-signal-active');
-      active.classList.add('is-signal-trail');
+  function showNextLine(paths) {
+    if (lineIndex >= paths.length) {
+      stopLineSequence();
+      return;
     }
 
-    lineIndex = (lineIndex + 1) % paths.length;
-    paths[lineIndex].classList.remove('is-signal-trail');
-    paths[lineIndex].classList.add('is-signal-active');
+    paths[lineIndex].classList.add('is-signal-visible');
+    lineIndex += 1;
+
+    if (lineIndex >= paths.length) stopLineSequence();
   }
 
   function startLineSequence() {
     stopLineSequence();
     clearLineClasses();
-    lineIndex = -1;
+    lineIndex = 0;
 
     var paths = getVisiblePaths();
     if (!paths.length) return;
 
     if (reducedMotion) {
-      paths[Math.floor(paths.length / 2)].classList.add('is-signal-active');
+      paths.forEach(function(path) { path.classList.add('is-signal-visible'); });
       return;
     }
 
-    showNextLine();
-    lineTimer = window.setInterval(showNextLine, 480);
+    showNextLine(paths);
+    if (lineIndex < paths.length) {
+      lineTimer = window.setInterval(function() { showNextLine(paths); }, lineInterval);
+    }
   }
 
   function applyLineCount() {
@@ -83,7 +80,6 @@
       path.toggleAttribute('hidden', index >= visibleCount);
     });
 
-    if (isRunning) startLineSequence();
   }
 
   function loadPaths() {
@@ -138,7 +134,11 @@
     container.classList.add('is-user-activated');
     container.classList.remove('is-paused');
     isRunning = true;
-    loadPaths().then(startLineSequence).catch(function() {});
+    loadPaths().then(function() {
+      if (isRunning && !container.hasAttribute('hidden') && container.style.display !== 'none') {
+        startLineSequence();
+      }
+    }).catch(function() {});
   }
 
   function stop() {
@@ -146,6 +146,7 @@
     container.classList.add('is-paused');
     isRunning = false;
     stopLineSequence();
+    clearLineClasses();
   }
 
   function init(containerEl) {
@@ -155,7 +156,7 @@
     svg = container.querySelector('.pulsar-svg');
     if (!svg) return;
 
-    if (container.hasAttribute('hidden') || reducedMotion) {
+    if (container.hasAttribute('hidden')) {
       stop();
     } else {
       start();
@@ -192,6 +193,7 @@
         ? Math.max(10, Math.min(100, parseInt(n, 10) || 46))
         : null;
       applyLineCount();
+      if (isRunning) startLineSequence();
     },
     setColor: function(color) {
       if (svg) svg.style.color = color || '';

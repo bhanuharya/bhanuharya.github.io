@@ -1529,11 +1529,20 @@ main.wrap {
     margin: 1rem 0 0.25rem;
   }
   .pulsar-wrap .pulsar-svg {
-    height: 340px;
+    height: clamp(270px, 77vw, 340px);
   }
-  .pulsar-caption {
+  .pulsar-wrap .pulsar-svg path {
+    stroke-width: 1.5;
+  }
+  .pulsar-wrap .pulsar-caption {
+    align-items: flex-start;
+    flex-direction: column;
     font-size: 0.68rem;
     padding: 0.25rem 0.5rem;
+    text-align: left;
+  }
+  .pulsar-wrap .pulsar-credit {
+    margin-left: 0;
   }
 }
 
@@ -1579,10 +1588,6 @@ main.wrap {
     overflow-wrap: anywhere;
   }
 
-  .pulsar-wrap .pulsar-svg {
-    height: 300px;
-  }
-
   .post-content pre,
   .highlight {
     padding: 0.85rem;
@@ -1622,9 +1627,6 @@ main.wrap {
     padding-right: 0.7rem;
   }
 
-  .pulsar-wrap .pulsar-svg {
-    height: 270px;
-  }
 }
 
 /* ---------- Code block copy button ---------- */
@@ -2115,22 +2117,15 @@ main.wrap {
 .pulsar-svg path {
   fill: none;
   stroke: currentColor;
-  stroke-width: 4;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0;
   vector-effect: non-scaling-stroke;
-  transition: opacity 0.22s ease;
 }
 
-.pulsar-svg path.is-signal-active {
+.pulsar-svg path.is-signal-visible {
   opacity: 1;
-  transition-duration: 0.01s;
-}
-
-.pulsar-svg path.is-signal-trail {
-  opacity: 0.28;
-  transition-duration: 0.35s;
 }
 
 .pulsar-svg path[hidden] {
@@ -2139,13 +2134,12 @@ main.wrap {
 
 @media (prefers-reduced-motion: reduce) {
   .pulsar-svg path {
-    opacity: 0 !important;
     transition: none !important;
   }
+}
 
-  .pulsar-svg path.is-signal-active {
-    opacity: 0.9 !important;
-  }
+.visitor-suggestions:empty {
+  display: none;
 }
 
 .pulsar-caption {
