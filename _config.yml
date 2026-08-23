@@ -8,3 +8,7 @@ baseurl: ""
 theme: minima
 show_excerpts: true
 lang: en
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap

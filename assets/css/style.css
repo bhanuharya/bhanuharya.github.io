@@ -19,6 +19,90 @@
   --space-3: 1.5rem;
 }
 
+[data-theme="matrix"] {
+  --bg: #030a04;
+  --panel: #061408;
+  --panel-alt: #0a1f0d;
+  --border: #133a19;
+  --border-bright: #277232;
+  --text: #a6f3a6;
+  --muted: #5ea860;
+  --dim: #356b37;
+  --cli-cyan: #50fa7b;
+  --cli-amber: #f1fa8c;
+  --cli-green: #50fa7b;
+}
+
+[data-theme="amber"] {
+  --bg: #0c0800;
+  --panel: #161002;
+  --panel-alt: #221804;
+  --border: #42320a;
+  --border-bright: #705513;
+  --text: #ffcf70;
+  --muted: #b88f3f;
+  --dim: #735720;
+  --cli-cyan: #ffd98a;
+  --cli-amber: #ffb000;
+  --cli-green: #e6a100;
+}
+
+[data-theme="cyber"] {
+  --bg: #05050f;
+  --panel: #0a0a1e;
+  --panel-alt: #11112e;
+  --border: #232352;
+  --border-bright: #45458e;
+  --text: #e0e8ff;
+  --muted: #8394d1;
+  --dim: #546091;
+  --cli-cyan: #00f0ff;
+  --cli-amber: #ff007f;
+  --cli-green: #00ff9f;
+}
+
+[data-theme="monochrome"] {
+  --bg: #0a0a0a;
+  --panel: #121212;
+  --panel-alt: #1a1a1a;
+  --border: #303030;
+  --border-bright: #606060;
+  --text: #f0f0f0;
+  --muted: #949494;
+  --dim: #606060;
+  --cli-cyan: #ffffff;
+  --cli-amber: #dedede;
+  --cli-green: #c0c0c0;
+}
+
+[data-theme="solaris"] {
+  --bg: #060a0f;
+  --panel: #0d141f;
+  --panel-alt: #131e2e;
+  --border: #1e2d42;
+  --border-bright: #2d4260;
+  --text: #d5e5f5;
+  --muted: #7b96b5;
+  --dim: #476080;
+  --cli-cyan: #38bdf8;
+  --cli-amber: #fbbf24;
+  --cli-green: #34d399;
+}
+
+[data-theme="pulsar"] {
+  --bg: #000000;
+  --panel: #050505;
+  --panel-alt: #0a0a0a;
+  --border: #222222;
+  --border-bright: #444444;
+  --text: #ffffff;
+  --muted: #888888;
+  --dim: #555555;
+  --cli-cyan: #ffffff;
+  --cli-amber: #e0e0e0;
+  --cli-green: #cccccc;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -1329,4 +1413,605 @@ main.wrap {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
+}
+
+/* ---------- Code block copy button ---------- */
+.code-copy-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.55rem;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  z-index: 5;
+}
+
+.highlight:hover .code-copy-btn,
+.highlight:focus-within .code-copy-btn,
+.post-content pre:hover .code-copy-btn,
+.post-content pre:focus-within .code-copy-btn,
+.code-copy-btn:focus {
+  opacity: 1;
+}
+
+.code-copy-btn:hover,
+.code-copy-btn:focus-visible {
+  color: #ffffff;
+  border-color: var(--border-bright);
+  outline: none;
+}
+
+.code-copy-btn .copy-success {
+  color: var(--cli-green);
+  font-weight: bold;
+}
+
+@media (hover: none) {
+  .code-copy-btn {
+    opacity: 0.85;
+  }
+}
+
+/* ---------- Blog tag filter bar ---------- */
+.tag-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  margin: 1.25rem 0 1.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.tag-filter-label {
+  font-size: 0.8rem;
+  margin-right: 0.25rem;
+  user-select: none;
+}
+
+.tag-btn {
+  font-family: var(--font);
+  font-size: 0.78rem;
+  padding: 0.2rem 0.5rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-btn:hover {
+  color: var(--text);
+  border-color: var(--border-bright);
+}
+
+.tag-btn.is-active {
+  color: var(--cli-cyan);
+  border-color: var(--cli-cyan);
+  background: rgba(125, 207, 255, 0.08);
+}
+
+.tag-btn:focus-visible {
+  outline: 1px solid var(--cli-cyan);
+  outline-offset: 1px;
+}
+
+/* ---------- Terminal Bar Chrome & Controls ---------- */
+.term-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 0.75rem;
+}
+
+.term-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.85;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.term-dot:hover {
+  transform: scale(1.15);
+  opacity: 1;
+}
+
+.term-dot:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 1px;
+}
+
+.term-dot-close { background: #ff5f56; box-shadow: 0 0 4px rgba(255, 95, 86, 0.4); }
+.term-dot-min { background: #ffbd2e; box-shadow: 0 0 4px rgba(255, 189, 46, 0.4); }
+.term-dot-max { background: #27c93f; box-shadow: 0 0 4px rgba(39, 201, 63, 0.4); }
+
+.term.is-maximized {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  max-width: 100vw !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: var(--bg) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.term.is-maximized .term-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  max-height: calc(100vh - 42px) !important;
+  padding: 1.5rem !important;
+}
+
+.term.is-minimized .term-body {
+  display: none !important;
+}
+
+.term-actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.term-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  color: var(--cli-green);
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font);
+}
+
+.term-badge::before {
+  content: "● ";
+  font-size: 8px;
+  vertical-align: middle;
+  animation: badge-pulse 2s infinite ease-in-out;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ---------- Interactive Visitor Shell History Buffer ---------- */
+.visitor-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.visitor-history-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.visitor-history-entry .cmd {
+  color: var(--cli-amber);
+}
+
+.visitor-cli-output {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  overflow-x: auto;
+}
+
+.visitor-cli-output a,
+.visitor-history a {
+  color: var(--cli-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  display: inline-block;
+  margin-right: 0.75rem;
+}
+
+.visitor-cli-output a:hover,
+.visitor-history a:hover {
+  color: #ffffff;
+}
+
+.visitor-cli-block {
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.6;
+}
+
+/* ---------- Subpage terminal prompt line ---------- */
+.page-prompt {
+  margin: 0 0 1.25rem;
+  padding: 0.45rem 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--cli-cyan);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  border-radius: 2px;
+  user-select: none;
+}
+
+/* ---------- Header Nav Extras (Theme & Shortcuts) ---------- */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.theme-toggle,
+.help-toggle {
+  font-family: var(--font);
+  font-size: 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 0.3rem 0.55rem;
+  border-radius: 2px;
+  cursor: pointer;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.15s ease;
+}
+
+.theme-toggle:hover,
+.help-toggle:hover {
+  color: var(--text);
+  border-color: var(--border-bright);
+}
+
+.theme-toggle .theme-name {
+  color: var(--cli-amber);
+}
+
+.theme-toggle .crt-status {
+  color: var(--cli-cyan);
+}
+
+/* ---------- Terminal Keyboard Shortcuts Modal ---------- */
+.shortcut-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.shortcut-modal[hidden] {
+  display: none !important;
+}
+
+.shortcut-box {
+  background: var(--panel);
+  border: 1px solid var(--border-bright);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
+  max-width: 28rem;
+  width: 100%;
+  padding: 1.25rem;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  border-radius: 2px;
+}
+
+.shortcut-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.85rem;
+  color: var(--cli-cyan);
+  font-weight: bold;
+}
+
+.shortcut-close-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.shortcut-close-btn:hover {
+  color: #fff;
+  border-color: var(--border-bright);
+}
+
+.shortcut-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.shortcut-table td {
+  padding: 0.35rem 0;
+  border: none;
+  background: transparent !important;
+}
+
+.shortcut-key {
+  color: var(--cli-amber);
+  font-weight: bold;
+  width: 38%;
+}
+
+.shortcut-desc {
+  color: var(--text);
+}
+
+/* Matrix effect stream */
+.matrix-text {
+  color: var(--cli-green);
+  text-shadow: 0 0 6px var(--cli-green);
+  animation: matrix-fade 3s forwards;
+}
+
+@keyframes matrix-fade {
+  0% { opacity: 1; }
+  80% { opacity: 0.9; }
+  100% { opacity: 0.7; }
+}
+
+/* ---------- CRT Display Shader & Phosphor Glow ---------- */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.42) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 3px, 6px 100%;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+  animation: crt-flicker 0.15s infinite;
+  opacity: 0.92;
+}
+
+.crt-overlay[hidden] {
+  display: none !important;
+}
+
+.crt-active body,
+.crt-active .term,
+.crt-active h1,
+.crt-active h2,
+.crt-active h3,
+.crt-active .prompt,
+.crt-active .cmd,
+.crt-active .out,
+.crt-active pre,
+.crt-active code,
+.crt-active input,
+.crt-active button,
+.crt-active a {
+  text-shadow: 0 0 3px currentColor, 0 0 6px currentColor;
+}
+
+@keyframes crt-flicker {
+  0% { opacity: 0.91; }
+  50% { opacity: 0.95; }
+  100% { opacity: 0.92; }
+}
+
+.crt-degauss-flash {
+  animation: crt-degauss 0.4s ease-out forwards;
+}
+
+@keyframes crt-degauss {
+  0% { filter: brightness(3.5) contrast(2); transform: scaleY(0.01) scaleX(1); }
+  40% { filter: brightness(2) contrast(1.5); transform: scaleY(1.05) scaleX(1); }
+  100% { filter: brightness(1) contrast(1); transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-overlay {
+    animation: none;
+  }
+  .crt-degauss-flash {
+    animation: none;
+  }
+}
+
+/* ---------- Joy Division Pulsar Wave Component ---------- */
+.pulsar-wrap {
+  width: 100%;
+  background: #000000;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 1.25rem 0;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.pulsar-wrap:hover {
+  border-color: var(--border-bright);
+}
+
+.pulsar-canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+  background: #000000;
+  cursor: crosshair;
+}
+
+.pulsar-caption {
+  font-size: 0.72rem;
+  color: var(--dim);
+  text-align: right;
+  padding: 0.35rem 0.75rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font);
+  background: #050505;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pulsar-caption a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.pulsar-caption a:hover {
+  color: var(--cli-cyan);
+}
+
+/* ---------- Terminal Games Box (Snake, Pong, Hack) ---------- */
+.terminal-game-box {
+  background: #000000;
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin: 0.75rem 0;
+  font-family: var(--font);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.9);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--cli-cyan);
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.game-stats {
+  color: var(--cli-amber);
+  font-size: 0.8rem;
+}
+
+.game-canvas {
+  display: block;
+  margin: 0 auto;
+  background: #000000;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  max-width: 100%;
+  height: auto;
+}
+
+.game-controls-help {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 0.65rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.game-exit-btn {
+  display: block;
+  margin: 0.75rem auto 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.game-exit-btn:hover {
+  color: #fff;
+  border-color: #ff5555;
+  background: rgba(255, 85, 85, 0.1);
+}
+
+/* Cyber Hack Game */
+.cyber-hack-box .hack-log-view {
+  background: #050505;
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.hack-log-line {
+  margin: 0.2rem 0;
+}
+
+.hack-mem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+
+.hack-word-btn {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.hack-word-btn:hover:not(:disabled) {
+  border-color: var(--cli-cyan);
+  color: var(--cli-cyan);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.hack-word-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #333;
+}
+
+.hack-word-btn.hack-word-win {
+  border-color: #50fa7b;
+  color: #50fa7b;
+  background: rgba(80, 250, 123, 0.15);
 }

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#000000"/>
+  <defs>
+    <style>
+      .term-text { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; fill: #e6e6e6; }
+      .prompt { fill: #7dcfff; font-weight: bold; }
+      .loc { fill: #9ece6a; }
+      .cmd { fill: #e0af68; }
+      .dim { fill: #8a8a8a; }
+    </style>
+  </defs>
+  <!-- Window Container -->
+  <rect x="100" y="85" width="1000" height="460" rx="8" fill="#0d0d0d" stroke="#262626" stroke-width="2"/>
+  <!-- Window Bar -->
+  <path d="M 100 93 A 8 8 0 0 1 108 85 L 1092 85 A 8 8 0 0 1 1100 93 L 1100 130 L 100 130 Z" fill="#141414"/>
+  <line x1="100" y1="130" x2="1100" y2="130" stroke="#262626" stroke-width="1.5"/>
+  <!-- Window buttons -->
+  <circle cx="130" cy="107" r="6" fill="#f2777a"/>
+  <circle cx="150" cy="107" r="6" fill="#e0af68"/>
+  <circle cx="170" cy="107" r="6" fill="#9ece6a"/>
+  <text x="600" y="112" class="term-text dim" font-size="16" text-anchor="middle">bhanuharya@sec : zsh</text>
+  <!-- Terminal Content -->
+  <g transform="translate(140, 190)">
+    <!-- Line 1: whoami -->
+    <text x="0" y="0" class="term-text" font-size="28">
+      <tspan class="prompt">bhanuharya@sec</tspan><tspan class="loc">:~$ </tspan><tspan class="cmd">whoami</tspan>
+    </text>
+    <!-- Output 1 -->
+    <text x="0" y="45" class="term-text" font-size="24" fill="#e6e6e6">
+      harya · information security, systems, and self-hosting.
+    </text>
+    <!-- Line 2: notes & experiments -->
+    <text x="0" y="120" class="term-text" font-size="28">
+      <tspan class="prompt">bhanuharya@sec</tspan><tspan class="loc">:~$ </tspan><tspan class="cmd">cat interests.txt</tspan>
+    </text>
+    <text x="0" y="165" class="term-text dim" font-size="22">
+      ├── infosec &amp; infrastructure security
+    </text>
+    <text x="0" y="200" class="term-text dim" font-size="22">
+      ├── ai &amp; self-hosted agent systems
+    </text>
+    <text x="0" y="235" class="term-text dim" font-size="22">
+      └── linux, compilers, and low-level computing
+    </text>
+  </g>
+  <!-- Footer URL -->
+  <text x="600" y="580" class="term-text dim" font-size="18" text-anchor="middle">https://bhanuharya.github.io</text>
+</svg>
