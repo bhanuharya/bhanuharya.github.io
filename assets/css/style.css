@@ -483,7 +483,14 @@ main.wrap {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.visitor-cli-line .cli-prefix {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .visitor-cli-line .prompt {
@@ -1450,6 +1457,16 @@ main.wrap {
     padding: 1rem 0.9rem 1.2rem;
     font-size: 14px;
   }
+
+  .visitor-cli-line {
+    flex-wrap: wrap;
+  }
+
+  .visitor-cli-line input {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
   .banner {
     font-size: 11px;
   }
