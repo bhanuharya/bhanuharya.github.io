@@ -1,6 +1,7 @@
 ---
 layout: default
 ---
+<div class="reading-progress" data-reading-progress aria-hidden="true"><span></span></div>
 <div class="page-prompt" aria-hidden="true">
   <span class="prompt">bhanuharya@sec</span><span class="loc">:~/posts$</span> <span class="cmd">less {{ page.title | slugify }}.md</span>
 </div>
@@ -127,5 +128,22 @@ layout: default
       block.style.position = 'relative';
       block.appendChild(btn);
     });
+  })();
+
+  // --- Reading progress line ---
+  (function() {
+    var bar = document.querySelector('[data-reading-progress]');
+    var span = bar ? bar.firstElementChild : null;
+    var article = document.querySelector('.post');
+    if (!bar || !span || !article) return;
+    function update() {
+      var rect = article.getBoundingClientRect();
+      var scrollable = rect.height - window.innerHeight;
+      var done = scrollable > 0 ? Math.min(1, Math.max(0, -rect.top / scrollable)) : 1;
+      span.style.width = (done * 100).toFixed(2) + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+    update();
   })();
   </script>
