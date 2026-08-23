@@ -65,7 +65,7 @@ layout: default
 
       <div class="out about-copy">
         <h2 id="about-heading" class="visually-hidden">about</h2>
-        <p>i work in information security, mostly around financial systems and the infrastructure behind them. i got into security by tinkering with linux and computers, and never really stopped.</p>
+        <p>hi, i’m harya / wishnu. i work in information security, mostly around financial systems and the infrastructure behind them. i got into security by tinkering with linux and computers, and never really stopped.</p>
         <p>i studied computer science/informatics at bandung institute of technology (itb). my interests include ai, privacy, open source, self hosting, music, and computers.</p>
         <p>this site is for notes, experiments, and things i want to remember :-)</p>
         <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
@@ -629,9 +629,9 @@ layout: default
 
       case 'about':
         appendEntry(raw, [
-          'Security practitioner working around financial systems and infrastructure.',
-          'Undergraduate CS at ITB (designed a Python compiler for 32-bit RISC-V).',
-          'Curiosity: Cloud/Network Security, AI Defenders, Compilers, Linux, Self-Hosting.'
+          'hi, i’m harya / wishnu.',
+          'i work in information security, mostly around financial systems and infrastructure.',
+          'i studied computer science/informatics at itb, where i built a python compiler for a 32 bit risc v processor.'
         ], [{ label: 'open about page →', href: aboutUrl }]);
         break;
 
@@ -711,6 +711,7 @@ layout: default
           const target = args.toLowerCase();
           if (target === 'about.txt') {
             appendEntry(raw, [
+              'hi, i’m harya / wishnu.',
               'i work in information security, mostly around financial systems and infrastructure.',
               'undergraduate work involved designing a python compiler for a 32 bit risc v processor.',
               'outside work: privacy, open source, self hosting, music, and computers.'

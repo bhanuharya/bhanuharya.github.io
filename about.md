@@ -8,7 +8,7 @@ permalink: /about/
   <span class="prompt">bhanuharya@sec</span><span class="loc">:~/about$</span> <span class="cmd">cat about.txt</span>
 </div>
 
-i work in information security, mostly around financial systems and the infrastructure behind them.
+hi, i’m harya / wishnu. i work in information security, mostly around financial systems and the infrastructure behind them.
 
 i got into security during my early college years, mostly by tinkering with linux and computer systems. i was curious about how things worked, why they broke, and what happened when they were used in ways their builders did not expect.
 
