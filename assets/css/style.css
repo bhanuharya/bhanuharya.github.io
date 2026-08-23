@@ -744,6 +744,51 @@ main.wrap {
   min-height: 24px;
 }
 
+.latest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.latest-item + .latest-item {
+  border-top: 1px solid var(--border);
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+}
+
+.latest-row-title {
+  font-size: 1rem;
+  line-height: 1.35;
+  margin: 0 0 0.25rem;
+  font-family: var(--font-prose);
+}
+
+.latest-row-title a {
+  color: var(--text);
+}
+
+.latest-row .latest-meta {
+  margin-bottom: 0;
+}
+
+/* ---------- reading progress ---------- */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.reading-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--cli-cyan);
+}
+
 /* ---------- pages / posts ---------- */
 .page-title,
 .post-title {
@@ -1291,6 +1336,10 @@ main.wrap {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .reading-progress {
+    display: none;
   }
 
   *, *::before, *::after {

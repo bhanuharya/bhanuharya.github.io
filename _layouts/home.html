@@ -105,26 +105,43 @@ layout: default
   </div>
 </article>
 
-{% assign latest = site.posts.first %}
+{% assign recent = site.posts | limit: 3 %}
 <section class="latest" aria-labelledby="latest-heading">
   <div class="latest-head">
-    <h2 id="latest-heading" class="latest-title">latest note</h2>
+    <h2 id="latest-heading" class="latest-title">latest notes</h2>
     <a class="latest-all" href="{{ '/blog/' | relative_url }}">view all →</a>
   </div>
-  {% if latest %}
-    <article class="latest-card">
-      <h3 class="latest-card-title"><a href="{{ latest.url | relative_url }}">{{ latest.title | escape }}</a></h3>
-      <div class="latest-meta">
-        <time datetime="{{ latest.date | date_to_xmlschema }}">{{ latest.date | date: '%b %-d, %Y' }}</time>
-        {% assign words = latest.content | number_of_words %}
+  {% if recent.size > 0 %}
+    <ul class="latest-list">
+      {% for post in recent %}
+        {% assign words = post.content | number_of_words %}
         {% assign mins = words | divided_by: 200 %}
         {% if mins == 0 %}{% assign mins = 1 %}{% endif %}
-        <span aria-hidden="true"> · </span><span>{{ mins }} min read</span>
-        {% if latest.tags and latest.tags.size > 0 %}<span aria-hidden="true"> · </span><span class="latest-tags">{{ latest.tags | join: ', ' }}</span>{% endif %}
-      </div>
-      <div class="latest-excerpt">{{ latest.excerpt | strip_html | truncatewords: 28 }}</div>
-      <a class="latest-cta" href="{{ latest.url | relative_url }}">read →</a>
-    </article>
+        <li class="latest-item">
+          {% if forloop.first %}
+            <article class="latest-card">
+              <h3 class="latest-card-title"><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h3>
+              <div class="latest-meta">
+                <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%b %-d, %Y' }}</time>
+                <span aria-hidden="true"> · </span><span>{{ mins }} min read</span>
+                {% if post.tags and post.tags.size > 0 %}<span aria-hidden="true"> · </span><span class="latest-tags">{{ post.tags | join: ', ' }}</span>{% endif %}
+              </div>
+              <div class="latest-excerpt">{{ post.excerpt | strip_html | truncatewords: 28 }}</div>
+              <a class="latest-cta" href="{{ post.url | relative_url }}">read →</a>
+            </article>
+          {% else %}
+            <article class="latest-row">
+              <h3 class="latest-row-title"><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h3>
+              <div class="latest-meta">
+                <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%b %-d, %Y' }}</time>
+                <span aria-hidden="true"> · </span><span>{{ mins }} min read</span>
+                {% if post.tags and post.tags.size > 0 %}<span aria-hidden="true"> · </span><span class="latest-tags">{{ post.tags | join: ', ' }}</span>{% endif %}
+              </div>
+            </article>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
   {% else %}
     <p class="dim">no posts yet. check back soon :-)</p>
   {% endif %}
