@@ -1,248 +1,184 @@
 /**
- * Joy Division "Unknown Pleasures" (Pulsar PSR B1919+21) Wave Generator
- * High-performance, zero-dependency HTML5 Canvas stacked wave visualizer.
+ * Native controller for the attributed Unknown Pleasures SVG line animation.
+ * Loads only path data from the local MIT-licensed standalone asset.
  */
 (function() {
   'use strict';
 
-  var canvas, ctx;
-  var animFrameId = null;
-  var isRunning = false;
-  var isVisible = true;
-  var customLinesCount = null;
-  var time = 0;
-  var mouseX = -1;
-  var mouseY = -1;
-  var mouseTargetX = -1;
-  var mouseTargetY = -1;
+  var SVG_NS = 'http://www.w3.org/2000/svg';
   var container = null;
-  var colorMode = 'auto'; // 'auto', '#ffffff', etc.
+  var svg = null;
+  var isRunning = false;
+  var customLinesCount = null;
+  var loadPromise = null;
+  var lineTimer = null;
+  var lineIndex = -1;
+  var reducedMotion = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Precomputed seeds for each line's unique characteristics
-  var lineSeeds = [];
-  function initSeeds(count) {
-    lineSeeds = [];
-    var total = Math.max(count || 64, 64);
-    for (var i = 0; i < total; i++) {
-      lineSeeds.push({
-        freq1: 0.02 + Math.random() * 0.02,
-        freq2: 0.04 + Math.random() * 0.03,
-        speed: 0.4 + Math.random() * 0.6,
-        phase: Math.random() * Math.PI * 2,
-        noiseScale: 0.7 + Math.random() * 0.6,
-        peakCenter: 0.5 + (Math.random() - 0.5) * 0.15,
-        peakWidth: 0.14 + Math.random() * 0.06
-      });
+  function getVisiblePaths() {
+    if (!svg) return [];
+    return Array.prototype.filter.call(svg.querySelectorAll('path'), function(path) {
+      return !path.hasAttribute('hidden');
+    });
+  }
+
+  function clearLineClasses() {
+    if (!svg) return;
+    svg.querySelectorAll('.is-signal-active, .is-signal-trail').forEach(function(path) {
+      path.classList.remove('is-signal-active', 'is-signal-trail');
+    });
+  }
+
+  function stopLineSequence() {
+    if (lineTimer) {
+      window.clearInterval(lineTimer);
+      lineTimer = null;
     }
   }
 
-  function getEffectiveLines(width) {
-    if (customLinesCount !== null) return customLinesCount;
-    if (width <= 420) return 26;
-    if (width <= 640) return 32;
-    return 44;
-  }
+  function showNextLine() {
+    var paths = getVisiblePaths();
+    if (!paths.length) return;
 
-  function getThemeStrokeColor() {
-    if (colorMode && colorMode !== 'auto') return colorMode;
-    var theme = document.documentElement.getAttribute('data-theme') || 'default';
-    if (theme === 'matrix') return '#50fa7b';
-    if (theme === 'amber') return '#ffb000';
-    if (theme === 'cyber') return '#00f0ff';
-    if (theme === 'solaris') return '#38bdf8';
-    return '#ffffff';
-  }
+    var trail = svg.querySelector('.is-signal-trail');
+    if (trail) trail.classList.remove('is-signal-trail');
 
-  function resizeCanvas() {
-    if (!canvas || !container) return;
-    var rect = container.getBoundingClientRect();
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var w = rect.width || 640;
-    var h = canvas.clientHeight || (w <= 420 ? 105 : (w <= 640 ? 130 : 180));
-
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  }
-
-  function draw() {
-    if (!isRunning || !isVisible || !canvas || !ctx) return;
-
-    var w = parseFloat(canvas.style.width) || (canvas.width / (window.devicePixelRatio || 1));
-    var h = parseFloat(canvas.style.height) || (canvas.height / (window.devicePixelRatio || 1));
-    var strokeColor = getThemeStrokeColor();
-
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, w, h);
-
-    time += 0.02;
-
-    // Smooth mouse / touch interpolation
-    mouseX += (mouseTargetX - mouseX) * 0.1;
-    mouseY += (mouseTargetY - mouseY) * 0.1;
-
-    var effLines = getEffectiveLines(w);
-    var padTop = Math.max(8, Math.floor(h * 0.08));
-    var padBottom = Math.max(10, Math.floor(h * 0.12));
-    var usableH = Math.max(20, h - padTop - padBottom);
-    var stepY = usableH / Math.max(1, effLines - 1);
-    var xStep = Math.max(2, Math.floor(w / 120));
-    var maxBaseAmp = Math.min(usableH * 0.28, w <= 480 ? 13 : (w <= 640 ? 18 : 25));
-    var interactRadius = Math.min(120, Math.max(50, w * 0.28));
-
-    for (var i = 0; i < effLines; i++) {
-      var seed = lineSeeds[i] || lineSeeds[0];
-      var baseY = padTop + i * stepY;
-
-      ctx.beginPath();
-      ctx.moveTo(0, baseY);
-
-      for (var x = 0; x <= w; x += xStep) {
-        var normX = x / w;
-
-        // Gaussian bell curve centered around center
-        var dx = (normX - seed.peakCenter) / seed.peakWidth;
-        var bell = Math.exp(-0.5 * dx * dx);
-
-        // Multi-frequency harmonic wave
-        var wave1 = Math.sin(normX * 28 * seed.freq1 + time * seed.speed + seed.phase);
-        var wave2 = Math.cos(normX * 45 * seed.freq2 - time * seed.speed * 1.3 + seed.phase);
-        var wave3 = Math.sin(normX * 12 + time * 0.8) * Math.sin(time * 0.5 + i * 0.2);
-
-        var rawWave = (wave1 * 0.55 + wave2 * 0.35 + wave3 * 0.25) * seed.noiseScale;
-
-        // Mouse / touch perturbation on wave
-        var mouseDist = Math.hypot(x - mouseX, baseY - mouseY);
-        var mouseEffect = 0;
-        if (mouseX >= 0 && mouseDist < interactRadius) {
-          var mFactor = (1 - mouseDist / interactRadius);
-          mouseEffect = Math.sin(mouseDist * 0.1 - time * 4) * (maxBaseAmp * 0.7) * mFactor;
-        }
-
-        var rowWeight = Math.sin((i / Math.max(1, effLines - 1)) * Math.PI);
-        var maxAmp = maxBaseAmp * rowWeight;
-        var elevation = (rawWave * maxAmp * bell) + (mouseEffect * bell);
-
-        var y = baseY - elevation;
-        ctx.lineTo(x, y);
-      }
-
-      ctx.lineTo(w, h + 20);
-      ctx.lineTo(0, h + 20);
-      ctx.closePath();
-
-      // Occlusion fill: solid black under each wave line to block lines behind
-      ctx.fillStyle = '#000000';
-      ctx.fill();
-
-      // Stroke the wave line
-      ctx.lineWidth = (w <= 480) ? (i % 2 === 0 ? 1.2 : 1.0) : (i % 2 === 0 ? 1.4 : 1.1);
-      ctx.strokeStyle = strokeColor;
-      ctx.stroke();
+    var active = svg.querySelector('.is-signal-active');
+    if (active) {
+      active.classList.remove('is-signal-active');
+      active.classList.add('is-signal-trail');
     }
 
-    animFrameId = requestAnimationFrame(draw);
+    lineIndex = (lineIndex + 1) % paths.length;
+    paths[lineIndex].classList.remove('is-signal-trail');
+    paths[lineIndex].classList.add('is-signal-active');
   }
 
-  function start() {
-    if (isRunning) return;
-    isRunning = true;
-    animFrameId = requestAnimationFrame(draw);
-  }
+  function startLineSequence() {
+    stopLineSequence();
+    clearLineClasses();
+    lineIndex = -1;
 
-  function stop() {
-    isRunning = false;
-    if (animFrameId) {
-      cancelAnimationFrame(animFrameId);
-      animFrameId = null;
-    }
-  }
+    var paths = getVisiblePaths();
+    if (!paths.length) return;
 
-  function init(containerEl, options) {
-    options = options || {};
-    container = containerEl || document.querySelector('[data-pulsar-waves]');
-    if (!container) return;
-
-    if (options.lines) customLinesCount = options.lines;
-    if (options.color) colorMode = options.color;
-
-    initSeeds(100);
-
-    canvas = container.querySelector('canvas');
-    if (!canvas) {
-      canvas = document.createElement('canvas');
-      canvas.className = 'pulsar-canvas';
-      canvas.setAttribute('aria-label', 'Joy Division PSR B1919+21 Pulsar Wave Simulation');
-      container.insertBefore(canvas, container.firstChild);
-    }
-
-    ctx = canvas.getContext('2d');
-    resizeCanvas();
-
-    window.addEventListener('resize', resizeCanvas, { passive: true });
-
-    container.addEventListener('mousemove', function(e) {
-      var rect = canvas.getBoundingClientRect();
-      mouseTargetX = e.clientX - rect.left;
-      mouseTargetY = e.clientY - rect.top;
-    }, { passive: true });
-
-    container.addEventListener('mouseleave', function() {
-      mouseTargetX = -1;
-      mouseTargetY = -1;
-    }, { passive: true });
-
-    container.addEventListener('touchmove', function(e) {
-      if (e.touches && e.touches[0]) {
-        var rect = canvas.getBoundingClientRect();
-        mouseTargetX = e.touches[0].clientX - rect.left;
-        mouseTargetY = e.touches[0].clientY - rect.top;
-      }
-    }, { passive: true });
-
-    container.addEventListener('touchend', function() {
-      mouseTargetX = -1;
-      mouseTargetY = -1;
-    }, { passive: true });
-
-    if ('IntersectionObserver' in window) {
-      var obs = new IntersectionObserver(function(entries) {
-        isVisible = entries[0].isIntersecting;
-        if (isVisible && isRunning && !animFrameId) {
-          animFrameId = requestAnimationFrame(draw);
-        }
-      }, { threshold: 0.05 });
-      obs.observe(container);
-    }
-
-    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reducedMotion) {
-      time = 1.0;
-      draw();
+      paths[Math.floor(paths.length / 2)].classList.add('is-signal-active');
       return;
     }
 
-    start();
+    showNextLine();
+    lineTimer = window.setInterval(showNextLine, 480);
+  }
+
+  function applyLineCount() {
+    if (!svg) return;
+    var paths = svg.querySelectorAll('path');
+    var visibleCount = customLinesCount === null
+      ? paths.length
+      : Math.max(3, Math.min(paths.length, customLinesCount));
+
+    paths.forEach(function(path, index) {
+      path.toggleAttribute('hidden', index >= visibleCount);
+    });
+
+    if (isRunning) startLineSequence();
+  }
+
+  function loadPaths() {
+    if (!svg) return Promise.resolve();
+    if (svg.querySelector('path')) return Promise.resolve();
+    if (loadPromise) return loadPromise;
+
+    var sourceUrl = svg.getAttribute('data-source');
+    if (!sourceUrl) return Promise.reject(new Error('missing pulsar source'));
+
+    loadPromise = fetch(sourceUrl, { credentials: 'same-origin' })
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('pulsar source request failed: ' + response.status);
+        }
+        return response.text();
+      })
+      .then(function(markup) {
+        var sourceDocument = new DOMParser().parseFromString(markup, 'text/html');
+        var sourceSvg = sourceDocument.querySelector('#box svg');
+        if (!sourceSvg) throw new Error('pulsar source svg not found');
+
+        var sourcePaths = sourceSvg.querySelectorAll('path');
+        if (!sourcePaths.length) throw new Error('pulsar source paths not found');
+
+        var linesGroup = document.createElementNS(SVG_NS, 'g');
+        linesGroup.setAttribute('class', 'pulsar-lines');
+        sourcePaths.forEach(function(sourcePath) {
+          var pathData = sourcePath.getAttribute('d');
+          if (!pathData) return;
+
+          var path = document.createElementNS(SVG_NS, 'path');
+          path.setAttribute('d', pathData);
+          linesGroup.appendChild(path);
+        });
+
+        svg.replaceChildren(linesGroup);
+        svg.setAttribute('viewBox', sourceSvg.getAttribute('viewBox') || '0 0 630 810');
+        applyLineCount();
+      })
+      .catch(function(error) {
+        container.classList.add('is-unavailable');
+        console.error(error);
+        throw error;
+      });
+
+    return loadPromise;
+  }
+
+  function start() {
+    if (!container || !svg) return;
+    container.classList.add('is-user-activated');
+    container.classList.remove('is-paused');
+    isRunning = true;
+    loadPaths().then(startLineSequence).catch(function() {});
+  }
+
+  function stop() {
+    if (!container) return;
+    container.classList.add('is-paused');
+    isRunning = false;
+    stopLineSequence();
+  }
+
+  function init(containerEl) {
+    container = containerEl || document.querySelector('[data-pulsar-waves]');
+    if (!container) return;
+
+    svg = container.querySelector('.pulsar-svg');
+    if (!svg) return;
+
+    if (container.hasAttribute('hidden') || reducedMotion) {
+      stop();
+    } else {
+      start();
+    }
+
+    loadPaths().catch(function() {});
   }
 
   function toggle() {
-    if (container) {
-      var isHidden = container.hasAttribute('hidden') || container.style.display === 'none';
-      if (isHidden) {
-        container.removeAttribute('hidden');
-        container.style.display = 'block';
-        resizeCanvas();
-        start();
-        return true;
-      } else {
-        container.setAttribute('hidden', '');
-        container.style.display = 'none';
-        stop();
-        return false;
-      }
+    if (!container) return false;
+
+    var isHidden = container.hasAttribute('hidden')
+      || container.style.display === 'none';
+    if (isHidden) {
+      container.removeAttribute('hidden');
+      container.style.display = 'block';
+      start();
+      return true;
     }
+
+    container.setAttribute('hidden', '');
+    container.style.display = 'none';
+    stop();
     return false;
   }
 
@@ -252,16 +188,13 @@
     stop: stop,
     toggle: toggle,
     setLines: function(n) {
-      if (n) {
-        customLinesCount = Math.max(10, Math.min(100, parseInt(n, 10) || 44));
-      } else {
-        customLinesCount = null;
-      }
-      initSeeds(100);
-      resizeCanvas();
+      customLinesCount = n
+        ? Math.max(10, Math.min(100, parseInt(n, 10) || 46))
+        : null;
+      applyLineCount();
     },
-    setColor: function(c) {
-      colorMode = c;
+    setColor: function(color) {
+      if (svg) svg.style.color = color || '';
     },
     isRunning: function() {
       return isRunning;
@@ -270,11 +203,9 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
-      var c = document.querySelector('[data-pulsar-waves]');
-      if (c) init(c);
+      init(document.querySelector('[data-pulsar-waves]'));
     });
   } else {
-    var c = document.querySelector('[data-pulsar-waves]');
-    if (c) init(c);
+    init(document.querySelector('[data-pulsar-waves]'));
   }
 })();

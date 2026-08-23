@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#08090b">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   {% assign seo_title = page.title | default: site.title %}
   {% assign seo_description = page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
@@ -53,8 +53,8 @@
   {% endif %}
   <script>
     (function(){
-      var t = localStorage.getItem('term-theme') || 'default';
-      if (t !== 'default') document.documentElement.setAttribute('data-theme', t);
+      var t = localStorage.getItem('term-theme') || 'pulsar';
+      document.documentElement.setAttribute('data-theme', t);
       var crt = localStorage.getItem('term-crt') === '1';
       if (crt) document.documentElement.classList.add('crt-active');
     })();
@@ -144,11 +144,11 @@
       updateThemeUI(t);
     }
 
-    var currentTheme = localStorage.getItem('term-theme') || 'default';
+    var currentTheme = localStorage.getItem('term-theme') || 'pulsar';
     updateThemeUI(currentTheme);
 
     function cycleTheme() {
-      var curr = localStorage.getItem('term-theme') || 'default';
+      var curr = localStorage.getItem('term-theme') || 'pulsar';
       var nextIdx = (themes.indexOf(curr) + 1) % themes.length;
       setTheme(themes[nextIdx]);
     }
@@ -258,7 +258,7 @@
     });
 
     window.setSiteTheme = setTheme;
-    window.getSiteTheme = function() { return localStorage.getItem('term-theme') || 'default'; };
+    window.getSiteTheme = function() { return localStorage.getItem('term-theme') || 'pulsar'; };
     window.toggleCRT = toggleCRT;
     window.setCRT = setCRT;
   })();
