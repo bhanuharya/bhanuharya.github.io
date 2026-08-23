@@ -13,7 +13,7 @@ layout: default
     </div>
     <span class="term-title">bhanuharya@sec : zsh (tty1)</span>
     <div class="term-actions">
-      <span class="term-badge">online</span>
+      <span class="term-badge">tty</span>
     </div>
   </div>
 
@@ -87,8 +87,8 @@ layout: default
 
     <form class="visitor-cli" data-visitor-cli autocomplete="off" novalidate>
       <div class="visitor-history" data-visitor-history aria-live="polite"></div>
-      <div class="line visitor-cli-line">
-        <span class="cli-prefix"><label class="prompt" for="visitor-command">visitor@sec</label><span class="loc">:~$</span></span>
+      <div class="line visitor-cli-line visitor-cli-current">
+        <label class="prompt cli-prefix" for="visitor-command">visitor@sec:~$</label>
         <input id="visitor-command" role="combobox" name="command" type="text" spellcheck="false" autocapitalize="none" autocomplete="off" maxlength="128" aria-autocomplete="list" aria-controls="visitor-suggestions" aria-describedby="visitor-cli-help visitor-privacy" placeholder="type help or search...">
       </div>
       <div id="visitor-cli-help" class="visitor-cli-help">tab / ↑↓ : history &amp; complete · enter : run · esc : dismiss · type <span>help</span> for commands</div>
@@ -97,9 +97,17 @@ layout: default
       <noscript><p class="dim" style="margin-top:0.5rem">javascript is off. use the links above: <a href="{{ '/about/' | relative_url }}">about</a> · <a href="{{ '/blog/' | relative_url }}">blog</a></p></noscript>
     </form>
 
-    <div class="pulsar-wrap" data-pulsar-waves aria-label="Pulsar PSR B1919+21 radio wave profile">
+    <div class="pulsar-wrap" data-pulsar-waves hidden aria-label="Pulsar PSR B1919+21 radio wave profile">
+      <svg
+        class="pulsar-svg"
+        data-source="{{ '/assets/unknown-pleasures/index.html' | relative_url }}"
+        viewBox="0 0 630 810"
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden="true"
+      ></svg>
       <div class="pulsar-caption">
         <span><kbd style="font:inherit;color:var(--cli-amber)">w</kbd> or <code style="font:inherit;color:var(--cli-cyan)">waves</code> to toggle</span>
+        <span class="pulsar-credit">svg source: <a href="https://codepen.io/jessenwells/pen/pJrJjp" rel="noopener noreferrer">jessenwells on codepen</a> · <a href="{{ '/assets/unknown-pleasures/LICENSE.txt' | relative_url }}">mit license</a></span>
       </div>
     </div>
   </div>
@@ -220,18 +228,39 @@ layout: default
     });
   }
 
-  const escapeHtml = (str) => {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const createVisitorCommandLine = (cmdText) => {
+    const cmdLine = document.createElement('div');
+    cmdLine.className = 'line';
+
+    const prompt = document.createElement('span');
+    prompt.className = 'prompt';
+    prompt.textContent = 'visitor@sec';
+
+    const location = document.createElement('span');
+    location.className = 'loc';
+    location.textContent = ':~$';
+
+    const command = document.createElement('span');
+    command.className = 'cmd';
+    command.textContent = cmdText;
+
+    cmdLine.append(prompt, location, document.createTextNode(' '), command);
+    return cmdLine;
+  };
+
+  const scrollToVisitorPrompt = () => {
+    const reducedMotion = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    input.scrollIntoView({
+      block: 'nearest',
+      behavior: reducedMotion ? 'auto' : 'smooth'
+    });
   };
 
   const appendEntry = (cmdText, lines = [], links = []) => {
     const entry = document.createElement('div');
     entry.className = 'visitor-history-entry';
-
-    const cmdLine = document.createElement('div');
-    cmdLine.className = 'line';
-    cmdLine.innerHTML = `<span class="prompt">visitor@sec</span><span class="loc">:~$</span> <span class="cmd">${escapeHtml(cmdText)}</span>`;
-    entry.appendChild(cmdLine);
+    entry.appendChild(createVisitorCommandLine(cmdText));
 
     if (lines.length || links.length) {
       const out = document.createElement('div');
@@ -254,7 +283,7 @@ layout: default
     }
 
     historyContainer.appendChild(entry);
-    entry.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    scrollToVisitorPrompt();
   };
 
   const updateAria = () => {
@@ -332,13 +361,13 @@ layout: default
           '  cat <filename>       Print file contents (e.g. cat skills.txt)',
           '  tree                 Display virtual filesystem hierarchy tree',
           '',
-          'RETRO ARCADE & VISUALS',
+          'EXPERIMENTS & SIGNALS',
           '  snake                Play classic 8-bit Snake inside the terminal',
           '  pong                 Play 1-Player Pong paddle match vs CPU',
-          '  hack / wargame       Cybersecurity password cipher decryption puzzle',
+          '  hack / wargame       Cipher memory puzzle',
           '  game / games         Show retro terminal arcade games list',
           '  waves / pulsar       Toggle Joy Division pulsar wave line visualizer',
-          '  matrix               Trigger falling digital matrix rain stream',
+          '  matrix               Cascading terminal signal stream',
           '',
           'SYSTEM, DISPLAY & WORKSTATION',
           '  crt [on|off]         Toggle retro CRT scanlines & phosphor monitor glow',
@@ -360,12 +389,12 @@ layout: default
       case 'games':
         appendEntry(raw, [
           '┌─────────────────────────────────────────────────────────────┐',
-          '│                RETRO TERMINAL ARCADE                        │',
+          '│                 TERMINAL EXPERIMENTS                        │',
           '├───────────────┬─────────────────────────────────────────────┤',
           '│ snake         │ Classic 8-bit Snake with high score saving  │',
           '│ pong          │ Arcade 1-Player Pong paddle match vs CPU    │',
-          '│ hack          │ Cyber memory password cipher puzzle         │',
-          '│ matrix        │ Cascading digital green rain stream         │',
+          '│ hack          │ Cipher memory puzzle                        │',
+          '│ matrix        │ Cascading terminal signal stream            │',
           '│ waves         │ Joy Division pulsar wave line visualizer    │',
           '└───────────────┴─────────────────────────────────────────────┘',
           'Type any command above (e.g. "snake" or "pong") to launch.'
@@ -376,10 +405,11 @@ layout: default
         {
           const entry = document.createElement('div');
           entry.className = 'visitor-history-entry';
-          entry.innerHTML = `<div class="line"><span class="prompt">visitor@sec</span><span class="loc">:~$</span> <span class="cmd">${escapeHtml(raw)}</span></div>`;
+          entry.appendChild(createVisitorCommandLine(raw));
           const gameContainer = document.createElement('div');
           entry.appendChild(gameContainer);
           historyContainer.appendChild(entry);
+          scrollToVisitorPrompt();
           if (window.TerminalGames) {
             window.TerminalGames.startSnake(gameContainer, (finalScore) => {
               appendEntry('snake [exit]', [`Snake session finished. Final Score: ${finalScore}`]);
@@ -393,10 +423,11 @@ layout: default
         {
           const entry = document.createElement('div');
           entry.className = 'visitor-history-entry';
-          entry.innerHTML = `<div class="line"><span class="prompt">visitor@sec</span><span class="loc">:~$</span> <span class="cmd">${escapeHtml(raw)}</span></div>`;
+          entry.appendChild(createVisitorCommandLine(raw));
           const gameContainer = document.createElement('div');
           entry.appendChild(gameContainer);
           historyContainer.appendChild(entry);
+          scrollToVisitorPrompt();
           if (window.TerminalGames) {
             window.TerminalGames.startPong(gameContainer, (score) => {
               appendEntry('pong [exit]', [`Pong match ended. Your score: ${score}`]);
@@ -411,10 +442,11 @@ layout: default
         {
           const entry = document.createElement('div');
           entry.className = 'visitor-history-entry';
-          entry.innerHTML = `<div class="line"><span class="prompt">visitor@sec</span><span class="loc">:~$</span> <span class="cmd">${escapeHtml(raw)}</span></div>`;
+          entry.appendChild(createVisitorCommandLine(raw));
           const gameContainer = document.createElement('div');
           entry.appendChild(gameContainer);
           historyContainer.appendChild(entry);
+          scrollToVisitorPrompt();
           if (window.TerminalGames) {
             window.TerminalGames.startHack(gameContainer, () => {
               appendEntry('hack [exit]', ['Memory override session terminated.']);
@@ -455,10 +487,18 @@ layout: default
           if (window.PulsarWaves) { window.PulsarWaves.start(); }
           appendEntry(raw, ['Joy Division pulsar wave visualization ACTIVE.']);
         } else {
+          const pw = document.querySelector('[data-pulsar-waves]');
+          let shown = false;
           if (window.PulsarWaves) {
-            const shown = window.PulsarWaves.toggle();
-            appendEntry(raw, [`Joy Division Pulsar wave toggled: ${shown ? 'SHOWN' : 'HIDDEN'}`]);
+            shown = window.PulsarWaves.toggle();
+          } else if (pw) {
+            shown = pw.hasAttribute('hidden') || pw.style.display === 'none';
+            pw.toggleAttribute('hidden', !shown);
+            pw.style.display = shown ? 'block' : 'none';
+            pw.classList.toggle('is-paused', !shown);
+            if (shown) pw.classList.add('is-user-activated');
           }
+          appendEntry(raw, [`Joy Division Pulsar wave toggled: ${shown ? 'SHOWN' : 'HIDDEN'}`]);
         }
         break;
 
