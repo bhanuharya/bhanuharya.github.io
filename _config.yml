@@ -9,6 +9,13 @@ theme: minima
 show_excerpts: true
 lang: en
 
+permalink: /blog/:title/
+include:
+  - .well-known
+exclude:
+  - pi-session-*.html
+
 plugins:
   - jekyll-feed
   - jekyll-sitemap
+  - jekyll-redirect-from

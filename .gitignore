@@ -5,6 +5,7 @@
 session-*.md
 *.session.md
 _transcript*.md
+pi-session-*.html
 
 # Jekyll build output
 _site/

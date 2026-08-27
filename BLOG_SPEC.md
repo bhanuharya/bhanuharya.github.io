@@ -4,7 +4,7 @@ This document describes the current Jekyll site after the rebuild and refinement
 
 ## Identity
 
-- `_config.yml` keeps `title: bhanuharya@sec` and `author: harya`; added `url`, `baseurl`, `lang` (no global `permalink` — pretty URLs intentionally not set so existing `*.html` post URLs are preserved).
+- `_config.yml` keeps `title: bhanuharya@sec` and `author: harya`; added `url`, `baseurl`, `lang`, and the `/blog/:title/` permalink format. The existing Hermes article retains its prior date-based URL through `redirect_from`.
 - No Gemfile required for Pages; remains GitHub Pages-safe (minima theme, plain CSS, no unsupported gems). Local build uses `github-pages` gem if available, otherwise CI builds.
 
 ## Layouts
