@@ -4,6 +4,8 @@ title: "Building a Small Self-Hosted Agent System with Hermes"
 date: 2026-08-19
 author: bhanuharya
 tags: [agents, self-hosting, automation, security]
+redirect_from:
+  - /2026/08/19/building-a-small-self-hosted-agent-system-with-hermes.html
 ---
 
 I have been experimenting with a small self-hosted agent environment built around Hermes.

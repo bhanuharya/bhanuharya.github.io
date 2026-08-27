@@ -58,7 +58,7 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 **No Ruby available?** Validate front matter and generated HTML structure by inspection (one h1 per page, canonical/OG tags, valid internal links); CI will still build on push.
 
-> Note: `_config.yml` has no global `permalink` on purpose — pretty URLs are not enabled so existing `*.html` post URLs stay stable. `_site/`, `.jekyll-cache/`, `.bundle/`, and `vendor/` are ignored.
+> Note: posts use the `/blog/:title/` permalink format. The previous date-based URL for the Hermes article remains available through a redirect. `_site/`, `.jekyll-cache/`, `.bundle/`, and `vendor/` are ignored, as are exported `pi-session-*.html` files.
 
 ## Privacy
 

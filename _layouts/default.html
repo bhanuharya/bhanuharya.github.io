@@ -22,6 +22,9 @@
   <meta property="og:url" content="{{ page.url | absolute_url }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
   <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Terminal window showing whoami output and interests: information security, self-hosted AI systems, Linux, and open source.">
   {% if page.date %}<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">{% endif %}
   {% if page.tags %}<meta property="article:tag" content="{{ page.tags | join: ', ' | escape }}">{% endif %}
   <meta name="twitter:card" content="summary_large_image">
@@ -116,8 +119,10 @@
     </div>
   </div>
 
-  <script src="{{ '/assets/js/pulsar-waves.js' | relative_url }}"></script>
-  <script src="{{ '/assets/js/terminal-games.js' | relative_url }}"></script>
+  {% if page.layout == 'home' %}
+  <script defer src="{{ '/assets/js/pulsar-waves.js' | relative_url }}"></script>
+  <script defer src="{{ '/assets/js/terminal-games.js' | relative_url }}"></script>
+  {% endif %}
   <script>
   (function() {
     var themes = ['default', 'solaris', 'pulsar', 'matrix', 'amber', 'cyber', 'monochrome'];
@@ -218,6 +223,7 @@
       }
 
       if (isInput) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       var now = Date.now();
       if (e.key === '?' || (e.shiftKey && e.key === '/')) {
