@@ -4,17 +4,7 @@ title: "When the Homelab Goes Offline: Hermes Through Private Cloud Fallbacks"
 date: 2026-08-31
 author: bhanuharya
 tags: [agents, networking, self-hosting, reliability, security]
-published: false
 ---
-
-<!--
-CONFIDENTIAL WORKING DRAFT.
-Do not publish without a separate privacy review. This companion article
-intentionally omits credentials, bot identifiers, hostnames, addresses, project
-IDs, filesystem paths, schedules, account names, and other identifying details.
-The earlier Hermes article covers the homelab runtime itself; this article is
-limited to the network and availability layer added around it.
--->
 
 The first article described why I run Hermes on a small Linux homelab and how its local profiles, tools, and gateways are separated.
 
