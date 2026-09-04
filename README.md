@@ -1,4 +1,4 @@
-# bnhrya.github.io — personal site
+# bhanuharya.github.io — personal site
 
 A Jekyll site on GitHub Pages: dark terminal aesthetic, mobile-first, no external fonts or JS dependencies. Content is Markdown plus a small interactive terminal on the homepage.
 
