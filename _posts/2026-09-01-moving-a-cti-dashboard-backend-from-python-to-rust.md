@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Rebuilding a CTI Radar Backend with Rust and NyaaBot"
+title: "Moving a CTI dashboard backend from Python to Rust"
 date: 2026-09-01
 author: bhanuharya
 tags: [rust, python, performance, security, agents, cti, self-hosting]
@@ -8,28 +8,25 @@ redirect_from:
   - /blog/how-nyaabot-helped-validate-a-cti-rust-migration/
 ---
 
-A backend rewrite is easy to describe as a language change. The difficult part is proving that the new implementation still behaves like the old one, keeps the same security boundaries, and improves the workload that motivated the migration.
+I moved the backend of my CTI radar dashboard from Python/FastAPI to Rust/Axum. The frontend and data model didn't change. This post is the honest version of that migration: what stayed the same, what got faster, and what the numbers don't cover.
 
-For a small self-hosted CTI Radar dashboard, I moved the backend from Python/FastAPI to Rust/Axum. NyaaBot helped make the migration reviewable: the Python service stayed as the behavioral reference while the Rust service was implemented in bounded steps, checked against the existing contract, and measured under the same local dashboard workload.
+The short version: authenticated dashboard reads got about twice as fast at half the memory, every security control survived the move, and the old Python service is still running next to the Rust one as a behavioral reference.
 
-The result was not a claim that Rust makes every security scan faster. It was a narrower and more useful outcome: the local API path became substantially faster and lighter without relaxing the controls around the security data it serves.
+## What got rewritten
 
-## The migration boundary
+The service doing authenticated dashboard reads, state handling, enrichment orchestration, and report generation. That covers:
 
-The frontend and data model stayed in place. The rewrite covered the service responsible for authenticated dashboard reads, state handling, enrichment orchestration, and report generation.
+- dashboard and API routes with org-scoped jobs and finding lifecycle state
+- PII masking before read responses
+- graph, summary, fleet, and finding views
+- passive DNS, HTTP, TCP, TLS, banner, and InternetDB enrichment
+- offline CVE matching and report generation
+- optional AI-assisted finding grading
+- a fail-closed wrapper for explicitly authorized active-assessment tooling
 
-The original Python backend remained the reference for observable behavior:
+The old Python service stayed running as the reference implementation. Same routes, same responses, same errors. Every Rust slice was compared against it instead of assuming that matching function names meant matching behavior.
 
-- authenticated dashboard and API routes;
-- organization-scoped jobs and finding lifecycle state;
-- PII masking before read responses;
-- graph, summary, fleet, and finding views;
-- passive DNS, HTTP, TCP, TLS, banner, and InternetDB enrichment;
-- offline CVE matching and report generation;
-- optional AI-assisted finding grading; and
-- a fail-closed wrapper for explicitly authorized active-assessment tooling.
-
-The implementation changed where Rust offered a practical advantage:
+## Where the implementation changed
 
 ```text
 Python reference                  Rust implementation
@@ -41,46 +38,25 @@ copy-heavy state handling         borrowed/owned values without deep copies
 interpreter startup               compiled release binary
 ```
 
-The objective was to improve the local service, not to turn a remote network into a faster one.
+The workload has two very different profiles. Remote enrichment is I/O-bound and benefits from async concurrency. Local dashboard reads are CPU-bound — load JSON state, mask, normalize, aggregate, build graph nodes — and that is where I expected Rust to actually matter.
 
-## How NyaaBot helped
+## Security invariants
 
-NyaaBot was used as a structured implementation and review loop rather than as an unrestricted rewrite command.
+I treated the security controls as migration invariants, not features to revisit later. Each one had to land in the Rust service with the same enforcement point as before:
 
-### Establishing the behavioral reference
+- org slugs validated before filesystem use
+- constant-time API token comparison
+- rate-limited login attempts
+- response security headers on
+- atomic, permission-restricted state writes
+- provider URLs checked against SSRF and DNS rebinding
+- active-assessment tooling stays fail-closed and explicitly authorized
 
-The first useful output was not Rust code. It was a list of responsibilities that could not silently disappear during the migration. Describing the contract in terms of routes, data transformations, authorization, and failure behavior made it possible to compare implementations without assuming that matching function names meant matching behavior.
+A rewrite that passes response tests but quietly loosens authorization is not an improvement, so any diff touching one of these paths got read before the slice was called done.
 
-Each migration slice had a concrete acceptance target: a route, a transformation, a compatibility decision, or a validation result. That made it possible to stop after any step and inspect the diff.
+## The workflow
 
-### Separating I/O from CPU work
-
-The backend has two very different performance profiles:
-
-```text
-remote enrichment       → asynchronous I/O and bounded concurrency
-local dashboard reads   → parsing, masking, normalization, aggregation
-```
-
-Tokio fit the asynchronous service and network operations. Rayon fit independent CPU-heavy transformations such as masking, normalization, and graph preparation. This division also kept the performance hypothesis testable: the strongest expected improvement was in authenticated dashboard reads, not in DNS response time or a remote HTTP server.
-
-### Treating security controls as invariants
-
-The migration review asked where each security property was enforced in the new implementation:
-
-- organization slugs are validated before filesystem use;
-- API-token comparison is constant-time;
-- login attempts are rate-limited;
-- response security headers remain enabled;
-- state writes remain atomic and permission-restricted;
-- provider URLs are checked against SSRF and DNS-rebinding risks; and
-- active-assessment operations remain fail-closed and explicitly authorized.
-
-This was an important constraint on the agent workflow. A rewrite that passes response tests but weakens authorization or URL validation is not an improvement.
-
-## The checkpoint loop
-
-The practical workflow was deliberately repetitive:
+I used NyaaBot as an implementation and review loop. Each slice: pick one Python behavior, write the Rust equivalent, diff response shape and error behavior, re-check the security-sensitive paths, run a focused check, record what still differs. A mismatch was a compatibility bug to investigate, never a reason to edit the expected result until the test passed.
 
 ```text
 inspect a Python behavior
@@ -96,26 +72,11 @@ run a focused check
 record the remaining difference
 ```
 
-A mismatch in a response field or status code was treated as a compatibility issue to investigate, not as permission to update the expected result until it passed. That kept the reference implementation useful throughout the rewrite.
+The bot traced code paths, proposed implementations, and ran bounded checks. Risk calls, benchmark data, and the release decision stayed with me.
 
-The bot could trace a code path, propose an implementation, run a bounded check, and identify a difference. Decisions about acceptable risk, authorized benchmark data, and release readiness remained human responsibilities.
+## Benchmark
 
-## Benchmark method
-
-I measured the part of the application where backend implementation should matter: authenticated, CPU-heavy dashboard reads.
-
-Both services used the same machine, the same demo organization data, and the same four request paths:
-
-```text
-/api/summary
-/api/findings
-/api/graph
-/api/dashboard
-```
-
-The load was 16 concurrent clients. Each backend completed five three-second runs. The reported values are the benchmark harness output for that run, not a synthetic projection.
-
-## Results
+I measured the part where the backend implementation should matter: authenticated, CPU-heavy dashboard reads. Same machine, same demo org data, same four paths (`/api/summary`, `/api/findings`, `/api/graph`, `/api/dashboard`), 16 concurrent clients, five 3-second runs per backend.
 
 ```text
 Metric                         Python/FastAPI       Rust/Axum
@@ -127,52 +88,16 @@ p99 latency                    119.1 ms             81.7 ms
 Peak server RSS under load     56.7 MB              27.5 MB
 ```
 
-Expressed as relative changes, the Rust backend delivered:
+That is 2.19× the throughput, 62.8% lower median latency, 39.6% lower p95, and 51.5% lower peak RSS. In plain terms: a little over twice as many requests at roughly half the memory, on the workload a dashboard actually runs.
 
-- **2.19× higher throughput**: 636.4 versus 290.0 requests per second;
-- **62.8% lower median latency**: 18.7 ms versus 50.3 ms;
-- **39.6% lower p95 latency** and **31.4% lower p99 latency**;
-- **51.5% lower peak resident memory**: 27.5 MB versus 56.7 MB.
+## What this doesn't prove
 
-For the dashboard/read workload, the service handled a little more than twice as many requests while using roughly half as much memory.
+It does not mean everything is 2.19× faster. A full passive scan is dominated by DNS response times, TCP/TLS handshake latency, remote rate limiting, and external data sources. Rust trims local scheduling and subprocess overhead; it cannot make a remote endpoint answer faster. Network-heavy work gets a smaller, target-dependent win.
 
-## Why the local read path benefits
+The next measurement should be a controlled scan run: authorized targets, identical settings, wall-clock time, CPU, RSS, external request counts, and output equivalence. That is the number that matters for the scan path; requests-per-second was the right number for the API path.
 
-The dashboard endpoints perform several small transformations on every request: load JSON state, remove sensitive values, normalize findings, aggregate counts, and build graph nodes and edges. That work is cheap once, but it compounds when several users or automation clients request it concurrently.
+## Where it landed
 
-Rust helps here in three practical ways.
+The Rust backend runs loopback-bound on its own port with the same frontend and data layout. Python is still available for comparison until the Rust service has done a stretch of unattended runs.
 
-### Async serving without interpreter overhead
-
-Tokio keeps many in-flight operations in a single asynchronous runtime. The service spends less time coordinating threads and more time doing response work.
-
-### Parallel CPU work where it is safe
-
-Masking, normalization, and graph preparation are independent over many findings. Rayon distributes those transformations across available CPU cores without sharing mutable request state.
-
-### Lower memory pressure
-
-The Rust service avoids per-request Python object overhead and unnecessary deep copies in the correlation path. Lower RSS preserves headroom for the browser, report rendering, scheduled jobs, and other local tools on a small self-hosted host.
-
-## What the benchmark does not prove
-
-A dashboard API benchmark is not a claim that every operation is 2.19× faster.
-
-A full passive scan is dominated by remote conditions: DNS response time, TCP connection latency, TLS negotiation, rate limiting, and external data-source availability. Rust can reduce local scheduling and subprocess overhead, but it cannot make a remote endpoint respond faster.
-
-The useful interpretation is narrower:
-
-```text
-local transformation and API work  → strong Rust advantage
-remote network reconnaissance      → smaller, target-dependent advantage
-```
-
-That distinction keeps a benchmark connected to the workload it actually measured instead of turning one local result into a universal performance claim.
-
-## Operational outcome
-
-The Rust backend runs as a loopback-bound service on its own port while preserving the existing frontend and data layout. Keeping the Python reference available during migration made it possible to compare behavior instead of treating the rewrite as an irreversible replacement.
-
-The next comparison should use a controlled set of authorized targets and identical scan settings. It should capture wall-clock time, CPU, peak RSS, external request counts, and output equivalence. For network-heavy work, those details are more informative than a single requests-per-second number.
-
-The broader lesson is about agent-assisted engineering as much as Rust. NyaaBot did not replace judgment; it reduced the cost of applying judgment repeatedly. A reference implementation, explicit security invariants, small checkpoints, and workload-matched measurements produced a migration that was both faster on the local API path and easier to evaluate honestly.
+Net: the local read path is about twice as fast at half the memory, with the same controls in front of it. The review setup — reference implementation, written-down invariants, small checkpoints, benchmarks matched to the workload — is what made the rewrite trustworthy. Rust was just the tool.
