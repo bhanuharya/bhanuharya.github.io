@@ -1,105 +1,48 @@
 ---
 layout: post
-title: "Reconciling a homegrown security scanner with SonarQube's external-issue import"
+title: "Why I built my own security scanner (and then had to explain it to Sonar)"
 date: 2026-09-10
 author: bhanuharya
-tags: [security, sast, devsecops, sonarqube, jenkins, go, self-hosting]
+tags: [security, devsecops, sonarqube, side-project]
+redirect_from: []
 ---
 
-I built a Go-based scanning pipeline — SAST, secrets, and dependency scanning with a policy gate — and ran it against three production-lineage Java microservices from a financial-services codebase. Service names, package paths, and internal identifiers are redacted throughout; the interesting part was never the names anyway. The findings were then imported into a local SonarQube 10.7 lab as external issues, and the reconciliation is where most of this post's lessons come from.
+Every security team eventually hits the same wall: the standard tools give answers, but not *your* answers. That happened to me and the solution was, characteristically, to spend my free time building another tool. This is the story of that.
 
-Plain-language version: a custom scanner found 255 issues across three services, and 249 of them (97.6%) show up in SonarQube's Issues tab with the right rule keys. Getting from "gap = 77" to "gap = 6" took one naming convention fix and taught me three ways Sonar silently drops findings.
+## The itch
 
-## The pipeline
+At work we run SonarQube and the usual pipeline stuff. It's fine. But when I'd look at a codebase I cared about, Sonar would show me a handful of hotspots and I'd think: is that... it? The answer turned out to be no — not because Sonar is bad, but because its security rules cover a narrow slice. When I ran a wider net (pattern-based SAST over 140+ rules, a secrets scanner, and a dependency checker) over the same code, the counts jumped from "a few" to 77–91 findings per service depending on the codebase.
 
-The tool ([secure-development-tools](https://github.com/bhanuharya/secure-development-tools), `sdt`) bundles three scanners behind one policy gate:
+Both numbers are true at once. They just measure different things. I wanted the wider net, and I wanted it running automatically, with a policy gate, producing something a human could actually review instead of a raw export nobody opens.
 
-```text
-opengrep    147 rules, taint + pattern SAST
-gitleaks    secret detection
-trivy-fs    dependency / IaC scanning
-```
+So I built `sdt`: a Go CLI that wraps three existing scanners — OpenGrep for SAST, Gitleaks for secrets, Trivy for dependencies — behind one command. Preflight check, scan, evaluate policy against agreed rules, generate a report (PDF/JSON/SARIF), and hand findings off to whichever tool the team reviews in. Boring on purpose. The scanning engines already exist; the missing piece was the connective tissue and the opinionated defaults.
 
-One scan produces `findings.json`, SARIF, a PDF report, and a SonarQube external-issue export. The pipeline is deliberately boring: preflight (`sdt doctor`), a plan with a content digest, scan, policy evaluation, report. Jenkins runs it as a sidecar next to the existing Sonar analysis, advisory-first with a strict toggle:
+## The part that took longer than expected
 
-```text
-Result                          Advisory    Strict
-------------------------------  --------    ------
-scan complete, policy passes    success     success
-scan complete, policy fails     unstable    failure
-incomplete/failed execution     failure     failure
-cancelled                       aborted     aborted
-```
+The scanners were the easy part. The hard part was reconciliation — the unglamorous work of proving the numbers mean something.
 
-The rule that matters: publish results *before* applying the blocking decision, so a strict failure still leaves its findings somewhere reviewable.
+I pointed `sdt` at three real Java microservices and imported everything into a local SonarQube lab. First result: 77 findings exported, zero visible. My gut said "the import failed." My gut was wrong — my rule naming didn't match Sonar's `external_<engine>:<rule>` format, so the findings were there, just invisible to the filter I was using.
 
-## Three services, snapshot scans
+Once the naming clicked, the reconciliation went from "gap = 77" to "gap = 6 out of 255," i.e. 97.6% of findings show up in Sonar's Issues tab. The remaining six come from one systematic cause — dotfiles that Sonar's scanner never indexes, so any finding inside `.npmrc` or `.yo-rc.json` has nowhere to land.
 
-The three services were scanned with the full profile. One honest caveat baked into the reports: these were snapshot commits (a fresh local commit of the exported tree), not full VCS history — so secrets findings are tree-only, and historical secrets coverage is explicitly marked unavailable. The exports also carried Windows `Zone.Identifier` metadata files, which are copy artifacts, not source; they got excluded before the snapshot commit, and the exclusion is verified by checking the tracked file list, not by trusting the ignore rules.
+I also learned the hard way that Sonar pipes several findings into a black hole quietly: narrow source scopes make dependency findings vanish (they live on `pom.xml`, not in `src/`), tree-wide scans then collide with the app's own `sonar.tests` setting, and imported issues land in Issues, never in the Security Hotspots view your team actually reviews. Three different ways a scan can "pass" while half its output quietly never gets displayed.
 
-```text
-Service   Findings   SAST   Secrets   Deps   Misconfig   Blockers
---------  --------   ----   -------   ----   ---------   --------
-A              77      21       37      19           0         49
-B              91      30       45      14           2         58
-C              87      27       40      18           2         50
-```
+That loop — scanner says something, Sonar disagrees, find out why — is most of what I actually did. The tool is a byproduct.
 
-Secrets dominate the raw counts. That is normal for a first pass with a secrets scanner and does not mean 122 exploitable leaks — gitleaks flags test fixtures and example keys too. The point of the review workflow is to turn raw counts into confirmed findings; the pipeline's job is to make sure nothing is silently missing.
+## What I built without meaning to
 
-## External imports land in Issues, not Security Hotspots
+Two things fell out of the pilot that I didn't plan:
 
-The first confusion: after importing 77 findings into SonarQube, the Security Hotspots page was empty and it looked like the import had failed. It hadn't. SonarQube routes externally imported issues into **Issues**; the Security Hotspots workflow only ever contains Sonar's native hotspot rules. An empty Hotspots page says nothing about your import.
+**A governance engine.** Forcing every scan to declare its scope — was this a snapshot commit or full history? are dependencies fully resolved or did offline mode silently skip some? — turns vague claims ("we scanned it") into checkable assertions. A green dashboard that hides a failed dependency resolution is a lie; a green dashboard that shows "partial coverage" is honest.
 
-This matters operationally: if your team reviews security findings in Hotspots, an external import will never appear there, and no filter will make it appear. Either review external findings in Issues, or treat the custom pipeline's own report as the review surface.
+**A history audit.** I git-audited the published repo expecting a clean pass. I got a partial pass: the sanitize commit I did earlier had cleaned the current tree, but earlier commits — already merged, already public — still contained internal identifiers. Fixing it isn't a technical problem, it's a process problem (force-push breaks everyone's clone), and the honest status is "open decision."
 
-## Reconciliation: from gap = 77 to gap = 6
+That last one is the part I keep thinking about. I built a scanner to catch vulnerabilities in code and it's most useful as a tool for catching my own assumptions: that the pipeline works, that the numbers aren't inflated, that the history I published is actually clean. All false at one point or another during this.
 
-The first reconciliation attempt was demoralizing: 77 findings exported, zero visible under the expected rule keys. The cause was my own rule-key format. SonarQube addresses external rules as `external_<engine>:<rule-key>`, and my queries were using the wrong engine prefix. With the correct prefix the picture flipped:
+## Where it's going
 
-```text
-Project    SDT findings   Imported   Native issues   Native hotspots
----------  ------------   --------   -------------   ---------------
-A                   77         75           6,338               4
-B                   91         89           3,850               8
-C                   87         85           7,220               3
-```
+Right now: advisory mode everywhere, nothing blocked, humans review everything. Next: PR-level feedback, then strict enforcement for the most unambiguous category — leaked credentials — and nowhere else, at least for a while.
 
-249 of 255 (97.6%). The entire remaining gap is one systematic cause: findings on hidden dotfiles (`.yo-rc.json`), which Sonar's scanner never indexes, so those issues have nowhere to attach. Everything else imports cleanly, including per-dependency CVEs on `pom.xml`.
+The takeaway if you're considering something similar: don't build a scanner. Build a *reconciliation* layer that tells you every time your scanner and your review tools disagree, and fix the disagreements one by one. Most of "security tooling" is that loop, made repetitive.
 
-Worth stating plainly: Sonar's native hotspots (4, 8, 3) are not a verdict that the services are clean — they are a different rule set with a much narrower reach. The custom pipeline's 49–58 blockers per service are the wider net. Both numbers are true at once; they measure different things.
-
-## Three ways Sonar silently drops findings
-
-1. **Dotfiles are never indexed.** Any external issue pointing at a dotfile is ignored for unknown files, with only a log line. If your scanner flags `.env`, `.npmrc`, or similar, expect those findings to be un-reconcilable in Sonar and keep them in the pipeline's own report.
-2. **Narrow source scope hides dependency findings.** With `sonar.sources` limited to `src/main`, external issues on `pom.xml` at the tree root disappear. Widening to the tree root with explicit exclusions (`reports/**`, caches, generated files) fixed it — and introduced the next trap:
-3. **`sonar.tests` conflicts with tree-wide sources.** With sources covering everything, the repo's own `sonar.tests` setting caused a "file can't be indexed twice" analysis failure. Override `sonar.tests` when using tree-wide sources.
-
-None of these are exotic. All three produce a *quieter* Sonar project, which looks like success.
-
-## Fixes to the pipeline itself
-
-The pilot also shook out three defects in `sdt`:
-
-- **Manifest verification anchored paths to the wrong root.** Relative rule-pack paths resolved against the process CWD, so `sdt rules verify` from a clean checkout reported eleven "found 0" entries. Fix: anchor both the pack root and every relative path to the repo root, so relative and absolute paths verify identically.
-- **`doctor` and `verify` used different rulers.** Doctor counted rule files with a shallow two-level walk and reported 24 while verify's recursive discovery counted 137 — same bundle, two answers. Fix: one shared discovery function everywhere, with a shallow fallback only when no pack exists.
-- **An unborn `HEAD` failed with a bare git error.** A fresh `git init` with no commits now produces a message that says commit once or pass an explicit `--head`, instead of `fatal: Needed a single revision` with no context.
-
-Also in the same pass: SARIF output now guarantees non-empty locations per result, because an empty-location record is a finding that downstream consumers can't display.
-
-## Tree-clean is not history-clean
-
-The pre-rollout audit found the exact failure mode the plan predicted: a sanitize commit had scrubbed internal identifiers from the current tree of the public repo, but earlier published commits — including one already merged — still contained the pre-sanitization content. Auditing the final diff says nothing about earlier commits; the history has to be walked with the same terms.
-
-Resolution is a governance question, not a technical one. The contaminated values are internal names rather than credentials, but a rewrite touches `origin/main`, breaks every clone, and needs a coordinated decision. That decision is still open, which is itself the honest status.
-
-## Lab notes
-
-Two things the local SonarQube lab taught, briefly:
-
-- A restart produced `cluster_block_exception ... no master` during report upload, and the scanner-side error — "The 'report' parameter is missing" — pointed nowhere near the cause. The lab's start script had been wiping Sonar's `data` directory on every launch, killing the embedded Elasticsearch index. Fix: only clear `temp`. The lesson generalizes: when an upload fails server-side, read the server log before debugging the client.
-- Saving a SonarQube page as HTML captures only the loading shell — the SPA fetches everything after load. It is not a findings export. Use the generated reports.
-
-## What's next
-
-The scan path is now stable enough to trust, which makes the next steps unglamorous on purpose: wire the Jenkins sidecar into PR delivery (links first, inline annotations later), reconcile per-finding identity across runs so a reintroduced issue reopens visibly, and move specific categories — confirmed exposed credentials first — from advisory to strict only after the advisory numbers have been reviewed for a while. Enforcement is the last milestone, not the first.
+And accept that you'll spend a nontrivial fraction of the project fighting your own bugs. The scanner had a bug where two internal commands reported different rule counts for the same rule pack — 24 vs 137 — because they used different discovery logic. Two tools, one opinion, both mine. That's the real work: making your own tool stop lying to you.
