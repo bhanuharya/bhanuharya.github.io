@@ -8,24 +8,24 @@ permalink: /about/
   <span class="prompt">bhanuharya@sec</span><span class="loc">:~/about$</span> <span class="cmd">cat about.txt</span>
 </div>
 
-hi, i’m harya / wishnu. i work in information security, mostly around financial systems and the infrastructure behind them.
+Hi, I'm Harya / Wishnu. I work in information security, mostly around financial systems and the infrastructure behind them.
 
-i got into security during my early college years, mostly by tinkering with linux and computer systems. i was curious about how things worked, why they broke, and what happened when they were used in ways their builders did not expect.
+I got into security during my early college years, mostly by tinkering with Linux and computer systems. I was curious about how things worked, why they broke, and what happened when they were used in ways their builders did not expect.
 
-i studied computer science/informatics at bandung institute of technology (itb). my undergraduate work involved designing a python compiler for a 32 bit risc v processor. it gave me a lasting interest in compilers, low level systems, and the parts of computing that usually stay out of sight.
+I studied computer science/informatics at Bandung Institute of Technology (ITB). My undergraduate work involved designing a Python compiler for a 32-bit RISC-V processor. It gave me a lasting interest in compilers, low-level systems, and the parts of computing that usually stay out of sight.
 
-that curiosity eventually turned into work. since then, i’ve worked across fintech, banking, securities firms, and capital markets. most of my work has been somewhere between security operations, engineering, and governance.
+That curiosity eventually turned into work. Since then, I've worked across fintech, banking, securities firms, and capital markets. Most of my work has been somewhere between security operations, engineering, and governance.
 
-the work has taken me through cloud and network security, firewalls and WAFs, identity, incident response, and secure software development. i also like building small automations when repetitive work starts getting annoying.
+The work has taken me through cloud and network security, firewalls and WAFs, identity, incident response, and secure software development. I also like building small automations when repetitive work starts getting annoying.
 
-these days, i’m especially interested in the relationship between ai and security. attackers are already using it, while defenders are often working with limited time and resources. i want to understand where ai can genuinely help defenders, and how to secure the ai systems that organizations are beginning to rely on.
+These days, I'm especially interested in the relationship between AI and security. Attackers are already using it, while defenders are often working with limited time and resources. I want to understand where AI can genuinely help defenders, and how to secure the AI systems that organizations are beginning to rely on.
 
-more broadly, i’m interested in how security decisions get made. that means looking beyond how a control works to understand the risk, the operational cost, and whether it helps the system keep working when something goes wrong.
+More broadly, I'm interested in how security decisions get made. That means looking beyond how a control works to understand the risk, the operational cost, and whether it helps the system keep working when something goes wrong.
 
-outside work, i’m interested in privacy, open source, self hosting, music, and computers. i still spend too much time tinkering with things that probably did not need tinkering :-)
+Outside work, I'm interested in privacy, open source, self-hosting, music, and computers. I still spend too much time tinkering with things that probably did not need tinkering :-)
 
-this site is for notes, experiments, and things i want to remember.
+This site is for notes, experiments, and things I want to remember.
 
 <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
 
-you can also find a condensed terminal view on the [home page]({{ '/' | relative_url }}#about).
+You can also find a condensed terminal view on the [home page]({{ '/' | relative_url }}#about).
