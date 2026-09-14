@@ -12,6 +12,17 @@ so when a 4b model showed up as a fresh gguf, i wanted the obvious question answ
 
 short version: the 4b reads long documents about seven times faster and uses half the vram, and it is still not the better model. the 23b keeps the lane.
 
+## the box
+
+one windows 11 machine with a 12 gb card in it, and the card is the whole constraint:
+
+- intel i5-12400, 6 cores and 12 threads
+- 32 gb of system ram
+- rtx 3060 with 12 gb of vram, running the cuda build of llama.cpp
+- no spare vram lying around: the 23b lane holds 11,444 mib of the 12,288 available
+
+that last number is why the two models take turns. there is not enough room for both, so every comparison in this post is a stop, swap, start, and the ninety seconds it costs counts as downtime for anything already pointed at the lane.
+
 ## the two candidates
 
 the incumbent: 23b total, ~3b active, iq3_s mix at 3.66 bits per weight, 10.18 gb on disk, 131k context window, 22.9b parameters reported by the runtime. it uses 11,444 mib of the 12 gb card, so there is no room for a second model.
