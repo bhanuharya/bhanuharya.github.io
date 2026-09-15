@@ -5,154 +5,84 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  {% assign seo_title = page.title | default: site.title %}
-  {% assign seo_description = page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
-  <title>{% if page.title %}{{ page.title | escape }} · {{ site.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
+  <meta name="color-scheme" content="light dark">
+  {% assign seo_title = page.title | default: site.title %}{% if page.title %}{% assign seo_title = page.title | append: ' · ' | append: site.title %}{% endif %}
+  {% assign seo_description = page.description | default: page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
+  <title>{{ seo_title | escape }}{% unless page.title %} · notes on security and systems{% endunless %}</title>
   <meta name="description" content="{{ seo_description | escape }}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">
   <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ '/feed.xml' | relative_url }}">
   <meta property="og:site_name" content="{{ site.title | escape }}">
   <meta property="og:title" content="{{ seo_title | escape }}">
   <meta property="og:description" content="{{ seo_description | escape }}">
-  <meta property="og:url" content="{{ page.url | absolute_url }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
+  <meta property="og:url" content="{{ page.url | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Terminal window showing whoami output and interests: information security, self-hosted AI systems, Linux, and open source.">
-  {% if page.date %}<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">{% endif %}
-  {% if page.tags %}<meta property="article:tag" content="{{ page.tags | join: ', ' | escape }}">{% endif %}
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ seo_title | escape }}">
-  <meta name="twitter:description" content="{{ seo_description | escape }}">
-  <meta name="twitter:image" content="{{ '/assets/og-image.png' | absolute_url }}">
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('theme'); } catch (e) {}
+      var param = new URLSearchParams(window.location.search).get('theme');
+      var prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      var choice = (param === 'dark' || param === 'light') ? param : (stored === 'dark' || stored === 'light' ? stored : prefers);
+      document.documentElement.setAttribute('data-theme', choice);
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": {{ page.title | jsonify }},
-    "datePublished": "{{ page.date | date_to_xmlschema }}",
-    "author": { "@type": "Person", "name": {{ page.author | default: site.author | jsonify }} },
-    "description": {{ seo_description | jsonify }},
-    "mainEntityOfPage": { "@type": "WebPage", "@id": {{ page.url | absolute_url | jsonify }} }
-  }
-  </script>
-  {% else %}
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": {{ site.title | jsonify }},
-    "url": {{ '/' | absolute_url | jsonify }},
-    "description": {{ site.description | jsonify }}
+    "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+    "url": {{ page.url | absolute_url | jsonify }},
+    "author": { "@type": "Person", "name": {{ site.author | jsonify }} }
   }
   </script>
   {% endif %}
 </head>
 <body>
-  <a class="skip-link" href="#content">Skip to content</a>
-
-  <div class="page">
-
-    <div class="topbar">
-      <span class="topbar-title">{{ site.title | escape }}</span>
-      <span class="topbar-note">last updated {{ site.time | date: "%b %-d, %Y" }}</span>
-    </div>
-
-    <div class="masthead">
-      <h1 class="site-title"><a href="{{ '/' | relative_url }}">{{ site.title | escape }}</a></h1>
-      <p class="tagline">Notes and experiments on security, systems, and self-hosting. Hand written, no trackers, no popups.</p>
-      {% if site.posts.first %}
-      <div class="ticker" aria-label="Latest note">
-        <span>*** new in the blog: {{ site.posts.first.title | escape }}, posted {{ site.posts.first.date | date: "%b %-d, %Y" }} *** welcome, mind the starfield ***</span>
-      </div>
-      {% endif %}
-    </div>
-
-    <div class="navstrip" aria-label="Main">
-      <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} aria-current="page"{% endif %}>home</a>
-      <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' or page.layout == 'post' %} aria-current="page"{% endif %}>blog</a>
+<a class="skip" href="#main">skip to content</a>
+<div class="wrap">
+  <header class="site-head">
+    <a class="site-name" href="{{ '/' | relative_url }}">bhanuharya@sec</a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' %} aria-current="page"{% endif %}>blog</a>
       <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>about</a>
       <a href="{{ '/terminal/' | relative_url }}"{% if page.url == '/terminal/' %} aria-current="page"{% endif %}>terminal</a>
       <a href="{{ '/feed.xml' | relative_url }}">rss</a>
-    </div>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch color theme">theme</button>
+    </nav>
+  </header>
 
-    <div class="columns">
-      <div class="sidebar">
-        <div class="panel">
-          <div class="panel-head">Navigation</div>
-          <ul>
-            <li><a href="{{ '/' | relative_url }}">Home</a></li>
-            <li><a href="{{ '/blog/' | relative_url }}">Blog</a></li>
-            <li><a href="{{ '/about/' | relative_url }}">About me</a></li>
-            <li><a href="{{ '/terminal/' | relative_url }}">Terminal</a></li>
-            <li><a href="{{ '/feed.xml' | relative_url }}">RSS feed</a></li>
-          </ul>
-        </div>
+  <main id="main">
+    {{ content }}
+  </main>
 
-        <div class="panel">
-          <div class="panel-head">Elsewhere</div>
-          <ul>
-            <li><a href="https://github.com/bhanuharya" rel="me noopener">GitHub</a></li>
-            <li><a href="https://www.linkedin.com/in/wishnumurti" rel="me noopener">LinkedIn</a></li>
-            <li><a href="{{ '/.well-known/security.txt' | relative_url }}">security.txt</a></li>
-          </ul>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">Site stuff</div>
-          <div class="panel-body small">
-            <p class="counter">Your visits from this browser:<br>
-              <span class="counter-digits" id="visit-counter">000000</span>
-            </p>
-            <p>No cookies for tracking, no analytics, no ads. Static files on GitHub Pages.</p>
-            <p>Best viewed at 1024x768 or larger, in any browser you like.</p>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">Off the beaten path</div>
-          <ul>
-            <li><a href="{{ '/assets/unknown-pleasures/index.html' | relative_url }}">Unknown Pleasures</a></li>
-            <li><a href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener">Site source</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="main" id="content">
-        {{ content }}
-      </div>
-    </div>
-
-    <div class="site-footer">
-      <div class="badges">
-        <a class="badge" href="{{ '/feed.xml' | relative_url }}"><b>RSS</b>subscribe<br>and never miss</a>
-        <a class="badge" href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener"><b>VIEW SOURCE</b>hand written<br>no framework</a>
-        <a class="badge" href="{{ '/about/' | relative_url }}"><b>NO TRACKERS</b>no cookies<br>no analytics</a>
-        <span class="badge"><b>MADE WITH</b>vim, coffee<br>and shell scripts</span>
-      </div>
-      <p>&copy; {{ site.time | date: '%Y' }} {{ site.title | escape }}. Built with Jekyll on GitHub Pages. <a href="{{ '/feed.xml' | relative_url }}">rss</a></p>
-      <p>This page is a deliberate throwback. Nothing here phones home :-)</p>
-    </div>
-
-  </div>
-
-  <script>
+  <footer class="footer">
+    <p>&copy; {{ site.time | date: '%Y' }} Harya. Notes and experiments, nothing here is advice.</p>
+    <p>No trackers, no cookies. <a href="{{ '/feed.xml' | relative_url }}">rss</a>, <a href="https://github.com/bhanuharya" rel="me">github</a>, <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a>.</p>
+  </footer>
+</div>
+<script>
   (function () {
-    var out = document.getElementById('visit-counter');
-    if (!out) return;
-    var key = 'visit-count';
-    var n = 0;
-    try { n = parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) { n = 0; }
-    n = n + 1;
-    try { localStorage.setItem(key, String(n)); } catch (e) {}
-    out.textContent = String(n).padStart(6, '0');
+    var btn = document.getElementById('theme-toggle');
+    var root = document.documentElement;
+    function label() {
+      btn.textContent = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      btn.title = 'Switch to ' + btn.textContent + ' theme';
+    }
+    label();
+    btn.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      label();
+    });
   })();
-  </script>
+</script>
 </body>
 </html>

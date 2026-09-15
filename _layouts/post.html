@@ -5,20 +5,15 @@ layout: default
   <header class="post-header">
     <h1 class="post-title">{{ page.title | escape }}</h1>
     <div class="post-meta">
-      Posted on <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%B %-d, %Y' }}</time>
-      {% if page.author %} by {{ page.author }}{% endif %}
-      {% assign words = content | number_of_words %}
-      {% assign mins = words | divided_by: 200 %}
-      {% if mins == 0 %}{% assign mins = 1 %}{% endif %}
-      <span aria-hidden="true"> · </span><span class="post-reading">{{ mins }} min read</span>
-      {% if words %}<span aria-hidden="true"> · </span><span class="post-words">{{ words }} words</span>{% endif %}
+      <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
+      {% assign words = page.content | number_of_words %}{% assign mins = words | divided_by: 200 %}{% if mins == 0 %}{% assign mins = 1 %}{% endif %}
+      <span>{{ words }} words, {{ mins }} min</span>
+      {% if page.tags.size > 0 %}
+      <span class="post-tags">
+        {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+      </span>
+      {% endif %}
     </div>
-    {% if page.tags and page.tags.size > 0 %}
-    <div class="post-tags" aria-label="Tags">
-      <span class="dim">Filed under:</span>
-      {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
-    </div>
-    {% endif %}
   </header>
 
   <div class="post-content">
@@ -26,43 +21,28 @@ layout: default
   </div>
 
   <nav class="post-nav" aria-label="Post navigation">
-    {% if page.previous %}<a href="{{ page.previous.url | relative_url }}">&laquo; {{ page.previous.title | escape }}</a>{% endif %}
-    {% if page.next %}<a href="{{ page.next.url | relative_url }}">{{ page.next.title | escape }} &raquo;</a>{% endif %}
-    <a href="{{ '/blog/' | relative_url }}">Back to the blog index</a>
-    <a href="{{ '/' | relative_url }}">Home</a>
+    <span>{% if page.previous %}<a href="{{ page.previous.url | relative_url }}">&larr; {{ page.previous.title | escape }}</a>{% endif %}</span>
+    <span>{% if page.next %}<a href="{{ page.next.url | relative_url }}">{{ page.next.title | escape }} &rarr;</a>{% endif %}</span>
   </nav>
 </article>
 
 <script>
-  // --- Copy code button for snippets ---
-  (function() {
-    if (!navigator.clipboard) return;
-    var codeBlocks = document.querySelectorAll('.post-content .highlight, .post-content pre');
-    codeBlocks.forEach(function(block) {
-      if (block.tagName === 'PRE' && block.closest('.highlight')) return;
-      if (block.closest('.diagram-wrap')) return;
-
+  (function () {
+    var blocks = document.querySelectorAll('.post-content pre');
+    blocks.forEach(function (pre) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'code-copy-btn';
-      btn.setAttribute('aria-label', 'Copy code to clipboard');
-      btn.innerHTML = '<span class="copy-text">copy</span>';
-
-      btn.addEventListener('click', function() {
-        var code = block.querySelector('code') || block;
-        var text = (code.innerText || code.textContent).trim();
-        navigator.clipboard.writeText(text).then(function() {
-          btn.innerHTML = '<span class="copy-text copy-success">copied</span>';
-          setTimeout(function() {
-            btn.innerHTML = '<span class="copy-text">copy</span>';
-          }, 2000);
-        }).catch(function() {
-          btn.innerHTML = '<span class="copy-text">failed</span>';
+      btn.textContent = 'copy';
+      btn.addEventListener('click', function () {
+        var text = pre.querySelector('code') ? pre.querySelector('code').innerText : pre.innerText;
+        navigator.clipboard.writeText(text).then(function () {
+          btn.textContent = 'copied';
+          btn.classList.add('copy-success');
+          setTimeout(function () { btn.textContent = 'copy'; btn.classList.remove('copy-success'); }, 1400);
         });
       });
-
-      block.style.position = 'relative';
-      block.appendChild(btn);
+      pre.appendChild(btn);
     });
   })();
 </script>

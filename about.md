@@ -28,4 +28,4 @@ This site is for notes, experiments, and things I want to remember.
 
 <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
 
-You can also find a condensed terminal view on the [home page]({{ '/' | relative_url }}#about).
+You can also find a condensed terminal view at [bhanuharya.github.io/terminal]({{ '/terminal/' | relative_url }}).
