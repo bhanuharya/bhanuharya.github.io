@@ -4,6 +4,7 @@
    =============================================================== */
 
 :root {
+  color-scheme: light;
   --bg: #fbfbfa;
   --fg: #1c1c1a;
   --muted: #6f6f68;
@@ -21,6 +22,7 @@
 }
 
 html[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #14161a;
   --fg: #cfcdc7;
   --muted: #85837d;
