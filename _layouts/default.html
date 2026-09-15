@@ -5,8 +5,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#08090b">
+  <meta name="color-scheme" content="light">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   {% assign seo_title = page.title | default: site.title %}
   {% assign seo_description = page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
@@ -54,219 +53,105 @@
   }
   </script>
   {% endif %}
-  <script>
-    (function(){
-      var t = localStorage.getItem('term-theme') || 'pulsar';
-      document.documentElement.setAttribute('data-theme', t);
-      var crt = localStorage.getItem('term-crt') === '1';
-      if (crt) document.documentElement.classList.add('crt-active');
-    })();
-  </script>
 </head>
 <body>
-  <div id="crt-overlay" class="crt-overlay" hidden aria-hidden="true"></div>
   <a class="skip-link" href="#content">Skip to content</a>
-  <header class="site-header">
-    <nav class="wrap nav" aria-label="Main">
-      <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title | escape }}</a>
-      <div class="nav-actions">
-        <div class="nav-links">
-          <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' or page.layout == 'post' %} aria-current="page"{% endif %}>blog</a>
-          <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>about</a>
-        </div>
-        <button type="button" class="theme-toggle" id="crt-btn" aria-label="Toggle CRT mode" title="Toggle CRT scanlines (press 'c')">
-          <span class="crt-status">crt:off</span>
-        </button>
-        <button type="button" class="theme-toggle" id="theme-btn" aria-label="Switch terminal theme" title="Switch terminal theme (press 't')">
-          <span class="theme-name">thm:default</span>
-        </button>
-        <button type="button" class="help-toggle" id="shortcut-btn" aria-label="Keyboard shortcuts" title="Keyboard shortcuts (press '?')">
-          <span>[?]</span>
-        </button>
-      </div>
-    </nav>
-  </header>
-  <main id="content" class="wrap">
-    {{ content }}
-  </main>
-  <footer class="site-footer">
-    <div class="wrap footer-inner">
-      <p>&copy; {{ site.time | date: '%Y' }} {{ site.title | escape }}. Built with Jekyll on GitHub Pages. <a href="{{ '/feed.xml' | relative_url }}">rss</a></p>
-      <p class="footer-note">no intentional analytics or tracking. just static files, pulsar waves, and a tiny terminal :-) · press <kbd style="font:inherit;color:var(--cli-amber)">?</kbd> for shortcuts</p>
-    </div>
-  </footer>
 
-  <div id="shortcut-modal" class="shortcut-modal" hidden role="dialog" aria-modal="true" aria-labelledby="shortcut-title">
-    <div class="shortcut-box">
-      <div class="shortcut-header">
-        <span id="shortcut-title">&gt;_ KEYBOARD SHORTCUTS</span>
-        <button type="button" class="shortcut-close-btn" id="shortcut-close">esc</button>
-      </div>
-      <table class="shortcut-table">
-        <tbody>
-          <tr><td class="shortcut-key">g then h</td><td class="shortcut-desc">go to home</td></tr>
-          <tr><td class="shortcut-key">g then b</td><td class="shortcut-desc">go to blog</td></tr>
-          <tr><td class="shortcut-key">g then a</td><td class="shortcut-desc">go to about</td></tr>
-          <tr><td class="shortcut-key">/</td><td class="shortcut-desc">focus terminal prompt</td></tr>
-          <tr><td class="shortcut-key">c</td><td class="shortcut-desc">toggle CRT scanline monitor mode</td></tr>
-          <tr><td class="shortcut-key">w</td><td class="shortcut-desc">toggle Joy Division pulsar waves</td></tr>
-          <tr><td class="shortcut-key">f</td><td class="shortcut-desc">toggle terminal fullscreen workstation</td></tr>
-          <tr><td class="shortcut-key">t</td><td class="shortcut-desc">cycle theme (solaris/pulsar/matrix/amber)</td></tr>
-          <tr><td class="shortcut-key">?</td><td class="shortcut-desc">toggle shortcuts modal</td></tr>
-          <tr><td class="shortcut-key">esc</td><td class="shortcut-desc">close modal / exit game / blur prompt</td></tr>
-        </tbody>
-      </table>
+  <div class="page">
+
+    <div class="topbar">
+      <span class="topbar-title">{{ site.title | escape }}</span>
+      <span class="topbar-note">last updated {{ site.time | date: "%b %-d, %Y" }}</span>
     </div>
+
+    <div class="masthead">
+      <h1 class="site-title"><a href="{{ '/' | relative_url }}">{{ site.title | escape }}</a></h1>
+      <p class="tagline">Notes and experiments on security, systems, and self-hosting. Hand written, no trackers, no popups.</p>
+      {% if site.posts.first %}
+      <div class="ticker" aria-label="Latest note">
+        <span>*** new in the blog: {{ site.posts.first.title | escape }}, posted {{ site.posts.first.date | date: "%b %-d, %Y" }} *** welcome, mind the starfield ***</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="navstrip" aria-label="Main">
+      <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} aria-current="page"{% endif %}>home</a>
+      <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' or page.layout == 'post' %} aria-current="page"{% endif %}>blog</a>
+      <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>about</a>
+      <a href="{{ '/terminal/' | relative_url }}"{% if page.url == '/terminal/' %} aria-current="page"{% endif %}>terminal</a>
+      <a href="{{ '/feed.xml' | relative_url }}">rss</a>
+    </div>
+
+    <div class="columns">
+      <div class="sidebar">
+        <div class="panel">
+          <div class="panel-head">Navigation</div>
+          <ul>
+            <li><a href="{{ '/' | relative_url }}">Home</a></li>
+            <li><a href="{{ '/blog/' | relative_url }}">Blog</a></li>
+            <li><a href="{{ '/about/' | relative_url }}">About me</a></li>
+            <li><a href="{{ '/terminal/' | relative_url }}">Terminal</a></li>
+            <li><a href="{{ '/feed.xml' | relative_url }}">RSS feed</a></li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">Elsewhere</div>
+          <ul>
+            <li><a href="https://github.com/bhanuharya" rel="me noopener">GitHub</a></li>
+            <li><a href="https://www.linkedin.com/in/wishnumurti" rel="me noopener">LinkedIn</a></li>
+            <li><a href="{{ '/.well-known/security.txt' | relative_url }}">security.txt</a></li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">Site stuff</div>
+          <div class="panel-body small">
+            <p class="counter">Your visits from this browser:<br>
+              <span class="counter-digits" id="visit-counter">000000</span>
+            </p>
+            <p>No cookies for tracking, no analytics, no ads. Static files on GitHub Pages.</p>
+            <p>Best viewed at 1024x768 or larger, in any browser you like.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">Off the beaten path</div>
+          <ul>
+            <li><a href="{{ '/assets/unknown-pleasures/index.html' | relative_url }}">Unknown Pleasures</a></li>
+            <li><a href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener">Site source</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="main" id="content">
+        {{ content }}
+      </div>
+    </div>
+
+    <div class="site-footer">
+      <div class="badges">
+        <a class="badge" href="{{ '/feed.xml' | relative_url }}"><b>RSS</b>subscribe<br>and never miss</a>
+        <a class="badge" href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener"><b>VIEW SOURCE</b>hand written<br>no framework</a>
+        <a class="badge" href="{{ '/about/' | relative_url }}"><b>NO TRACKERS</b>no cookies<br>no analytics</a>
+        <span class="badge"><b>MADE WITH</b>vim, coffee<br>and shell scripts</span>
+      </div>
+      <p>&copy; {{ site.time | date: '%Y' }} {{ site.title | escape }}. Built with Jekyll on GitHub Pages. <a href="{{ '/feed.xml' | relative_url }}">rss</a></p>
+      <p>This page is a deliberate throwback. Nothing here phones home :-)</p>
+    </div>
+
   </div>
 
-  {% if page.layout == 'home' %}
-  <script defer src="{{ '/assets/js/pulsar-waves.js' | relative_url }}"></script>
-  <script defer src="{{ '/assets/js/terminal-games.js' | relative_url }}"></script>
-  {% endif %}
   <script>
-  (function() {
-    var themes = ['default', 'solaris', 'pulsar', 'matrix', 'amber', 'cyber', 'monochrome'];
-    var themeBtn = document.getElementById('theme-btn');
-    var themeLabel = themeBtn ? themeBtn.querySelector('.theme-name') : null;
-    var crtBtn = document.getElementById('crt-btn');
-    var crtLabel = crtBtn ? crtBtn.querySelector('.crt-status') : null;
-    var crtOverlay = document.getElementById('crt-overlay');
-    var modal = document.getElementById('shortcut-modal');
-    var shortcutBtn = document.getElementById('shortcut-btn');
-    var closeBtn = document.getElementById('shortcut-close');
-
-    function updateThemeUI(t) {
-      if (themeLabel) themeLabel.textContent = 'thm:' + t;
-    }
-
-    function setTheme(t) {
-      if (t === 'default') {
-        document.documentElement.removeAttribute('data-theme');
-      } else {
-        document.documentElement.setAttribute('data-theme', t);
-      }
-      localStorage.setItem('term-theme', t);
-      updateThemeUI(t);
-    }
-
-    var currentTheme = localStorage.getItem('term-theme') || 'pulsar';
-    updateThemeUI(currentTheme);
-
-    function cycleTheme() {
-      var curr = localStorage.getItem('term-theme') || 'pulsar';
-      var nextIdx = (themes.indexOf(curr) + 1) % themes.length;
-      setTheme(themes[nextIdx]);
-    }
-
-    if (themeBtn) themeBtn.addEventListener('click', cycleTheme);
-
-    // --- CRT Display Mode ---
-    function setCRT(enabled) {
-      var active = !!enabled;
-      if (active) {
-        document.documentElement.classList.add('crt-active');
-        if (crtOverlay) crtOverlay.hidden = false;
-        if (crtLabel) crtLabel.textContent = 'crt:on';
-        localStorage.setItem('term-crt', '1');
-        document.body.classList.add('crt-degauss-flash');
-        setTimeout(function() { document.body.classList.remove('crt-degauss-flash'); }, 450);
-        if (window.TerminalGames && window.TerminalGames.Sound) {
-          window.TerminalGames.Sound.degauss();
-        }
-      } else {
-        document.documentElement.classList.remove('crt-active');
-        if (crtOverlay) crtOverlay.hidden = true;
-        if (crtLabel) crtLabel.textContent = 'crt:off';
-        localStorage.setItem('term-crt', '0');
-      }
-    }
-
-    var initialCrt = localStorage.getItem('term-crt') === '1';
-    setCRT(initialCrt);
-
-    function toggleCRT() {
-      var isCrt = localStorage.getItem('term-crt') === '1';
-      setCRT(!isCrt);
-    }
-
-    if (crtBtn) crtBtn.addEventListener('click', toggleCRT);
-
-    function toggleModal(open) {
-      if (!modal) return;
-      var show = open !== undefined ? open : modal.hidden;
-      modal.hidden = !show;
-    }
-
-    if (shortcutBtn) shortcutBtn.addEventListener('click', function() { toggleModal(true); });
-    if (closeBtn) closeBtn.addEventListener('click', function() { toggleModal(false); });
-    if (modal) {
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) toggleModal(false);
-      });
-    }
-
-    var lastKey = '';
-    var lastKeyTime = 0;
-
-    document.addEventListener('keydown', function(e) {
-      var activeTag = document.activeElement ? document.activeElement.tagName : '';
-      var isInput = activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT';
-
-      if (e.key === 'Escape') {
-        if (modal && !modal.hidden) {
-          toggleModal(false);
-          e.preventDefault();
-        } else if (isInput) {
-          document.activeElement.blur();
-        }
-        return;
-      }
-
-      if (isInput) return;
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-      var now = Date.now();
-      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
-        e.preventDefault();
-        toggleModal();
-      } else if (e.key === 't' || e.key === 'T') {
-        e.preventDefault();
-        cycleTheme();
-      } else if (e.key === 'c' || e.key === 'C') {
-        e.preventDefault();
-        toggleCRT();
-      } else if (e.key === 'w' || e.key === 'W') {
-        if (window.PulsarWaves) {
-          e.preventDefault();
-          window.PulsarWaves.toggle();
-        }
-      } else if (e.key === 'f' || e.key === 'F') {
-        var term = document.querySelector('.term');
-        if (term) {
-          e.preventDefault();
-          term.classList.toggle('is-maximized');
-        }
-      } else if (e.key === '/') {
-        var cliInput = document.getElementById('visitor-command');
-        if (cliInput) {
-          e.preventDefault();
-          cliInput.focus();
-        }
-      } else if (e.key === 'g') {
-        lastKey = 'g';
-        lastKeyTime = now;
-      } else if (lastKey === 'g' && (now - lastKeyTime < 1000)) {
-        if (e.key === 'h') { window.location.href = "{{ '/' | relative_url }}"; }
-        else if (e.key === 'b') { window.location.href = "{{ '/blog/' | relative_url }}"; }
-        else if (e.key === 'a') { window.location.href = "{{ '/about/' | relative_url }}"; }
-        lastKey = '';
-      }
-    });
-
-    window.setSiteTheme = setTheme;
-    window.getSiteTheme = function() { return localStorage.getItem('term-theme') || 'pulsar'; };
-    window.toggleCRT = toggleCRT;
-    window.setCRT = setCRT;
+  (function () {
+    var out = document.getElementById('visit-counter');
+    if (!out) return;
+    var key = 'visit-count';
+    var n = 0;
+    try { n = parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch (e) { n = 0; }
+    n = n + 1;
+    try { localStorage.setItem(key, String(n)); } catch (e) {}
+    out.textContent = String(n).padStart(6, '0');
   })();
   </script>
 </body>
