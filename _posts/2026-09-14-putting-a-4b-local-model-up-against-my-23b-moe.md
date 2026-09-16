@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Putting a 4B Local Model Up Against My 23B MoE, Twice"
+title: "4B vs 23B on the 3060"
 date: 2026-09-14
 author: bhanuharya
 tags: [local-llm, llama.cpp, hardware, self-hosting, testing]

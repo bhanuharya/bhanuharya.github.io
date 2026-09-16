@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Building a Small Self-Hosted Agent System with Hermes"
+title: "Hermes at home"
 date: 2026-08-19
 author: bhanuharya
 tags: [agents, self-hosting, automation, security]

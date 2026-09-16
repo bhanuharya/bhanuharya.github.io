@@ -8,23 +8,23 @@ permalink: /about/
   <span class="prompt">bhanuharya@sec</span><span class="loc">:~/about$</span> <span class="cmd">cat about.txt</span>
 </div>
 
-Hi, I'm Harya / Wishnu. I work in information security, mostly around financial systems and the infrastructure behind them.
+Hi, I'm Harya, also Wishnu. I work in information security, mostly around financial systems and the infrastructure underneath them.
 
-I got into security during my early college years, mostly by tinkering with Linux and computer systems. I was curious about how things worked, why they broke, and what happened when they were used in ways their builders did not expect.
+I got into it in college, mostly by tinkering with Linux and taking my own machines apart. I wanted to know why something stopped working, and what happened when you used it in a way the author did not expect.
 
-I studied computer science/informatics at Bandung Institute of Technology (ITB). My undergraduate work involved designing a Python compiler for a 32-bit RISC-V processor. It gave me a lasting interest in compilers, low-level systems, and the parts of computing that usually stay out of sight.
+I studied computer science at Bandung Institute of Technology. My undergraduate work was a Python compiler for a 32-bit RISC-V processor, which is where the interest in compilers and low-level systems stuck. I still like the parts of computing that stay out of sight.
 
-That curiosity eventually turned into work. Since then, I've worked across fintech, banking, securities firms, and capital markets. Most of my work has been somewhere between security operations, engineering, and governance.
+Since then I've worked across fintech, banking, securities, and capital markets.
 
-The work has taken me through cloud and network security, firewalls and WAFs, identity, incident response, and secure software development. I also like building small automations when repetitive work starts getting annoying.
+Most of the work sits between security operations and engineering: cloud and network security, firewalls and WAFs, identity, incident response, secure software development, and whatever small automation stops a repetitive task from staying repetitive.
 
-These days, I'm especially interested in the relationship between AI and security. Attackers are already using it, while defenders are often working with limited time and resources. I want to understand where AI can genuinely help defenders, and how to secure the AI systems that organizations are beginning to rely on.
+Right now I'm most interested in AI and security. The attacking side adopted it first. Teams on defense are still working out where it fits, usually with less time than the problem deserves.
 
-More broadly, I'm interested in how security decisions get made. That means looking beyond how a control works to understand the risk, the operational cost, and whether it helps the system keep working when something goes wrong.
+I also care about how security decisions get made, not only how a control works. Whether it still works on an ordinary Tuesday matters more to me than whether it looks right in a document.
 
-Outside work, I'm interested in privacy, open source, self-hosting, music, and computers. I still spend too much time tinkering with things that probably did not need tinkering :-)
+Outside work: privacy, open source, self-hosting, and more music than I can keep track of. I still spend too long tinkering with things that did not need tinkering :-)
 
-This site is for notes, experiments, and things I want to remember.
+This site is where I keep notes and experiments.
 
 <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
 

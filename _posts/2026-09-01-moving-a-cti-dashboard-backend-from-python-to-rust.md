@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Moving a CTI Dashboard Backend from Python to Rust"
+title: "I moved the CTI backend to Rust"
 date: 2026-09-01
 author: bhanuharya
 tags: [rust, python, performance, security, agents, cti, self-hosting]

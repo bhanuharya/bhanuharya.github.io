@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Why I Built My Own Security Scanner (and Then Had to Explain It to SonarQube)"
+title: "my scanner and SonarQube"
 date: 2026-09-10
 author: bhanuharya
 tags: [security, devsecops, sonarqube, side-project]
