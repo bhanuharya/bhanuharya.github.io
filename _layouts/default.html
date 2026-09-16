@@ -1,7 +1,7 @@
 ---
 ---
 <!DOCTYPE html>
-<html lang="{{ page.lang | default: site.lang | default: 'en' }}">
+<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-visits-endpoint="">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -64,8 +64,10 @@
   <footer class="footer">
     <p>&copy; {{ site.time | date: '%Y' }} Harya. Notes and experiments, nothing here is advice.</p>
     <p>No trackers, no cookies. <a href="{{ '/feed.xml' | relative_url }}">rss</a>, <a href="https://github.com/bhanuharya" rel="me">github</a>, <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a>.</p>
+    <p id="visits" hidden>visits: <span id="visit-count">0</span> <span class="dim">(first-party counter, one hit per browser per day, nothing else stored)</span></p>
   </footer>
 </div>
+<script defer src="{{ '/assets/js/visits.js' | relative_url }}"></script>
 <script>
   (function () {
     var btn = document.getElementById('theme-toggle');
