@@ -1,4 +1,4 @@
-# bnhrya.github.io — personal site
+# bhanuharya.github.io: personal site
 
 A Jekyll site on GitHub Pages: dark terminal aesthetic, mobile-first, no external fonts or JS dependencies. Content is Markdown plus a small interactive terminal on the homepage.
 
@@ -23,24 +23,24 @@ Posts appear on `/blog/` newest-first with title, date, reading time, tags, and 
 
 ## Structure
 
-- `_posts/` — published posts
-- `_drafts/` — unpublished template (`next-article-template.md`)
-- `_layouts/` — custom layouts (default, home, post, page) that override minima
-- `assets/css/style.css` — site styles (terminal + prose typography)
-- `index.md` — homepage (layout: home, terminal + latest post)
-- `blog.md` — blog index at `/blog/`
-- `about.md` — about page at `/about/`
-- `_config.yml` — site config (title, description, url, theme)
-- `404.html` — custom not-found page
-- `.github/workflows/jekyll-gh-pages.yml` — Pages deployment workflow (do not modify)
+- `_posts/`: published posts
+- `_drafts/`: unpublished template (`next-article-template.md`)
+- `_layouts/`: custom layouts (default, home, post, page) that override minima
+- `assets/css/style.css`: site styles (terminal + prose typography)
+- `index.md`: homepage (layout: home, terminal + latest post)
+- `blog.md`: blog index at `/blog/`
+- `about.md`: about page at `/about/`
+- `_config.yml`: site config (title, description, url, theme)
+- `404.html`: custom not-found page
+- `.github/workflows/jekyll-gh-pages.yml`: Pages deployment workflow (do not modify)
 
 ## Local build
 
-GitHub Actions is the authoritative build (`actions/jekyll-build-pages@v1` on push to `main`). No Gemfile is committed — the site builds on Pages without one.
+GitHub Actions is the authoritative build (`actions/jekyll-build-pages@v1` on push to `main`). No Gemfile is committed: the site builds on Pages without one.
 
 If you want a local render:
 
-**Option A — Ruby (when installed):**
+**Option A: Ruby (when installed):**
 ```sh
 gem install bundler github-pages
 bundle init
@@ -51,7 +51,7 @@ bundle exec jekyll serve
 ```
 Remove the generated `Gemfile`/`Gemfile.lock` before committing (they are not needed on Pages), or keep them ignored.
 
-**Option B — Docker (no Ruby needed):**
+**Option B: Docker (no Ruby needed):**
 ```sh
 docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll serve
 ```
