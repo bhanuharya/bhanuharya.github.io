@@ -2,8 +2,8 @@
 window.TERM_ART = {
   "harya": [
     "+--------------------------------------------+",
-    "| harya@bhanuharya:~$ whoami                 |",
-    "| security, systems, ai, thoughts            |",
+    "| bhanuharya@sec:~$ whoami                   |",
+    "| security, systems, self hosting            |",
     "+--------------------------------------------+"
   ],
   "cat": [
