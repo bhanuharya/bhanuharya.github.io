@@ -2,30 +2,30 @@
 
 :root {
   --bg: #050605;
-  --fg: #38f27a;
-  --dim: #1f9e4a;
+  --fg: #62f2a0;
+  --dim: #4ecb80;
   --err: #ff6b6b;
   --warn: #ffd166;
   --link: #8affd0;
   --sel: #143d24;
-  --glow: rgba(56, 242, 122, 0.45);
+  --glow: rgba(98, 242, 160, 0.28);
   --mono: ui-monospace, "SF Mono", "DejaVu Sans Mono", "Courier New", monospace;
 }
 
 html[data-term="amber"] {
   --fg: #ffb000;
-  --dim: #a86f00;
+  --dim: #d99b2b;
   --link: #ffd28a;
   --sel: #3d2b00;
-  --glow: rgba(255, 176, 0, 0.4);
+  --glow: rgba(255, 176, 0, 0.3);
 }
 
 html[data-term="white"] {
   --fg: #e6e6e6;
-  --dim: #8a8a8a;
+  --dim: #a8a8a8;
   --link: #a8d8ff;
   --sel: #2a2a2a;
-  --glow: rgba(230, 230, 230, 0.25);
+  --glow: rgba(230, 230, 230, 0.18);
 }
 
 * { box-sizing: border-box; }

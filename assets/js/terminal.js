@@ -19,7 +19,7 @@
   };
 
   function promptText() {
-    return 'harya@bhanuharya:' + state.cwd + '$ ';
+    return 'bhanuharya@sec:' + state.cwd + '$ ';
   }
 
   function renderPrompt() {
@@ -565,7 +565,7 @@
   function cmdNeofetch() {
     var art = (ART.monitor || []).slice();
     var info = [
-      'harya@bhanuharya',
+      'bhanuharya@sec',
       '---------------',
       'site     bhanuharya.github.io',
       'shell    terminal.js',
