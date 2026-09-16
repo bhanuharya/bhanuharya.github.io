@@ -206,10 +206,43 @@
     return normPath(state.cwd + '/' + arg);
   }
 
+  var LOCAL_FILES = {
+    'about.txt': { size: 1284, date: '2026-08-20' },
+    'notes.txt': { size: 372, date: '2026-08-20' },
+    'links.txt': { size: 246, date: '2026-08-20' },
+    '.plan': { size: 214, date: '2026-09-16', hidden: true }
+  };
+
+  function meta(path) {
+    var out = [];
+    if (path === '~') {
+      Object.keys(LOCAL_FILES).forEach(function (n) {
+        var f = LOCAL_FILES[n];
+        out.push({ name: n, type: 'f', size: f.size, date: f.date, hidden: !!f.hidden });
+      });
+      out.push({ name: 'posts', type: 'd', size: DATA.posts.length, date: '2026-09-14' });
+      out.push({ name: 'tags', type: 't', size: allTags().length, date: '2026-09-14' });
+      return out;
+    }
+    if (path === ROOT_POSTS) {
+      return DATA.posts.map(function (p) {
+        return { name: slug(p.url) + '.md', type: 'f', size: (p.words || 0) * 6, date: p.date };
+      });
+    }
+    if (path === ROOT_TAGS) {
+      return allTags().map(function (t) { return { name: t, type: 't', size: 1, date: '2026-09-14' }; });
+    }
+    return null;
+  }
+
   function dirs() {
-    var map = { '~': ['about.txt', 'notes.txt', 'links.txt', 'posts/', 'tags/'] };
-    map[ROOT_POSTS] = DATA.posts.map(function (p) { return slug(p.url) + '.md'; });
-    map[ROOT_TAGS] = allTags().map(function (t) { return t; });
+    var map = {};
+    ['~', ROOT_POSTS, ROOT_TAGS].forEach(function (p) {
+      var m = meta(p) || [];
+      map[p] = m.filter(function (e) { return !e.hidden; }).map(function (e) {
+        return e.name + (e.type === 'd' ? '/' : '');
+      });
+    });
     return map;
   }
 
@@ -253,44 +286,51 @@
     });
   }
 
-  function cat(path, done) {
-    var dir = dirs();
-    if (path === '~') { addLine('cat: ~: is a directory', 'err'); return; }
-    if (dir[path]) { addLine('cat: ' + path.replace('~/', '') + ': is a directory', 'err'); return; }
-    if (path === '~/about.txt') {
-      fetchText('/about/', function (t) { addBlob(t); done && done(); });
-      return;
-    }
-    if (path === '~/notes.txt') {
-      addBlob(notesText);
-      return;
-    }
-    if (path === '~/links.txt') {
-      addBlob(linksText);
-      return;
-    }
+  function numberLines(t) {
+    return t.split('\n').map(function (l, i) { return pad(String(i + 1), 6) + l; }).join('\n');
+  }
+
+  function readFile(path, cb) {
+    if (path === '~/about.txt') { fetchText('/about/', cb); return; }
+    if (path === '~/notes.txt') { cb(notesText); return; }
+    if (path === '~/links.txt') { cb(linksText); return; }
+    if (path === '~/.plan') { cb(planText); return; }
     if (path.indexOf(ROOT_POSTS + '/') === 0) {
       var name = path.split('/').pop();
       var post = DATA.posts.filter(function (p) { return slug(p.url) + '.md' === name; })[0];
-      if (!post) { addLine('cat: ' + name + ': no such file', 'err'); return; }
+      if (!post) { cb(null, 'cat: ' + name + ': no such file or directory'); return; }
       fetchText(post.url, function (t) {
-        addBlob(t);
-        addLine('', 'dim');
-        addLine('open it in the browser: read ' + (DATA.posts.indexOf(post) + 1), 'dim');
-        done && done();
+        cb(t + '\n\nopen it in the browser: read ' + (DATA.posts.indexOf(post) + 1));
       });
       return;
     }
-    addLine('cat: ' + path.replace('~/', '') + ': no such file or directory', 'err');
+    cb(null, 'cat: ' + path.replace('~/', '') + ': no such file or directory');
+  }
+
+  function cat(path, opts) {
+    opts = opts || {};
+    if (path === '~' || dirs()[path]) {
+      addLine('cat: ' + path.replace('~/', '') + ': is a directory', 'err');
+      return;
+    }
+    readFile(path, function (text, err) {
+      if (err) { addLine(err, 'err'); return; }
+      addBlob(opts.n ? numberLines(text) : text);
+    });
   }
   /* ---- static text ----------------------------------------------------- */
 
-  var bannerBox = [
-    '+----------------------------------------------+',
-    '|   bhanuharya@sec   security and systems      |',
-    '|   notes, experiments, small programs         |',
-    '+----------------------------------------------+'
-  ].join('\n');
+  var ART = window.TERM_ART || { harya: [], cat: [], monitor: [] };
+
+  var tagline = 'security, systems, self hosting. hand written page, no trackers.';
+
+  function bannerLines() {
+    var out = (ART.harya || []).slice();
+    out.push('');
+    out.push('  ' + tagline);
+    out.push('');
+    return out;
+  }
 
   var notesText = [
     'this site is notes, experiments, and things i want to remember:',
@@ -300,6 +340,15 @@
     'nothing here is a product announcement and nothing here is advice.',
     'it is a plain page on purpose: it loads fast, it reads on anything,',
     'and it will still open in ten years.'
+  ].join('\n');
+
+  var planText = [
+    '.plan, the old finger convention. mine says:',
+    '',
+    '  read more source, write fewer abstractions, keep the notes.',
+    '  ship the small tool, then delete half of it.',
+    '',
+    'this file never shows up in a plain ls. try ls -la :-)'
   ].join('\n');
 
   var linksText = [
@@ -315,9 +364,12 @@
       'available commands',
       '',
       '  help              this list',
-      '  ls [dir]          list files',
-      '  cd <dir>          change directory',
-      '  cat <file>        print a file (try about.txt, notes.txt, links.txt)',
+      '  ls [-laRh] [dir]  list files: -l long, -a hidden, -R recursive, -h sizes',
+      '  cd <dir>          change directory, cd - goes back',
+      '  cat [-n] <file>   print a file: about.txt, notes.txt, links.txt, .plan',
+      '  head/tail [-n N]  first or last lines of a file',
+      '  wc [-lwc] <file>  count lines, words, characters',
+      '  grep [-i] <pat>   search: grep rust posts, grep -n ssrf notes.txt',
       '  pwd               print working directory',
       '  posts             list notes with numbers',
       '  read <n>          open note n in the browser',
@@ -332,6 +384,7 @@
       '  history           previous commands',
       '  clear             clear the screen (or ctrl+l)',
       '  pulsar            play the pulsar',
+      '  banner / art      the ascii art again',
       '  exit              leave the terminal (or esc)',
       '',
       'tab completes, up and down walk history, ctrl+c cancels a line.'
@@ -340,13 +393,21 @@
 
   function welcomeLines() {
     var lines = [
-      'welcome to the shell. type help for commands, exit to leave.',
-      ''
+      'getting started',
+      '',
+      '  1.  ls               list what is here',
+      '  2.  cat about.txt    read about me',
+      '  3.  posts            list the notes, then read 1',
+      '  4.  neofetch         this shell in a box',
+      '  5.  theme amber      try another phosphor',
+      '  6.  exit             back to the plain site',
+      '',
+      'type help for every command. tab completes, up and down walk history.'
     ];
     var last = DATA.posts[0];
     if (last) {
-      lines.push('latest note: ' + last.title + ' (' + last.date + ')');
-      lines.push('read it with: read 1');
+      lines.push('');
+      lines.push('latest note: ' + last.title + ' (' + last.date + ')  ->  read 1');
     }
     return lines;
   }
@@ -371,20 +432,79 @@
   }
   /* ---- commands -------------------------------------------------------- */
 
+  function human(n) {
+    if (n === undefined || n === null) return '';
+    if (n < 1024) return n + 'B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + 'K';
+    return (n / 1048576).toFixed(1) + 'M';
+  }
+
+  function longLine(e, hum) {
+    var perm = e.type === 'f' ? '-rw-r--r--' : 'drwxr-xr-x';
+    return pad(perm, 12) + pad('1 harya harya', 15) +
+           pad(hum ? human(e.size) : String(e.size), 8) + pad(e.date, 12) +
+           e.name + (e.type === 'd' ? '/' : '');
+  }
+
+  function listDir(path, opts) {
+    var m = meta(path);
+    if (!m) return false;
+    var items = m.filter(function (e) { return opts.all || !e.hidden; });
+    if (opts.all) {
+      items = [{ name: '.', type: 'd', size: 0, date: '' },
+               { name: '..', type: 'd', size: 0, date: '' }].concat(items);
+    }
+    if (opts.long) {
+      addLine('total ' + items.length, 'dim');
+      items.forEach(function (e) { addLine(longLine(e, opts.human)); });
+    } else {
+      addLine(items.map(function (e) { return e.name + (e.type === 'd' ? '/' : ''); }).join('   '));
+    }
+    return true;
+  }
+
   function cmdLs(args) {
-    var path = resolve(args[0] || state.cwd);
-    var map = dirs();
-    var entries = map[path];
-    if (!entries) { addLine('ls: ' + path.replace('~/', '') + ': no such directory', 'err'); return; }
-    addLine(entries.join('   '));
+    var flags = '', targets = [];
+    args.forEach(function (a) {
+      if (a.charAt(0) === '-' && a.length > 1) flags += a.slice(1);
+      else targets.push(a);
+    });
+    var opts = {
+      all: flags.indexOf('a') !== -1,
+      long: flags.indexOf('l') !== -1,
+      human: flags.indexOf('h') !== -1,
+      rec: flags.indexOf('R') !== -1
+    };
+    var path = resolve(targets[0] || state.cwd);
+    if (!meta(path)) {
+      addLine('ls: ' + (targets[0] || path).replace('~/', '') + ': no such directory', 'err');
+      return;
+    }
+    listDir(path, opts);
+    if (opts.rec && path === '~') {
+      ['~/posts', '~/tags'].forEach(function (sub) {
+        addLine('');
+        addLine(sub + ':', 'dim');
+        listDir(sub, { all: false, long: opts.long, human: opts.human });
+      });
+    }
   }
 
   function cmdCd(args) {
+    if (args[0] === '-') {
+      var prev = state.prev || '~';
+      state.prev = state.cwd;
+      state.cwd = prev;
+      renderPrompt();
+      addLine(state.cwd);
+      return;
+    }
     var path = resolve(args[0]);
     if (!dirs()[path]) {
       addLine('cd: ' + (args[0] || '') + ': no such directory', 'err');
       return;
     }
+    state.prev = state.cwd;
     state.cwd = path;
     renderPrompt();
   }
@@ -447,15 +567,7 @@
   }
 
   function cmdNeofetch() {
-    var art = [
-      '        .--.       ',
-      '       |o_o |      ',
-      '       |:_/ |      ',
-      '      //   \\ \\     ',
-      '     (|     | )    ',
-      "    /'\\_   _/`\\    ",
-      '    \\___)=(___/    '
-    ];
+    var art = (ART.monitor || []).slice();
     var info = [
       'harya@bhanuharya',
       '---------------',
@@ -519,11 +631,102 @@
       addLine('pulsar PSR B1919+21, 1.337 seconds, drawn in ascii. :-)', 'dim');
     }, 5200);
   }
+  function parseFlags(args) {
+    var flags = '', rest = [];
+    args.forEach(function (a) {
+      if (a.charAt(0) === '-' && a.length > 1) flags += a.slice(1);
+      else rest.push(a);
+    });
+    return { flags: flags, args: rest };
+  }
+
+  function cmdWc(args) {
+    var f = parseFlags(args);
+    var target = f.args[0];
+    if (!target) { addLine('wc: usage: wc [-l] [-w] [-c] <file>', 'err'); return; }
+    readFile(resolve(target), function (text, err) {
+      if (err) { addLine(err, 'err'); return; }
+      var all = !f.flags;
+      var out = [];
+      if (all || f.flags.indexOf('l') !== -1) out.push(pad(String(text.split('\n').length), 7) + 'lines');
+      if (all || f.flags.indexOf('w') !== -1) out.push(pad(String(text.split(/\s+/).filter(Boolean).length), 7) + 'words');
+      if (all || f.flags.indexOf('c') !== -1) out.push(pad(String(text.length), 7) + 'chars');
+      addLine(out.join('  ') + '   ' + target);
+    });
+  }
+
+  function cmdHeadTail(args, mode) {
+    var f = parseFlags(args);
+    var rest = f.args.slice();
+    var n = 10;
+    if (rest.length > 1 && /^\d+$/.test(rest[rest.length - 1])) n = parseInt(rest.pop(), 10);
+    else if (rest.length > 1 && /^\d+$/.test(rest[0])) n = parseInt(rest.shift(), 10);
+    var target = rest[0];
+    if (!target) { addLine(mode + ': usage: ' + mode + ' [-n N] <file>', 'err'); return; }
+    readFile(resolve(target), function (text, err) {
+      if (err) { addLine(err, 'err'); return; }
+      var lines = text.split('\n');
+      addBlob((mode === 'head' ? lines.slice(0, n) : lines.slice(-n)).join('\n'));
+    });
+  }
+
+  function cmdGrep(args) {
+    var f = parseFlags(args);
+    var pattern = f.args[0];
+    var target = f.args[1];
+    if (!pattern) { addLine('grep: usage: grep [-i] <pattern> [file | posts | tags]', 'err'); return; }
+    var rx;
+    try {
+      rx = new RegExp(pattern, f.flags.indexOf('i') !== -1 ? 'i' : '');
+    } catch (e) {
+      addLine('grep: bad pattern', 'err');
+      return;
+    }
+
+    function scan(name, text) {
+      var hits = text.split('\n').filter(function (l) { return rx.test(l); })
+        .map(function (l) { return l.trim(); })
+        .filter(function (l) { return l.length; });
+      if (hits.length) {
+        addLine(name, 'dim');
+        hits.slice(0, 10).forEach(function (l) { addLine('  ' + l.slice(0, 110)); });
+        if (hits.length > 10) addLine('  ... ' + (hits.length - 10) + ' more matching lines', 'dim');
+      }
+      return hits.length;
+    }
+
+    if (!target || target === 'posts' || target === '~/posts') {
+      var total = 0, i = 0;
+      (function next() {
+        if (i >= DATA.posts.length) {
+          if (!total) { addLine('no matches in ' + DATA.posts.length + ' notes', 'dim'); }
+          return;
+        }
+        var p = DATA.posts[i++];
+        fetchText(p.url, function (t) {
+          total += scan(slug(p.url) + '.md', t);
+          next();
+        });
+      })();
+      return;
+    }
+    if (target === 'tags' || target === '~/tags') {
+      var hits = allTags().filter(function (t) { return rx.test(t); });
+      addLine(hits.length ? hits.join('   ') : 'no matching tags');
+      return;
+    }
+    readFile(resolve(target), function (text, err) {
+      if (err) { addLine(err, 'err'); return; }
+      if (!scan(resolve(target).replace('~/', ''), text)) addLine('no matches', 'dim');
+    });
+  }
+
   /* ---- dispatch -------------------------------------------------------- */
 
   var CMDS = {
     help: function () { addBlob(helpText()); },
-    banner: function () { addBlob(bannerBox); },
+    banner: function () { bannerLines().forEach(function (l) { addLine(l, 'banner'); }); },
+    art: function () { (ART.cat || []).forEach(function (l) { addLine(l, 'banner'); }); },
     ls: cmdLs,
     dir: cmdLs,
     cd: cmdCd,
@@ -533,6 +736,10 @@
     read: cmdRead,
     open: cmdRead,
     tags: cmdTags,
+    wc: cmdWc,
+    grep: cmdGrep,
+    head: function (a) { cmdHeadTail(a, 'head'); },
+    tail: function (a) { cmdHeadTail(a, 'tail'); },
     links: cmdLinks,
     contact: cmdLinks,
     whoami: cmdWhoami,
@@ -561,7 +768,14 @@
     if (!name) return;
 
     if (name === 'cat' || name === 'less' || name === 'more') {
-      cat(resolve(args[0]), null);
+      var cf = parseFlags(args);
+      if (!cf.args.length) {
+        addLine('cat: missing operand', 'err');
+        (ART.cat || []).forEach(function (l) { addLine(l, 'banner'); });
+        addLine('have a cat instead. try cat about.txt or cat notes.txt', 'dim');
+        return;
+      }
+      cat(resolve(cf.args[0]), { n: cf.flags.indexOf('n') !== -1 });
       return;
     }
     var fn = CMDS[name];
@@ -633,7 +847,8 @@
 
   function boot() {
     restorePrefs();
-    addBlob(bannerBox, 'banner');
+    bannerLines().forEach(function (l) { addLine(l, 'banner'); });
+    if (!(ART.harya || []).length) { addLine('bhanuharya@sec', 'banner'); }
     addLine('terminal.js v1.0, a small shell over a static site', 'dim');
     addLine('');
     welcomeLines().forEach(function (l) { addLine(l, l ? '' : 'dim'); });
