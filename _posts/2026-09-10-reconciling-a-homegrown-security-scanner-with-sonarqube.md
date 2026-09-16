@@ -3,7 +3,7 @@ layout: post
 title: "my scanner and SonarQube"
 date: 2026-09-10
 author: bhanuharya
-tags: [security, devsecops, sonarqube, side-project]
+tags: [security, devsecops, sonarqube, go, python, side-project]
 ---
 
 Every security team eventually hits the same wall: the standard tools give answers, but not *your* answers. That happened to me, and the solution was, characteristically, to spend my free time building another tool. This is the story of that.
@@ -14,7 +14,19 @@ At work we run SonarQube and the usual pipeline stuff. It is fine. But when I lo
 
 Both numbers are true at once. They just measure different things. I wanted the wider net, and I wanted it running automatically, with a policy gate, producing something a human could actually review instead of a raw export nobody opens.
 
-So I built `sdt`: a Go CLI that wraps three existing scanners. OpenGrep for SAST, Gitleaks for secrets, Trivy for dependencies, all behind one command. Preflight check, scan, evaluate policy against agreed rules, generate a report (PDF/JSON/SARIF), and hand findings off to whichever tool the team reviews in. Boring on purpose. The scanning engines already exist. The missing piece was the connective tissue and the opinionated defaults.
+## The first version was a platform
+
+It was a web app first, not a CLI. FastAPI with SQLite, a dashboard, and seven scanners wired in parallel: bandit and opengrep for SAST, trivy and osv-scanner for dependencies, checkov for IaC, gitleaks for secrets, ZAP for DAST. Intake came from Bitbucket, or a ZIP, a local folder, or an approved DAST target. Findings kept an 8 KiB code context, and credential-shaped values were redacted before anything got stored. 35 Python files, about 6,000 lines.
+
+The engines worked. The shape was wrong. A verdict that lives in a dashboard only helps if somebody opens the dashboard, and what I actually wanted was a gate: one line of output, a non-zero exit, evidence left behind, running wherever the code already is. A server, a database, a dashboard, and provider-coupled intake have no counterpart in that design, so the gap was architectural rather than incremental. I wrote it down as [ADR 0001](https://github.com/bhanuharya/secure-development-tools/blob/main/docs/adr/0001-implementation-language-go.md), dated 2026-09-04, and rebuilt the runtime in Go. The Python tree is still in the repo, untouched, as reference.
+
+## The rebuild
+
+`sdt` is a Go CLI that wraps three existing scanners. OpenGrep for SAST, Gitleaks for secrets, Trivy for dependencies, all behind one command. Preflight check, scan, evaluate policy against agreed rules, generate a report (PDF/JSON/SARIF), and hand findings off to whichever tool the team reviews in. Boring on purpose. The scanning engines already exist. The missing piece was the connective tissue and the opinionated defaults.
+
+What moved into Go: the run pipeline (context, plan, execute, normalize, policy, artifacts), engine execution as direct argv with no shell anywhere, one canonical finding schema with occurrence-level fingerprints, a typed YAML policy checked against a fingerprint baseline, and the same four artifacts on every run, including runs that fail the policy. Exit codes are the gate now, not a status field in a database. That came to 64 Go files and about 9,600 lines, so the rewrite is bigger than the thing it replaced. Dropping the server did not shrink the tool, it moved the weight into the parts that decide something.
+
+The report plumbing stayed Python: PDF generation, the Sonar converter, the Dart analyzer converter, and the shared module they use. Go runs the scans, Python writes the paperwork. What did not come across at all: the dashboard, the database, Bitbucket intake, and DAST orchestration. If I want ZAP pointed at a target again, I would be rebuilding that.
 
 ## The part that took longer than expected
 
