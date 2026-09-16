@@ -322,14 +322,10 @@
 
   var ART = window.TERM_ART || { harya: [], cat: [], monitor: [] };
 
-  var tagline = 'security, systems, self hosting. hand written page, no trackers.';
+  var tagline = 'security, systems, ai, thoughts.';
 
   function bannerLines() {
-    var out = (ART.harya || []).slice();
-    out.push('');
-    out.push('  ' + tagline);
-    out.push('');
-    return out;
+    return (ART.harya || ['bhanuharya@sec']).slice().concat(['']);
   }
 
   var notesText = [

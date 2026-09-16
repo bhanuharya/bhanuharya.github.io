@@ -1,11 +1,10 @@
-/* ascii art for the terminal. fonts: toilet mono9 (harya), hand drawn rest */
+/* ascii art for the terminal. banner is hand drawn, cat and monitor too */
 window.TERM_ART = {
   "harya": [
-    " ▄    ▄   ▄▄   ▄▄▄▄▄ ▄     ▄   ▄▄",
-    " █    █   ██   █   ▀█ ▀▄ ▄▀    ██",
-    " █▄▄▄▄█  █  █  █▄▄▄▄▀  ▀█▀    █  █",
-    " █    █  █▄▄█  █   ▀▄   █     █▄▄█",
-    " █    █ █    █ █    ▀   █    █    █"
+    "+--------------------------------------------+",
+    "| harya@bhanuharya:~$ whoami                 |",
+    "| security, systems, ai, thoughts            |",
+    "+--------------------------------------------+"
   ],
   "cat": [
     "    /\\_/\\    ",
