@@ -4,6 +4,7 @@ title: "Can my local 8B do what Jev does"
 date: 2026-09-17
 author: bhanuharya
 tags: [local-llm, evals, calibration, llama.cpp, email]
+redirect_from: /blog/email-triage-local-8b-vs-hosted/
 ---
 
 TypeSafe's Jev is new, and it landed in my feed twice in one day. [Hassan El Mghari](https://x.com/nutlope/status/2100426999546184123) used it to classify 1,018 AI research papers into 24 topics for eight cents, at a median 256 ms per paper. A [browser demo](https://x.com/gregpr07/status/2100411066966749359) from the Browser Use founder had it driving a real flight search in seven seconds for $0.0039. Different tasks, one primitive underneath: code enumerates the answers, the model picks one, and what comes back is the pick, a probability for every option that was offered, and a confidence you can threshold.
