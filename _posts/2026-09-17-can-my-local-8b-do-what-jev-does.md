@@ -7,7 +7,7 @@ tags: [local-llm, evals, calibration, llama.cpp, email]
 redirect_from: /blog/email-triage-local-8b-vs-hosted/
 ---
 
-TypeSafe's Jev is new, and it landed in my feed twice in one day. [Hassan El Mghari](https://x.com/nutlope/status/2100426999546184123) classified 1,018 AI research papers into 24 topics for eight cents, at a median 256 ms per paper. A [browser demo](https://x.com/gregpr07/status/2100411066966749359) from the Browser Use founder drove a flight search in seven seconds for $0.0039. Different tasks, one primitive: code enumerates the answers, the model picks one, and what comes back is the pick, a probability for every option offered, and a confidence you can threshold.
+TypeSafe's Jev kept landing in my feed, twice in one day, and both posts were pushing the same idea. [Hassan El Mghari](https://x.com/nutlope/status/2100426999546184123) classified 1,018 AI research papers into 24 topics for eight cents, at a median 256 ms per paper. A [browser demo](https://x.com/gregpr07/status/2100411066966749359) from the Browser Use founder drove a flight search in seven seconds for $0.0039. Different tasks, one primitive: code enumerates the answers, the model picks one, and what comes back is the pick, a probability for every option offered, and a confidence you can threshold.
 
 Both were hosted, so the question was whether my local lane could return that same shape on a task of mine, at an accuracy cost I could live with, and whether anything it returned would be safe to gate. Mail triage is the task, and in a security team it is a compliance question before a cost question. A router that reads mail sends the mail somewhere.
 
