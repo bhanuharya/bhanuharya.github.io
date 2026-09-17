@@ -17,6 +17,28 @@ So I ran it as an experiment with a frozen protocol instead of a vibe check: sor
 
 The short version. The local model is level with the hosted one on three of eight queues and nowhere near it on the rest. The number that decides whether either of them can run unattended is not accuracy, it is how many wrong answers walk through the confidence gate. And the local arm cannot be rescued by plumbing, because it never reports doubt in the first place.
 
+## What Jev is
+
+[TypeSafe](https://docs.typesafe.ai/) sells small units of AI as programming primitives, and Jev is the first of its System One models. The offer is narrow on purpose. Instead of asking a model to write something and then parsing whatever comes back, you hand it a state, a question and the set of answers you will accept, and it returns a typed judgment. For the Choice primitive that means the option it picked, a probability for every option you offered, and a confidence. There is no text to parse, no format to police, and no way for the answer to be a queue that does not exist. Choice is one of three primitives, next to Noul for yes or no and Score for how far along a described dimension something sits, and all three come back as values rather than prose.
+
+The difference from an LLM is the training target, not the plumbing. A general model is built to produce a plausible continuation, so the interface is text and structure is what you get by asking politely and checking afterwards. Jev is pointed at the judgment itself: choose among these options, and say how sure you are. Code owns the loop, and the model owns one bounded decision, which is the rule the vendor's own building guide states.
+
+Three properties follow, and they are the ones this post cares about:
+
+- The answer set is closed by construction, so a wrong answer is checkable without a parser.
+- Every option carries a probability, which means competing options can be compared and not just the winner read.
+- Confidence is a separate value from the top probability, and it exists to be thresholded. Gating on it is the design, not a workaround.
+
+## Why bother imitating it locally
+
+If the value is in the judgment rather than the text, the obvious question is how much of it a small model on your own hardware can carry. Three reasons push toward trying.
+
+- **Data.** A hosted call means the state you send leaves the host. For a mail router that state is the mail itself, and in a security team that is a compliance question before it is a cost question.
+- **Money.** Both of the demos in the opening lead with per-item cost, and per-call pricing is precisely what a local lane removes. The lane already exists for other work, so the marginal cost of the experiment is a day.
+- **Control.** `jev-latest` floats rather than pinning to a version, a hosted route can rate limit, and it can change under you. A file on disk does none of that.
+
+There is a fourth reason that is less rational. When the decision is only a choice among options that code has already enumerated, it looks like something an 8B ought to be able to do, especially once a grammar closes the answer set and the surrounding code is doing the validating and the gating. That intuition is what this experiment tests, and the result is that the shape travels and the calibration does not.
+
 ## The pattern and the two arms
 
 The hosted arm is Jev, over the same task. The local arm is LFM2.5-8B-A1B at Q4_K_M under llama-server on the ThinkPad T14 Gen 1 that serves my local lane, CPU only with no GPU offload, 8 of its 12 threads and 4 slots given to the server.
@@ -175,6 +197,7 @@ One measurement was abandoned rather than patched. Exact per-option scoring need
 - One model, one quantisation, one CPU lane, one corpus. Nothing here generalises to small models as a class.
 - `jev-latest` floats, so the hosted numbers cannot be reproduced against a pinned version.
 - Lab 1's trap sample was 14 items, and its "local beats hosted on traps" reading did not survive lab 2, where the hosted arm won 48 of 60 against 31.
+- The description of Jev is taken from TypeSafe's own documentation rather than from inspecting the model. Everything measured here is the behaviour of the API they serve.
 - The two posts in the opening are demos, not evaluations. Neither one reports accuracy on its own task, and both are self-reported by people adjacent to the vendors.
 - The $0.0786 per 1,000 emails figure is the paper classifier's number, eight cents for 1,018 items, applied to my token counts. It is not a rate card for this task, and TypeSafe's pricing page returns 404.
 
