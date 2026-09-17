@@ -11,9 +11,9 @@ TypeSafe's Jev kept landing in my feed, twice in one day, and both posts were pu
 
 Both were hosted, so the question was whether my local lane could return that same shape on a task of mine, at an accuracy cost I could live with, and whether anything it returned would be safe to gate. Mail triage is the task, and in a security team it is a compliance question before a cost question. A router that reads mail sends the mail somewhere.
 
-So I ran it with a frozen protocol, not a vibe check: sort synthetic email into queues, one arm on Jev, one on the local arm, and gate every answer on confidence the way an unattended router would have to.
+So I ran it with a frozen protocol, not a vibe check: sort synthetic email into queues, one on Jev, one on the local model, and gate every answer on confidence the way an unattended router would have to.
 
-The short version. The local model is level with the hosted one on three of eight queues and nowhere near it on the rest. What decides whether either can run unattended is not accuracy, it is how many wrong answers walk through the gate, and the local arm cannot be rescued by plumbing because it never reports doubt.
+The short version. The local model is level with the hosted one on three of eight queues and nowhere near it on the rest. What decides whether either can run unattended is not accuracy, it is how many wrong answers walk through the gate, and the local model cannot be rescued by plumbing because it never reports doubt.
 
 ## What Jev is
 
@@ -35,13 +35,13 @@ Three properties follow:
 
 The fourth reason is less rational. When a decision is only a choice among options code has already enumerated, it looks like something an 8B ought to manage. That intuition is what the experiment tests, and the result is that the shape travels and the calibration does not.
 
-## The pattern and the two arms
+## Two setups, one pattern
 
-The hosted arm is Jev. The local arm is LFM2.5-8B-A1B at Q4_K_M under llama-server on the ThinkPad T14 Gen 1 that serves my local lane, CPU only, 8 of its 12 threads and 4 slots given to the server.
+One setup is Jev, hosted. The other is LFM2.5-8B-A1B at Q4_K_M under llama-server on the ThinkPad T14 Gen 1 that serves my local lane, CPU only, 8 of its 12 threads and 4 slots given to the server.
 
-Both arms run the same pattern, which is the part worth copying. Code enumerates the candidate queues, the model picks inside that set, code validates the pick against what it offered, and it gates on confidence before anything routes. Neither arm is asked to write a label in prose and then trusted to have done it.
+Both setups run the same pattern, which is the part worth copying. Code enumerates the candidate queues, the model picks inside that set, code validates the pick against what it offered, and it gates on confidence before anything routes. Neither side is asked to write a label in prose and then trusted to have done it.
 
-Two labs, each with the corpus frozen alongside the run. Lab 1 used a queue-level prompt over 94 sampled emails per arm, lab 2 a semantic option space over 205 items, and lab 2 is the one worth quoting.
+Two labs, each with the corpus frozen alongside the run. Lab 1 used a queue-level prompt over 94 sampled emails each, lab 2 a semantic option space over 205 items, and lab 2 is the one worth quoting.
 
 ## Making the local model answer like Jev
 
@@ -75,7 +75,7 @@ LFM2.5-8B-A1B is sparse, 8B total with about 1B active per token, quantised to Q
 }
 ```
 
-The assistant turn is pre-filled with `{"label": "`, so the model continues a structure instead of inventing one, and `continue_final_message` keeps that prefill a partial turn. The grammar comes from the taxonomy, so an answer outside the set is not discouraged, it is unreachable. 8 tokens at temperature 0 leaves no room to think or argue, which is why the arm that needs 454 output tokens unconstrained needs 4 here.
+The assistant turn is pre-filled with `{"label": "`, so the model continues a structure instead of inventing one, and `continue_final_message` keeps that prefill a partial turn. The grammar comes from the taxonomy, so an answer outside the set is not discouraged, it is unreachable. 8 tokens at temperature 0 leaves no room to think or argue, which is why the model that needs 454 output tokens unconstrained needs 4 here.
 
 Lab 2 moves the trick one level up: the model chooses among 25 natural descriptions and code maps the winner onto one of the 8 queues, so it reasons in words it already uses while the deployer's queue names stay a code concern. The grammar enumerates the descriptions, a dictionary lookup does the mapping.
 
@@ -85,27 +85,27 @@ Renormalising is not optional. The probabilities the server reports are raw, com
 
 **The confidence.** Jev's confidence is separate from the top probability, so you can gate on one number and inspect the other. Locally there is nothing to return but the renormalised probability of the chosen option, so the two fields collapse into one.
 
-The unconstrained control arm drops the grammar and the prefix: same weights, same system prompt, `max_tokens` 512, and the label read back with a whole-word match where the last mention wins. That rule exists because the model writes sentences like "the subject does not say newsletter", and a naive match scores that as an answer.
+The unconstrained control run drops the grammar and the prefix: same weights, same system prompt, `max_tokens` 512, and the label read back with a whole-word match where the last mention wins. That rule exists because the model writes sentences like "the subject does not say newsletter", and a naive match scores that as an answer.
 
 So the configuration buys the shape and not the property. The pick is always legal and the gate always has a number to threshold. Whether that number is worth thresholding is the rest of this post.
 
 ## Lab 1: the grammar buys less than it looks like it does
 
-Three arms over the same 94 item ids:
+Three setups over the same 94 item ids:
 
-| arm | accuracy | ECE | latency p50 |
+| setup | accuracy | ECE | latency p50 |
 |---|---|---|---|
 | Jev, bounded choice | 81.9% (77/94) | 0.091 | 739 ms |
 | local 8B, grammar constrained | 63.8% (60/94) | 0.269 | 3,948 ms |
 | local 8B, unconstrained | 52.1% (49/94) | n/a | 21,850 ms |
 
-Constrained decoding beat the unconstrained arm by 11.7 points, which was my first version of the finding. Then the correction: nine of the unconstrained arm's answers contained no label at all, and those nine account for 9.6 of the 11.7 points. On the answers it actually produced it scored 57.6% against 63.8%, six items in 94, which is noise. The grammar bought machine-readable output and speed, 454 output tokens per decision down to 4 and 21.8 seconds down to 3.9. Not comprehension.
+Constrained decoding beat the unconstrained run by 11.7 points, which was my first version of the finding. Then the correction: nine of the unconstrained run's answers contained no label at all, and those nine account for 9.6 of the 11.7 points. On the answers it actually produced it scored 57.6% against 63.8%, six items in 94, which is noise. The grammar bought machine-readable output and speed, 454 output tokens per decision down to 4 and 21.8 seconds down to 3.9. Not comprehension.
 
 ## The gate is the real result
 
 Accuracy cannot automate anything on its own. Automation is a threshold on confidence, and what matters is how many wrong answers get past it.
 
-Jev, the hosted arm, over 94 items:
+Jev, the hosted model, over 94 items:
 
 | confidence gate | mailbox covered | accuracy inside | wrong answers passed |
 |---|---|---|---|
@@ -114,7 +114,7 @@ Jev, the hosted arm, over 94 items:
 | 0.8 | 79.8% | 96.0% | 3 |
 | 0.9 | 62.8% | 100% | 0 |
 
-The local arm over the same 94 items:
+The local model over the same 94 items:
 
 | confidence gate | mailbox covered | accuracy inside | wrong answers passed |
 |---|---|---|---|
@@ -123,32 +123,32 @@ The local arm over the same 94 items:
 | 0.8 | 80.9% | 73.7% | 20 |
 | 0.9 | 71.3% | 77.6% | 15 |
 
-At a 0.8 gate the hosted model runs four fifths of the mailbox with three wrong routings out of 94. The local arm does the same volume with twenty. That ratio, wrong answers passed per unit of automation, is the property worth paying for.
+At a 0.8 gate the hosted model runs four fifths of the mailbox with three wrong routings out of 94. The local model does the same volume with twenty. That ratio, wrong answers passed per unit of automation, is the property worth paying for.
 
-ECE says the same thing from another angle, 0.091 against 0.269, and the local arm is more confident when it is right, 0.964 against 0.941. Confident when right and equally confident when wrong is what makes a gate dangerous, not useless.
+ECE says the same thing from another angle, 0.091 against 0.269, and the local model is more confident when it is right, 0.964 against 0.941. Confident when right and equally confident when wrong is what makes a gate dangerous, not useless.
 
 ![Errors that pass a confidence gate](/assets/img/gate-errors-escaped.png)
 
-*Wrong answers that clear the gate, lab 2. The local arm covers the same volume at every threshold because it has nothing below 90% confidence.*
+*Wrong answers that clear the gate, lab 2. The local model covers the same volume at every threshold because it has nothing below 90% confidence.*
 
 ## Lab 2: three changes, two of them worse
 
 Lab 2 changed three things, each aimed at a failure I had already measured: queue definitions written as actions, not subject matter, a space of 25 natural descriptions mapped onto the 8 queues in code, and a full expansion over the raw token distribution, not just the greedy path. 205 items, 60 traps.
 
 - Jev on the queue-level prompt: 84.4%. Jev on the semantic space: 85.9%. Local on the semantic space: 65.4%.
-- The local arm went from 63.8% to 65.4% across a corpus that got harder, so flat in practice, and 71% slower per decision, 3.9 seconds to 6.7, because the prompt grew.
-- The semantic space made the hosted arm's traps worse, 43 of 60 against 48 of 60, and cost it 65,810 output tokens against 15,590.
-- Calibration got worse rather than better, ECE 0.339 for the local arm.
+- The local model went from 63.8% to 65.4% across a corpus that got harder, so flat in practice, and 71% slower per decision, 3.9 seconds to 6.7, because the prompt grew.
+- The semantic space made Jev's traps worse, 43 of 60 against 48 of 60, and cost it 65,810 output tokens against 15,590.
+- Calibration got worse rather than better, ECE 0.339 for the local model.
 
-Two negative results, kept rather than buried. Vocabulary the model actually uses did not buy accuracy, and it more than quadrupled the hosted arm's output tokens for a point and a half on 205 items.
+Two negative results, kept rather than buried. Vocabulary the model actually uses did not buy accuracy, and it more than quadrupled Jev's output tokens for a point and a half on 205 items.
 
-## The local arm cannot be recalibrated
+## The local model cannot be recalibrated
 
-ECE 0.339 raw, and fitting a temperature on held-out data left it in the 0.32 to 0.36 band, which is to say it did nothing. The reason is in the coverage: gate coverage is identical at 0.7, 0.8 and 0.9, 84.9% at every threshold. Every answer the arm is willing to gate arrives at high confidence, so nothing ever occupies the uncertain band for a temperature to rescale. 31 of its 205 answers produced no usable distribution either, and those rows cannot be presented to a gate at all.
+ECE 0.339 raw, and fitting a temperature on held-out data left it in the 0.32 to 0.36 band, which is to say it did nothing. The reason is in the coverage: gate coverage is identical at 0.7, 0.8 and 0.9, 84.9% at every threshold. Every answer the model is willing to gate arrives at high confidence, so nothing ever occupies the uncertain band for a temperature to rescale. 31 of its 205 answers produced no usable distribution either, and those rows cannot be presented to a gate at all.
 
 ![Stated confidence against observed accuracy](/assets/img/reliability.png)
 
-*Confidence bins against accuracy, lab 2. The local arm has no answers below 90% confidence, and none of the low bins have a local bar.*
+*Confidence bins against accuracy, lab 2. The local model has no answers below 90% confidence, and none of the low bins have a local bar.*
 
 That is the finding I would hand to anyone planning a local seat. A model that never reports doubt cannot be repaired by prompting, by a grammar, or by rescaling its outputs. Calibration is a property of training.
 
@@ -167,7 +167,7 @@ That is the finding I would hand to anyone planning a local seat. A model that n
 | personal | 56% | 44% |
 | complaint | 100% | 4% |
 
-The local model is level on newsletter, security and meeting, loses everywhere else, and one collapse does most of the damage. `complaint` is 24 of the 205 items and the local arm gets 1 of them, so that queue alone accounts for most of the 19 point aggregate gap.
+The local model is level on newsletter, security and meeting, loses everywhere else, and one collapse does most of the damage. `complaint` is 24 of the 205 items and the local model gets 1 of them, so that queue alone accounts for most of the 19 point aggregate gap.
 
 The defensible statement is not that a small model cannot do this. It is that this small model can do three of eight queues, and one aggregate number hid it. A two-tier design falls out of the table: let the local lane take the queues where it is level, escalate the rest, and report the removed volume against the accuracy cost.
 
@@ -175,11 +175,11 @@ The defensible statement is not that a small model cannot do this. It is that th
 
 Ten defects were found and fixed before or during measurement, three of which would have produced confident wrong conclusions:
 
-- Three trap items had their gold label pointing at the decoy queue, so a phishing email was filed under `billing` in the ground truth and every arm would have been scored wrong against it.
+- Three trap items had their gold label pointing at the decoy queue, so a phishing email was filed under `billing` in the ground truth and every run would have been scored wrong against it.
 - The grammar's closing brace rides on the final token, so a completed option never equalled an option name and a correct answer was scored as no answer.
 - The gate coverage metric dropped rows with no distribution, turning 84.9% coverage into 100% in one file while the report's own table said 84.9%.
 
-The rest are ordinary. A malformed grammar literal made the constrained arm return HTTP 400 on every item. A scorer read the token after the label instead of the label's own tokens. A 64 token cap returned empty answers because the model was still thinking. An answer parser matched labels inside negations, so "the subject does not say newsletter" scored as a newsletter answer.
+The rest are ordinary. A malformed grammar literal made the constrained run return HTTP 400 on every item. A scorer read the token after the label instead of the label's own tokens. A 64 token cap returned empty answers because the model was still thinking. An answer parser matched labels inside negations, so "the subject does not say newsletter" scored as a newsletter answer.
 
 Two corrections were to my own claims, in the open: the size of the constraint's benefit and the coverage denominator.
 
@@ -190,7 +190,7 @@ One measurement was abandoned rather than patched, exact per-option scoring, whi
 - The corpus is template generated and the bodies run 77 to 208 characters, so real mail will score lower and every accuracy here is an upper bound.
 - One model, one quantisation, one CPU lane, one corpus. Nothing here generalises to small models as a class.
 - `jev-latest` floats, so the hosted numbers cannot be reproduced against a pinned version.
-- Lab 1's trap sample was 14 items, and its "local beats hosted on traps" reading did not survive lab 2, where the hosted arm won 48 of 60 against 31.
+- Lab 1's trap sample was 14 items, and its "local beats hosted on traps" reading did not survive lab 2, where Jev won 48 of 60 against 31.
 - The description of Jev is TypeSafe's own documentation rather than an inspection of the model. Everything measured here is the behaviour of the API they serve.
 - The two posts in the opening are demos, not evaluations, and both are self-reported by people adjacent to the vendors.
 - The $0.0786 per 1,000 emails figure is the paper classifier's number applied to my token counts. It is not a rate card for this task, and TypeSafe's pricing page returns 404.
