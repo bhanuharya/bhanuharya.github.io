@@ -25,9 +25,11 @@ Both arms run the same pattern, and that part is worth copying. The code enumera
 
 Two labs, each with the corpus frozen alongside the run. Lab 1 used a queue-level prompt over 94 sampled emails per arm. Lab 2 used a semantic option space over 205 items, and it is the one worth quoting.
 
-## How the local lane is configured
+## Making the local model answer like Jev
 
-The model is LFM2.5-8B-A1B, sparse, 8B total with about 1B active per token, quantised to Q4_K_M at 4.9 GB on disk. It is served by one llama-server process on the ThinkPad, and the lane is manual: no service unit, nothing pointing at it by default, started by hand when I want it.
+Jev returns three things per decision: the one option it chose out of the set you offered, a probability for every option you offered, and a confidence. A chat completion returns none of them, so getting those three things out of a local 8B is most of what the setup is. The system prompt is the same text on both sides, which means everything below is decoding and code rather than prompt wording.
+
+The lane first. LFM2.5-8B-A1B is sparse, 8B total with about 1B active per token, quantised to Q4_K_M at 4.9 GB on disk, and served by one llama-server process on the ThinkPad. The lane is manual: no service unit, nothing pointed at it by default, started by hand when I want it, and bound to loopback.
 
 ```
 ./llama-server -m LFM2.5-8B-A1B-Q4_K_M.gguf \
@@ -38,29 +40,36 @@ The model is LFM2.5-8B-A1B, sparse, 8B total with about 1B active per token, qua
 
 Reading the flags: 8 threads for generation and 8 for batching on a 12 thread host, `-ngl 0` so every layer stays on the CPU, flash attention on, `--jinja` so the model's own chat template is used rather than one I hand rolled, and a loopback bind so the lane is not reachable off the machine. The run notes record four slots and no slot pinning, which is why the shared system prompt is believed to be re-prefilled on every call. That is a lane problem, not a model problem, and it is the reason the longer lab 2 prompt cost 70% more latency.
 
-Every local call in both labs goes through the same request shape:
+**The choice.** The option set is enumerated in code, closed by a grammar, and the model is only ever asked to continue a prefix:
 
 ```json
 {
   "model": "lfm25-8b",
+  "messages": ["<system prompt>", "<the email>", {"role": "assistant", "content": "{\"label\": \""}],
   "temperature": 0,
   "max_tokens": 8,
-  "logprobs": true,
-  "top_logprobs": 20,
-  "cache_prompt": true,
+  "grammar": "root ::= (\"billing\" | \"security\" | ... | \"__none__\") \"\\\"}\"",
   "continue_final_message": true,
   "add_generation_prompt": false,
-  "grammar": "root ::= (\"billing\" | \"security\" | ... | \"__none__\") \"\\\"}\""
+  "logprobs": true,
+  "top_logprobs": 20,
+  "cache_prompt": true
 }
 ```
 
-`messages` holds three turns: the taxonomy system prompt, the email, and an assistant turn pre-filled with the JSON prefix `{"label": "`. Three things in that payload are doing the real work.
+The assistant turn is pre-filled with `{"label": "`, so the model continues a structure instead of inventing one, and `continue_final_message` with `add_generation_prompt` false is what makes the prefill count as a partial turn rather than a finished one. The grammar is generated from the taxonomy, so an answer outside the set is not discouraged, it is unreachable. And 8 tokens at temperature 0 leaves no room to think or argue, which is why the arm that needs 454 output tokens with no constraint needs 4 here.
 
-- Temperature 0 with `max_tokens` 8 means the model does not get to think. It continues a prefix that already contains the key, so the only things it can emit are a queue name and a closing brace.
-- The grammar is the constraint under test, generated from the taxonomy, so the answer set is closed by construction rather than by instruction.
-- `top_logprobs` 20 is there because I need a distribution and not just a pick. The distribution is reassembled in code from the greedy path and its twenty alternatives and renormalised across labels. That is an approximation, and the reason it has to be one is in the defects section.
+Lab 2 puts the same trick one level up. The model chooses among 25 natural descriptions and code maps the winner onto one of the 8 queues, so it reasons in words it already uses rather than in a taxonomy I invented, and the deployer's queue names stay a code concern. The grammar enumerates the descriptions, and a dictionary lookup does the mapping.
+
+**The distribution.** Jev hands back a probability for every offered option. There is no such field locally, so it gets rebuilt from the token log probabilities: take the greedy token as the trunk, read the top 20 alternatives at each step, keep only the prefixes that can still become a valid option, accumulate the ones that finish as options, and renormalise across options. In lab 2 a second folding step adds the 25 descriptions back into the 8 queues.
+
+Renormalising is not optional. The probabilities the server reports are raw, computed before the grammar mask is applied, so reading `top_logprobs` straight gives a distribution that does not sum to one and does not correspond to what the model was allowed to say. The expansion is also an approximation: alternatives are only reported along the greedy path, so a branch abandoned at the first token never gets re-expanded, and what is reported against it is conditioned on a prefix it did not have. The exact method is one call per option, reading each option's own logprob, and that needs teacher forcing, which this build does not offer. The completions endpoint with `echo` and `logprobs` returned zero prompt tokens when I tested it directly.
+
+**The confidence.** Jev returns a confidence as a value separate from the top probability, which is what lets you gate on one number and still inspect the other. Locally there is nothing to return but the renormalised probability of the chosen option, so the local arm's confidence is its top probability and the two fields collapse into one.
 
 The unconstrained control arm drops the grammar and the prefix. Same weights, same system prompt, `max_tokens` 512, and the label is read back out of the text with a whole-word match where the last mention wins. That last rule exists because the model writes sentences like "the subject does not say newsletter", and a naive match scores that as an answer.
+
+So the configuration buys the shape and not the property. The pick is always legal, the distribution always sums to one, and the gate always has a number to threshold. Whether that number is worth thresholding is what the rest of this post is about.
 
 ## Lab 1: the grammar buys less than it looks like it does
 
