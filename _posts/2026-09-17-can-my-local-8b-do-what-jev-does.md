@@ -25,6 +25,43 @@ Both arms run the same pattern, and that part is worth copying. The code enumera
 
 Two labs, each with the corpus frozen alongside the run. Lab 1 used a queue-level prompt over 94 sampled emails per arm. Lab 2 used a semantic option space over 205 items, and it is the one worth quoting.
 
+## How the local lane is configured
+
+The model is LFM2.5-8B-A1B, sparse, 8B total with about 1B active per token, quantised to Q4_K_M at 4.9 GB on disk. It is served by one llama-server process on the ThinkPad, and the lane is manual: no service unit, nothing pointing at it by default, started by hand when I want it.
+
+```
+./llama-server -m LFM2.5-8B-A1B-Q4_K_M.gguf \
+  -c 65536 -t 8 -tb 8 -ngl 0 -fa on \
+  --jinja --metrics -a lfm25-8b \
+  -n 2048 --repeat-penalty 1.1 --repeat-last-n 256
+```
+
+Reading the flags: 8 threads for generation and 8 for batching on a 12 thread host, `-ngl 0` so every layer stays on the CPU, flash attention on, `--jinja` so the model's own chat template is used rather than one I hand rolled, and a loopback bind so the lane is not reachable off the machine. The run notes record four slots and no slot pinning, which is why the shared system prompt is believed to be re-prefilled on every call. That is a lane problem, not a model problem, and it is the reason the longer lab 2 prompt cost 70% more latency.
+
+Every local call in both labs goes through the same request shape:
+
+```json
+{
+  "model": "lfm25-8b",
+  "temperature": 0,
+  "max_tokens": 8,
+  "logprobs": true,
+  "top_logprobs": 20,
+  "cache_prompt": true,
+  "continue_final_message": true,
+  "add_generation_prompt": false,
+  "grammar": "root ::= (\"billing\" | \"security\" | ... | \"__none__\") \"\\\"}\""
+}
+```
+
+`messages` holds three turns: the taxonomy system prompt, the email, and an assistant turn pre-filled with the JSON prefix `{"label": "`. Three things in that payload are doing the real work.
+
+- Temperature 0 with `max_tokens` 8 means the model does not get to think. It continues a prefix that already contains the key, so the only things it can emit are a queue name and a closing brace.
+- The grammar is the constraint under test, generated from the taxonomy, so the answer set is closed by construction rather than by instruction.
+- `top_logprobs` 20 is there because I need a distribution and not just a pick. The distribution is reassembled in code from the greedy path and its twenty alternatives and renormalised across labels. That is an approximation, and the reason it has to be one is in the defects section.
+
+The unconstrained control arm drops the grammar and the prefix. Same weights, same system prompt, `max_tokens` 512, and the label is read back out of the text with a whole-word match where the last mention wins. That last rule exists because the model writes sentences like "the subject does not say newsletter", and a naive match scores that as an answer.
+
 ## Lab 1: the grammar buys less than it looks like it does
 
 Three arms over the same 94 item ids:
