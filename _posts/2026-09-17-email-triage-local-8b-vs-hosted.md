@@ -1,20 +1,24 @@
 ---
 layout: post
-title: "Email triage: a local 8B against a hosted decision model"
+title: "Can my local 8B do what Jev does"
 date: 2026-09-17
 author: bhanuharya
 tags: [local-llm, evals, calibration, llama.cpp, email]
 ---
 
-Every local-model argument reaches the same question sooner or later, and for mail it arrives sooner: can an 8B on the laptop do the job a hosted model already does, or is the hosted call just the cost of getting it right. For a security team the order is compliance first and cost second, because a router that reads mail sends the mail somewhere.
+TypeSafe's Jev is new, and it landed in my feed twice in one day. [Hassan El Mghari](https://x.com/nutlope/status/2100426999546184123) used it to classify 1,018 AI research papers into 24 topics for eight cents, at a median 256 ms per paper. A [browser demo](https://x.com/gregpr07/status/2100411066966749359) from the Browser Use founder had it driving a real flight search in seven seconds for $0.0039. Different tasks, one primitive underneath: code enumerates the answers, the model picks one, and what comes back is the pick, a probability for every option that was offered, and a confidence you can threshold.
 
-So I ran it as an experiment with a frozen protocol instead of a vibe check: sort synthetic email into queues, one arm on the hosted decision model, one on the local lane, and gate every answer on confidence the way a router that runs unattended would have to.
+Both of those are hosted. So the question I wanted answered was not whether Jev works. It was whether my local lane could produce the same shape on a task of mine, with an accuracy cost I could live with, and whether anything it returned would be safe to gate.
+
+Mail triage is the task. In a security team that question is a compliance question before it is a cost question, because a router that reads mail sends the mail somewhere.
+
+So I ran it as an experiment with a frozen protocol instead of a vibe check: sort synthetic email into queues, one arm on Jev, one on the local lane, and gate every answer on confidence the way a router that runs unattended would have to.
 
 The short version. The local model is level with the hosted one on three of eight queues and nowhere near it on the rest. The number that decides whether either of them can run unattended is not accuracy, it is how many wrong answers walk through the confidence gate. And the local arm cannot be rescued by plumbing, because it never reports doubt in the first place.
 
 ## The pattern and the two arms
 
-The hosted arm is TypeSafe Jev, a bounded-choice decision model. You hand it the answer set along with the question, and it returns the option it chose, a probability for every option you offered, and a confidence. The local arm is LFM2.5-8B-A1B at Q4_K_M under llama-server on the ThinkPad T14 Gen 1 that serves my local lane, CPU only with no GPU offload, 8 of its 12 threads and 4 slots given to the server.
+The hosted arm is Jev, over the same task. The local arm is LFM2.5-8B-A1B at Q4_K_M under llama-server on the ThinkPad T14 Gen 1 that serves my local lane, CPU only with no GPU offload, 8 of its 12 threads and 4 slots given to the server.
 
 Both arms run the same pattern, and that part is worth copying. The code enumerates the candidate queues, the model picks inside that set, the code validates the pick against the set it offered, and it gates on confidence before anything gets routed. No arm is asked to write a label in prose and then trusted to have done it.
 
@@ -124,7 +128,8 @@ One measurement was abandoned rather than patched. Exact per-option scoring need
 - One model, one quantisation, one CPU lane, one corpus. Nothing here generalises to small models as a class.
 - `jev-latest` floats, so the hosted numbers cannot be reproduced against a pinned version.
 - Lab 1's trap sample was 14 items, and its "local beats hosted on traps" reading did not survive lab 2, where the hosted arm won 48 of 60 against 31.
-- The $0.0786 per 1,000 emails figure is an anchor taken from a published example, not a rate card. The pricing page returns 404.
+- The two posts in the opening are demos, not evaluations. Neither one reports accuracy on its own task, and both are self-reported by people adjacent to the vendors.
+- The $0.0786 per 1,000 emails figure is the paper classifier's number, eight cents for 1,018 items, applied to my token counts. It is not a rate card for this task, and TypeSafe's pricing page returns 404.
 
 ## Next, cheapest first
 
@@ -133,7 +138,7 @@ One measurement was abandoned rather than patched. Exact per-option scoring need
 - A fine-tuned encoder classifier, milliseconds per item on CPU, with its calibration coming from training instead of from a prompt.
 - The CPU economics: pin one slot so the shared system prompt is prefilled once, and use all 12 threads instead of 8.
 
-Cost was never going to decide this. The hosted model works out at about eight cents per thousand emails on the anchor from its own published example. The local lane is free per call but runs 909 items an hour in lab 1 and 536 in lab 2, so 50,000 emails a month is 55 to 93 hours of lane time. At triage volumes the money is small on both sides, and the gate is the question.
+Cost was never going to decide this. The hosted model works out at about eight cents per thousand emails on the anchor from the paper classifier's own example. The local lane is free per call but runs 909 items an hour in lab 1 and 536 in lab 2, so 50,000 emails a month is 55 to 93 hours of lane time. At triage volumes the money is small on both sides, and the gate is the question.
 
 The run behind all of it: 158 tool calls, 1,286,819 input tokens, 428,852 output tokens, and 41,917,952 cache reads, which are context that was reprocessed rather than generated and are reported apart for that reason. Cost is recorded as zero because this route is unpriced, not because the work was free.
 
