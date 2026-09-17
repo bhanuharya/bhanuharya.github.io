@@ -8,7 +8,7 @@ permalink: /about/
   <span class="prompt">bhanuharya@sec</span><span class="loc">:~/about$</span> <span class="cmd">cat about.txt</span>
 </div>
 
-Hi, I'm Harya, also Wishnu. I work in information security, mostly around financial systems and the infrastructure underneath them.
+Hi, I'm Harya, also known as Wishnu. I work in information security, mostly around financial systems and the infrastructure underneath them.
 
 I got into it in college, mostly by tinkering with Linux and taking my own machines apart. I wanted to know why something stopped working, and what happened when you used it in a way the author did not expect.
 
