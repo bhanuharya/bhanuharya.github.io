@@ -11,20 +11,20 @@ TypeSafe's Jev kept landing in my feed, twice in one day, and both posts were pu
 
 Both were hosted, so the question was whether my local lane could return that same shape on a task of mine, at an accuracy cost I could live with, and whether anything it returned would be safe to gate. Mail triage is the task, and in a security team it is a compliance question before a cost question. A router that reads mail sends the mail somewhere.
 
-So I ran it with a frozen protocol, not a vibe check: sort synthetic email into queues, one on Jev, one on the local model, and gate every answer on confidence the way an unattended router would have to.
+So I ran it as an experiment with a frozen protocol: sort synthetic email into queues, one on Jev, one on the local model, and gate every answer on confidence the way an unattended router would have to.
 
 The short version. The local model is level with the hosted one on three of eight queues and nowhere near it on the rest. What decides whether either can run unattended is not accuracy, it is how many wrong answers walk through the gate, and the local model cannot be rescued by plumbing because it never reports doubt.
 
 ## What Jev is
 
-[TypeSafe](https://docs.typesafe.ai/) sells small units of AI as programming primitives, and Jev is the first of its System One models. Instead of writing text for you to parse, it takes a state, a question, and the answers you will accept, and returns a typed judgment: for the Choice primitive, the option it picked, a probability for every option offered, and a confidence. The answer cannot be a queue that does not exist. Choice sits next to Noul for yes or no and Score for how far along a dimension something sits, and all three come back as values rather than prose.
+[TypeSafe](https://docs.typesafe.ai/) sells small units of AI as programming primitives, and Jev is the first of its System One models. There is no text for you to parse. It takes a state, a question and the answers you will accept, and returns a typed judgment: for the Choice primitive, the option it picked, a probability for every option offered, and a confidence. The answer cannot be a queue that does not exist. Choice sits next to Noul for yes or no and Score for how far along a dimension something sits, and all three come back as values.
 
-The difference from an LLM is the training target, not the plumbing. A general model produces a plausible continuation, so structure is something you ask for politely and verify afterwards. Jev is pointed at the judgment: choose among these options and say how sure you are. Code owns the loop, the model owns one bounded decision.
+The difference from an LLM is the training target. A general model produces a plausible continuation, so structure is something you ask for politely and verify afterwards. Jev is pointed at the judgment: choose among these options and say how sure you are. Code owns the loop, the model owns one bounded decision.
 
 Three properties follow:
 
 - the answer set is closed by construction, so a wrong answer is checkable without a parser
-- every option carries a probability, so competing options can be compared and not just the winner read
+- every option carries a probability, so the whole distribution is visible
 - confidence is separate from the top probability and exists to be thresholded, which is what makes gating the design
 
 ## Why bother imitating it locally
@@ -33,7 +33,7 @@ Three properties follow:
 - **Money.** Both opening demos lead with per-item cost, and per-call pricing is what a local lane removes. The lane already runs for other work, so the experiment costs a day.
 - **Control.** `jev-latest` floats, a hosted route can rate limit, and it can change under you. A file on disk cannot.
 
-The fourth reason is less rational. When a decision is only a choice among options code has already enumerated, it looks like something an 8B ought to manage. That intuition is what the experiment tests, and the result is that the shape travels and the calibration does not.
+The fourth reason is less rational. When a decision is only a choice among options code has already enumerated, it looks like something an 8B ought to manage. That intuition is what the experiment tests.
 
 ## Two setups, one pattern
 
@@ -75,7 +75,7 @@ LFM2.5-8B-A1B is sparse, 8B total with about 1B active per token, quantised to Q
 }
 ```
 
-The assistant turn is pre-filled with `{"label": "`, so the model continues a structure instead of inventing one, and `continue_final_message` keeps that prefill a partial turn. The grammar comes from the taxonomy, so an answer outside the set is not discouraged, it is unreachable. 8 tokens at temperature 0 leaves no room to think or argue, which is why the model that needs 454 output tokens unconstrained needs 4 here.
+The assistant turn is pre-filled with `{"label": "`, so the structure is handed to the model, and `continue_final_message` keeps that prefill a partial turn. The grammar comes from the taxonomy, so an answer outside the set is not discouraged, it is unreachable. 8 tokens at temperature 0 leaves no room to think or argue, which is why the model that needs 454 output tokens unconstrained needs 4 here.
 
 Lab 2 moves the trick one level up: the model chooses among 25 natural descriptions and code maps the winner onto one of the 8 queues, so it reasons in words it already uses while the deployer's queue names stay a code concern. The grammar enumerates the descriptions, a dictionary lookup does the mapping.
 
@@ -99,7 +99,7 @@ Three setups over the same 94 item ids:
 | local 8B, grammar constrained | 63.8% (60/94) | 0.269 | 3,948 ms |
 | local 8B, unconstrained | 52.1% (49/94) | n/a | 21,850 ms |
 
-Constrained decoding beat the unconstrained run by 11.7 points, which was my first version of the finding. Then the correction: nine of the unconstrained run's answers contained no label at all, and those nine account for 9.6 of the 11.7 points. On the answers it actually produced it scored 57.6% against 63.8%, six items in 94, which is noise. The grammar bought machine-readable output and speed, 454 output tokens per decision down to 4 and 21.8 seconds down to 3.9. Not comprehension.
+Constrained decoding beat the unconstrained run by 11.7 points, which was my first version of the finding. Then the correction: nine of the unconstrained run's answers contained no label at all, and those nine account for 9.6 of the 11.7 points. On the answers it actually produced it scored 57.6% against 63.8%, six items in 94, which is noise. The grammar bought machine-readable output and speed, 454 output tokens per decision down to 4 and 21.8 seconds down to 3.9. On accuracy it changed nothing.
 
 ## The gate is the real result
 
@@ -125,7 +125,7 @@ The local model over the same 94 items:
 
 At a 0.8 gate the hosted model runs four fifths of the mailbox with three wrong routings out of 94. The local model does the same volume with twenty. That ratio, wrong answers passed per unit of automation, is the property worth paying for.
 
-ECE says the same thing from another angle, 0.091 against 0.269, and the local model is more confident when it is right, 0.964 against 0.941. Confident when right and equally confident when wrong is what makes a gate dangerous, not useless.
+ECE says the same thing from another angle, 0.091 against 0.269, and the local model is more confident when it is right, 0.964 against 0.941. Confident when right and equally confident when wrong is what makes a gate dangerous.
 
 ![Errors that pass a confidence gate](/assets/img/gate-errors-escaped.png)
 
@@ -133,14 +133,14 @@ ECE says the same thing from another angle, 0.091 against 0.269, and the local m
 
 ## Lab 2: three changes, two of them worse
 
-Lab 2 changed three things, each aimed at a failure I had already measured: queue definitions written as actions, not subject matter, a space of 25 natural descriptions mapped onto the 8 queues in code, and a full expansion over the raw token distribution, not just the greedy path. 205 items, 60 traps.
+Lab 2 changed three things, each aimed at a failure I had already measured: queue definitions written as actions, a space of 25 natural descriptions mapped onto the 8 queues in code, and a full expansion over the raw token distribution, going past the greedy path. 205 items, 60 traps.
 
 - Jev on the queue-level prompt: 84.4%. Jev on the semantic space: 85.9%. Local on the semantic space: 65.4%.
 - The local model went from 63.8% to 65.4% across a corpus that got harder, so flat in practice, and 71% slower per decision, 3.9 seconds to 6.7, because the prompt grew.
 - The semantic space made Jev's traps worse, 43 of 60 against 48 of 60, and cost it 65,810 output tokens against 15,590.
-- Calibration got worse rather than better, ECE 0.339 for the local model.
+- Calibration got worse, ECE 0.339 for the local model.
 
-Two negative results, kept rather than buried. Vocabulary the model actually uses did not buy accuracy, and it more than quadrupled Jev's output tokens for a point and a half on 205 items.
+Two negative results. Vocabulary the model actually uses did not buy accuracy, and it more than quadrupled Jev's output tokens for a point and a half on 205 items.
 
 ## The local model cannot be recalibrated
 
@@ -150,7 +150,7 @@ ECE 0.339 raw, and fitting a temperature on held-out data left it in the 0.32 to
 
 *Confidence bins against accuracy, lab 2. The local model has no answers below 90% confidence, and none of the low bins have a local bar.*
 
-That is the finding I would hand to anyone planning a local seat. A model that never reports doubt cannot be repaired by prompting, by a grammar, or by rescaling its outputs. Calibration is a property of training.
+Anyone planning a local seat should take this much from it. A model that never reports doubt cannot be repaired by prompting, by a grammar, or by rescaling its outputs. Calibration is a property of training.
 
 ## Where it does work, per queue
 
@@ -179,11 +179,11 @@ Ten defects were found and fixed before or during measurement, three of which wo
 - The grammar's closing brace rides on the final token, so a completed option never equalled an option name and a correct answer was scored as no answer.
 - The gate coverage metric dropped rows with no distribution, turning 84.9% coverage into 100% in one file while the report's own table said 84.9%.
 
-The rest are ordinary. A malformed grammar literal made the constrained run return HTTP 400 on every item. A scorer read the token after the label instead of the label's own tokens. A 64 token cap returned empty answers because the model was still thinking. An answer parser matched labels inside negations, so "the subject does not say newsletter" scored as a newsletter answer.
+The rest are ordinary. A malformed grammar literal made the constrained run return HTTP 400 on every item. A scorer read the token after the label and ignored the label's own. A 64 token cap returned empty answers because the model was still thinking. An answer parser matched labels inside negations, so "the subject does not say newsletter" scored as a newsletter answer.
 
 Two corrections were to my own claims, in the open: the size of the constraint's benefit and the coverage denominator.
 
-One measurement was abandoned rather than patched, exact per-option scoring, which needs teacher forcing. That leaves every local confidence number here an approximation over the greedy path and its top-20 alternatives.
+One measurement did not get patched. Exact per-option scoring needs teacher forcing, so every local confidence number here stays an approximation over the greedy path and its top-20 alternatives.
 
 ## What these numbers do not say
 
@@ -191,19 +191,19 @@ One measurement was abandoned rather than patched, exact per-option scoring, whi
 - One model, one quantisation, one CPU lane, one corpus. Nothing here generalises to small models as a class.
 - `jev-latest` floats, so the hosted numbers cannot be reproduced against a pinned version.
 - Lab 1's trap sample was 14 items, and its "local beats hosted on traps" reading did not survive lab 2, where Jev won 48 of 60 against 31.
-- The description of Jev is TypeSafe's own documentation rather than an inspection of the model. Everything measured here is the behaviour of the API they serve.
-- The two posts in the opening are demos, not evaluations, and both are self-reported by people adjacent to the vendors.
-- The $0.0786 per 1,000 emails figure is the paper classifier's number applied to my token counts. It is not a rate card for this task, and TypeSafe's pricing page returns 404.
+- The description of Jev comes from TypeSafe's own documentation. Everything measured here is the behaviour of the API they serve.
+- The two posts in the opening are demos, self-reported by people adjacent to the vendors. Neither reports accuracy on its own task.
+- The $0.0786 per 1,000 emails figure is the paper classifier's number applied to my token counts. TypeSafe publishes no rate card for this, and the pricing page returns 404.
 
 ## Next, cheapest first
 
 - Two or three few-shot examples for the confusable queues, `internal` against `meeting` and `personal` against no-fit.
 - Agreement between two runs with the option order permuted, used as the gate, since the model's own confidence is not.
 - A fine-tuned encoder classifier, milliseconds per item on CPU, with its calibration coming from training.
-- The CPU economics: pin one slot so the shared system prompt is prefilled once, and use all 12 threads instead of 8.
+- The CPU economics: pin one slot so the shared system prompt is prefilled once, and give the server all 12 threads.
 
 Cost was never going to decide this. The hosted model is about eight cents per thousand emails on the paper classifier's anchor, and the local lane is free per call but runs 909 items an hour in lab 1 and 536 in lab 2, so 50,000 emails a month is 55 to 93 hours of lane time. At triage volumes the money is small on both sides, and the gate is the question.
 
-The run behind it: 158 tool calls, 1,286,819 input tokens, 428,852 output, and 41,917,952 cache reads, which are context reprocessed rather than generated. Cost is recorded as zero because the route is unpriced, not because the work was free.
+The run behind it: 158 tool calls, 1,286,819 input tokens, 428,852 output, and 41,917,952 cache reads, which are context reprocessed on the way in. Cost is recorded as zero because the route is unpriced in the usage table. Nothing here was free.
 
 So the 8B stays a candidate prefilter for the queues it already handles, and stops auditioning as the router :-)
