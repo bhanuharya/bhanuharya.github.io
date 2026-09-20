@@ -77,7 +77,7 @@ Five hits, two of them comments and one an import. Exactly one runs on the reque
 
 Reading gives me a hypothesis and a set of seams worth testing. It cannot tell me whether a stopped grant still lands an effect, and that is the question the whole post turns on.
 
-![Where the authority sits, and where a stop acts](/assets/img/authority-map.png)
+![Where the authority sits, and where a stop acts](/assets/img/authority-map.svg)
 
 *The roles and the claim under test. A stop acts at the gateway, the effect lands at the service, the direct attempt from the sandbox is run as a case, and the observer is a separate process the task cannot see.*
 
