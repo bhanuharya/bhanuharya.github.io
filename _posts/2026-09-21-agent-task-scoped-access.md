@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Handing an agent a database credential"
+title: "What happens when I revoke an agent's access"
 date: 2026-09-21 05:50:00 +0700
 author: bhanuharya
 tags: [agents, security, access-control, self-hosting]
@@ -61,7 +61,7 @@ The second is an option named for tests, described in the source as a test-only 
 
 I now treat every claim of the form "the code does this, at this file and line" as unverified until I have fetched that source and grepped for the identifier. Doing it here turned up three problems, and only one of them was cosmetic. A line number can move, which is stale and easy to fix. An identifier can be gone or renamed, which means the mechanism my plan was built on does not exist in the version I am about to pin, and that is a design problem. A citation can never have existed, which is the expensive one, and it usually arrives inside a document that is otherwise careful.
 
-The habit that has paid off more often is checking the enforcement site rather than the declaration. A type or a function existing proves nothing about behaviour. In the gateway I read, the endpoint filter is declared in one file and actually called in the mitm proxy, on the request path, right before the credential swap. Stopping at the declaration would have given me a sentence that was true and misleading.
+The habit that has paid off more often is going to the enforcement site, the place that decides behaviour. A type or a function existing proves nothing about behaviour. In the gateway I read, the endpoint filter is declared in one file and actually called in the mitm proxy, on the request path, right before the credential swap. Stopping at the declaration would have given me a sentence that was true and misleading.
 
 ```bash
 # five mentions in the tree, and one place that decides anything
@@ -73,22 +73,29 @@ src/docker/mitm-proxy.ts:1105:    if (!isEndpointAllowed(provider.config, method
 
 Five hits, two of them comments and one an import. Exactly one runs on the request path, and that is the one that decides whether the filter means anything.
 
-## How I would find out
+## What would settle it
 
-Reading gets me a defensible hypothesis and a set of testable seams. It does not tell me whether a stopped grant can still land an effect, which is the question worth answering, so the plan is a measurement first.
+Reading gives me a hypothesis and a set of seams worth testing. It cannot tell me whether a stopped grant still lands an effect, and that is the question the whole post turns on.
 
 ![Where the authority sits, and where a stop acts](/assets/img/authority-map.png)
 
-*The roles, and the claim under test. A stop acts at the top of that flow, the effect lands at the service, the direct attempt from the sandbox is tested as a case, and the observer is a separate process that the task cannot see.*
+*The roles and the claim under test. A stop acts at the gateway, the effect lands at the service, the direct attempt from the sandbox is run as a case, and the observer is a separate process the task cannot see.*
 
-The shape I settled on is deliberately small: one issuer, one service, one observer. Freeze the expected outcome for each case before running anything, because an expectation written afterwards is a description. Include a calibration case where a permitted operation must succeed, so a later denial cannot be confused with a broken lab. Separate the lifecycle events, since one verdict hides the ordering. Observe from a process that is not the one under test. Mark any case that cannot separate two events as inconclusive and do not merge it into a story. Record the negative controls, including an actual attempt to reach the service directly, because inferring that from the topology is not the same as watching it fail.
+The lab stays small on purpose, one issuer, one service, one observer, and six rules that decide whether it can tell me anything:
 
-The gateway only earns its place once the small version produces something that needs it. Adding it first spends the budget on plumbing and arrives at the interesting question late.
+- write down what each case should show before running it, since an expectation written afterwards is a description
+- include a permitted operation that must succeed, so a later denial cannot be a broken lab
+- keep the four lifecycle events separate, because one verdict hides the ordering
+- observe from a process that is not the one under test
+- mark any case that cannot separate two events as inconclusive, and keep it out of the story
+- run the direct attempt as a control, because inferring it from the topology is not the same as watching it fail
 
-## What I have not run
+The gateway earns its place once the small version produces something that needs it. Added first, it spends the budget on plumbing and reaches the interesting question late.
 
-Nothing here has been run. No component is installed, no version is pinned, and every third-party statement above is documentation and source reading at one revision, which is a pointer and not evidence about the release I would actually use. One gateway having a particular endpoint filter and a particular pair of escape hatches says nothing about the category either, and one realization of a lab says nothing general.
+## Where this stands
 
-If the native controls close the gap once they are configured carefully, the honest output is a recipe and a negative result. I wrote that exit into the plan along with the conditions that trigger it, because the alternative is a project that keeps going to justify itself.
+Everything above is documentation and source reading at one revision. Nothing has been run, no version is pinned, and one gateway's allowlist and its pair of escape hatches say nothing about the category, the same way one lab says nothing general.
 
-I am still exploring this. The next step is deliberately unexciting: pin the versions, write down what each case should show before running anything, and get one honest measurement out of an issuer, a service and an observer. Whatever it says, the measurement is the part worth publishing. More when I have it.
+If the native controls close the gap once they are configured carefully, the honest output is a recipe and a negative result. I wrote that exit into the plan with the conditions that trigger it, because the alternative is a project that keeps going to justify itself.
+
+The case I am looking for is an effect that lands after the door closes. If it exists, the control everyone reaches for is narrower than it looks, and that is worth saying out loud. If it does not, the recipe is the answer. Either way, the next step is the one that produces evidence instead of more reading.

@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="520" viewBox="0 0 640 520">
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555555"/>
+    </marker>
+    <marker id="arwr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+    <marker id="arwg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b6b6b"/>
+    </marker>
+  </defs>
+
+  <rect width="640" height="520" fill="#ffffff"/>
+
+  <text x="12" y="26" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#1b1b1b">A stop acts at the door. The effect lands at the service.</text>
+
+  <!-- boxes -->
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" text-anchor="middle">
+    <rect x="8" y="48" width="196" height="72" rx="9" fill="#fff7e8" stroke="#d1570d" stroke-width="1.4"/>
+    <text x="106" y="76" font-size="15" font-weight="600" fill="#1b1b1b">agent sandbox</text>
+    <text x="106" y="96" font-size="12.5" fill="#555555">no network interface</text>
+    <text x="106" y="113" font-size="12.5" fill="#555555">two sockets, nothing else</text>
+
+    <rect x="252" y="48" width="180" height="64" rx="9" fill="#fff7e8" stroke="#d1570d" stroke-width="1.4"/>
+    <text x="342" y="74" font-size="15" font-weight="600" fill="#1b1b1b">operator</text>
+    <text x="342" y="95" font-size="12.5" fill="#555555">grant and deadline</text>
+
+    <rect x="252" y="156" width="180" height="88" rx="9" fill="#eef4ff" stroke="#1f6feb" stroke-width="1.4"/>
+    <text x="342" y="184" font-size="15" font-weight="600" fill="#1b1b1b">gateway</text>
+    <text x="342" y="204" font-size="12.5" fill="#555555">host allowlist</text>
+    <text x="342" y="221" font-size="12.5" fill="#555555">method and path allowlist</text>
+    <text x="342" y="238" font-size="12.5" fill="#555555">credential swap</text>
+
+    <rect x="448" y="164" width="184" height="64" rx="9" fill="#fff7e8" stroke="#d1570d" stroke-width="1.4"/>
+    <text x="540" y="190" font-size="15" font-weight="600" fill="#1b1b1b">issuer</text>
+    <text x="540" y="211" font-size="12.5" fill="#555555">short-lived credential</text>
+
+    <rect x="256" y="392" width="200" height="72" rx="9" fill="#eefaf1" stroke="#1a7f37" stroke-width="1.4"/>
+    <text x="356" y="420" font-size="15" font-weight="600" fill="#1b1b1b">service</text>
+    <text x="356" y="441" font-size="12.5" fill="#555555">the data the job reads</text>
+
+    <rect x="8" y="400" width="176" height="64" rx="9" fill="#f6f0ff" stroke="#8250df" stroke-width="1.4"/>
+    <text x="96" y="426" font-size="15" font-weight="600" fill="#1b1b1b">observer</text>
+    <text x="96" y="447" font-size="12.5" fill="#555555">separate process</text>
+  </g>
+
+  <!-- intended path -->
+  <g fill="none" stroke="#555555" stroke-width="1.6">
+    <path d="M342,112 L342,156" marker-end="url(#arw)"/>
+    <path d="M204,84 C232,84 232,180 252,180" marker-end="url(#arw)"/>
+    <path d="M342,244 L342,392" marker-end="url(#arw)"/>
+    <path d="M470,228 C470,320 456,352 456,392" marker-end="url(#arw)"/>
+  </g>
+
+  <!-- the case under test -->
+  <path d="M110,120 C110,330 160,400 256,430" fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="7 5" marker-end="url(#arwr)"/>
+
+  <!-- observation -->
+  <path d="M184,432 L256,432" fill="none" stroke="#6b6b6b" stroke-width="1.4" stroke-dasharray="2 4" marker-end="url(#arwg)"/>
+
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#555555">
+    <text x="350" y="138">authorises</text>
+    <text x="212" y="122">socket</text>
+    <text x="350" y="320">permits</text>
+    <text x="478" y="300">credential</text>
+    <text x="188" y="452" font-size="11.5" fill="#6b6b6b">watches</text>
+  </g>
+
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#c0392b">
+    <text x="150" y="300">direct attempt, run as a case</text>
+    <text x="150" y="318">and it must fail</text>
+  </g>
+
+  <text x="12" y="498" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" fill="#6b6b6b">orange: actors. blue: the control point. dashed: the case the lab runs.</text>
+</svg>
