@@ -8,15 +8,31 @@ tags: [agents, security, access-control, self-hosting]
 
 I have a job I would like to hand to an agent: compare a set of local migration files against the versions recorded in a staging database, and tell me which ones are missing. It reads one view, compares, and writes a short report.
 
-Doing that needs two things I would rather not hand an agent, a credential for the database and a network route to it. The advice I keep meeting takes three forms. Give the agent a scoped credential. Put a proxy in front of the service. Put the agent in a sandbox that cannot reach anything else. Each one is a real control, and none of them answers my actual question, which is what happens to work already in flight when I take the access away.
+That needs two things I would rather not hand an agent: a credential for the database and a network route to it. The usual advice comes in three forms: give the agent a scoped credential, put a proxy in front of the service, put the agent in a sandbox that cannot reach anything else.
+
+Short version:
+
+* Stopping access stops new work. Work already admitted can still finish.
+* Each control covers one part: the secret, the admission, the reachability.
+* My question is which part leaks once I pull the grant.
 
 ## Three clocks
 
-Granting access for a job starts three clocks at once. The grant is my decision that this task may touch this service until some deadline. The credential is whatever the issuer handed out, carrying its own expiry. The connection is a TCP session, a transaction, a query the database is already running.
+One grant starts three separate timers:
 
-They stop at different times. A grant can end while the credential is still valid. A credential can expire while the connection sits open and usable. A database will finish a query admitted before the revocation, and the result can land after the revocation was reported done.
+| Clock | Example |
+|---|---|
+| Grant | this task may touch this service until Friday |
+| Credential | password or token with its own expiry |
+| Connection | TCP session, transaction, query already running |
 
-The runtime I have been building keeps five observable events for this, and they are not interchangeable:
+They stop separately:
+
+* A grant can end while the credential still works.
+* A credential can expire while the connection stays open.
+* A database finishes a query it already accepted. The result can land after the revoke was reported done.
+
+The runtime I have been building tracks this as five separate events:
 
 ```text
 what the word "revoked" hides
@@ -35,33 +51,50 @@ what the word "revoked" hides
         can still deliver a result down here
 ```
 
-The sentence I can stand behind is "admission closed and no sessions remain". A status line that says revoked hides four questions behind one word, and at least one of them is usually still open.
+I trust one sentence here: "admission closed and no sessions remain". A status line that says revoked packs four open questions into one word.
 
 ## Where each control stops
 
-A secrets manager answers custody. It decides who may read which secret, and a Vault-shaped issuer can mint a short-lived database credential per task, which beats a long-lived password sitting in an environment variable. What it cannot tell me is what the effect is. A lease says when a credential dies. It says nothing about the query admitted a second earlier, or about whether the task still gets its answer.
+### Secrets manager: custody
 
-There is a second problem in the same place. The expiry binding that makes short-lived credentials work for PostgreSQL rides on password authentication, so if the fix is to stop using password authentication, the clock I was relying on may no longer be the thing enforcing anything.
+It decides who may read which secret. A Vault-shaped issuer can mint a short-lived database credential per task. That beats a long-lived password in an environment variable.
 
-A gateway answers admission. It sees a request, checks it against policy, and forwards or refuses. The one I read validates the HTTP method and path against a per-provider allowlist, so a permitted host does not imply a permitted operation. The limit is structural, since the gateway decides at admission and the work lands afterwards, so closing the door closes future admissions and leaves everything already inside alone.
+What it leaves open: the effect. A lease says when a credential dies. It says nothing about the query accepted a second earlier, or whether the task still gets its answer.
 
-A sandbox answers reachability. The strongest arrangement I have read about gives the agent container no network interface, drops every Linux capability, and mounts two Unix sockets it may use for tool calls and model calls. Nothing else is reachable, and the project aborts initialization when the connectivity check fails, so there is no quiet fallback to a weaker configuration.
+One more wrinkle in the same spot. Short-lived credentials for PostgreSQL ride on password authentication. If the fix is to move off password authentication, the clock I relied on may stop being the thing that enforces anything.
 
-That boundary has edges. If the fixture I want the agent to reach resolves to loopback or a private range, the same screen that keeps the agent out of my network keeps it out of my test stack, and the code says so: a fixture resolving to loopback needs a specific option set before it is reachable at all. That decides the shape of the design, because the adapter has to live somewhere the declared route permits, and that place may be awkward.
+### Gateway: admission
+
+It sees a request, checks policy, forwards or refuses. The one I read checks HTTP method and path against a per-provider allowlist. A permitted host still needs a permitted operation.
+
+The boundary: it decides at admission and the work lands later. Closing the door stops future admissions. Everything already inside keeps going.
+
+### Sandbox: reachability
+
+The strongest setup I have read about: the agent container gets no network interface, drops every Linux capability, and mounts two Unix sockets for tool calls and model calls. Nothing else is reachable. The project aborts startup when the connectivity check fails, so it never slides quietly into a weaker mode.
+
+The edge: the same screen that keeps the agent out of my network keeps it out of my test stack when the fixture resolves to loopback or a private range. The code says so directly. A fixture on loopback needs a specific option before it becomes reachable at all. So the adapter has to live somewhere the declared route permits, and that place can be awkward.
 
 ## Two escape hatches
 
-The same project documents one relaxation of that screen and ships another in code.
+The same project documents one relaxation and ships another in code:
 
-The documented one is an environment flag that makes the proxy treat any unknown host as a passthrough tunnel. It is described as suitable for trusted environments, and it applies to all three host checks.
+| Hatch | What it does |
+|---|---|
+| Env flag for trusted environments | Proxy treats any unknown host as a passthrough tunnel. Applies to all three host checks. |
+| Test-only option for loopback fixtures | Settable only by code that builds the proxy itself. Turns the address screen off. |
 
-The second is an option named for tests, described in the source as a test-only escape hatch for loopback fixtures. Nothing in user configuration reaches it. A lab that constructs the proxy itself can set it, and with it set the address screen is off, which means any claim that the agent cannot reach an undeclared route stops being true in that condition. The failure mode is quiet, because the lab works better, the boundary disappears, and the results look the same.
+With the second one set, any claim that the agent cannot reach an undeclared route stops holding. The failure is quiet: the lab works better, the boundary disappears, results look the same.
 
 ## Checking the citation
 
-I now treat every claim of the form "the code does this, at this file and line" as unverified until I have fetched that source and grepped for the identifier. Doing it here turned up three problems, and only one of them was cosmetic. A line number can move, which is stale and easy to fix. An identifier can be gone or renamed, which means the mechanism my plan was built on does not exist in the version I am about to pin, and that is a design problem. A citation can never have existed, which is the expensive one, and it usually arrives inside a document that is otherwise careful.
+I treat "the code does this, at this file and line" as unverified until I fetch the source and grep the identifier. Here that turned up three kinds of rot:
 
-The habit that has paid off more often is going to the enforcement site, the place that decides behaviour. A type or a function existing proves nothing about behaviour. In the gateway I read, the endpoint filter is declared in one file and actually called in the mitm proxy, on the request path, right before the credential swap. Stopping at the declaration would have given me a sentence that was true and misleading.
+1. Line moved. Stale, easy fix.
+2. Identifier gone or renamed. The mechanism my plan relied on is absent from the version I would pin. Design problem.
+3. Citation never existed. The expensive one, usually inside an otherwise careful document.
+
+The habit that paid off: go to the enforcement site, the place that decides behaviour. A type existing proves nothing. In the gateway I read, the endpoint filter is declared in one file and called in the mitm proxy, on the request path, right before the credential swap. Stopping at the declaration gives a sentence that is true and misleading.
 
 ```bash
 # five mentions in the tree, and one place that decides anything
@@ -71,31 +104,29 @@ $ grep -rn "isEndpointAllowed(provider.config" src --include="*.ts"
 src/docker/mitm-proxy.ts:1105:    if (!isEndpointAllowed(provider.config, method, path)) {
 ```
 
-Five hits, two of them comments and one an import. Exactly one runs on the request path, and that is the one that decides whether the filter means anything.
+Five hits. Two are comments and one is an import. Exactly one runs on the request path. That is the one that decides whether the filter means anything.
 
 ## What would settle it
 
-Reading gives me a hypothesis and a set of seams worth testing. It cannot tell me whether a stopped grant still lands an effect, and that is the question the whole post turns on.
+Reading gives a hypothesis and seams worth testing. It cannot say whether a stopped grant still lands an effect. That is the question the post turns on.
 
 ![Where the authority sits, and where a stop acts](/assets/img/authority-map.svg)
 
 *The roles and the claim under test. A stop acts at the gateway, the effect lands at the service, the direct attempt from the sandbox is run as a case, and the observer is a separate process the task cannot see.*
 
-The lab stays small on purpose, one issuer, one service, one observer, and six rules that decide whether it can tell me anything:
+Small lab on purpose. One issuer, one service, one observer. Six rules for whether it can tell me anything:
 
-- write down what each case should show before running it, since an expectation written afterwards is a description
-- include a permitted operation that must succeed, so a later denial cannot be a broken lab
-- keep the four lifecycle events separate, because one verdict hides the ordering
-- observe from a process that is not the one under test
-- mark any case that cannot separate two events as inconclusive, and keep it out of the story
-- run the direct attempt as a control, because inferring it from the topology is not the same as watching it fail
+* write down what each case should show before running it
+* include a permitted operation that must succeed, so a later denial reads as policy
+* keep the four lifecycle events separate
+* observe from a process outside the one under test
+* mark inconclusive cases as inconclusive, keep them out of the story
+* run the direct attempt as a control, since topology is no substitute for watching it fail
 
 The gateway earns its place once the small version produces something that needs it. Added first, it spends the budget on plumbing and reaches the interesting question late.
 
 ## Where this stands
 
-Everything above is documentation and source reading at one revision. Nothing has been run, no version is pinned, and one gateway's allowlist and its pair of escape hatches say nothing about the category, the same way one lab says nothing general.
+Everything above is documentation and source reading at one revision. Nothing has been run. No version is pinned. One gateway's allowlist and its pair of escape hatches say nothing about the category. One lab says nothing general.
 
-If the native controls close the gap once they are configured carefully, the honest output is a recipe and a negative result. I wrote that exit into the plan with the conditions that trigger it, because the alternative is a project that keeps going to justify itself.
-
-The case I am looking for is an effect that lands after the door closes. If it exists, the control everyone reaches for is narrower than it looks, and that is worth saying out loud. If it does not, the recipe is the answer. Either way, the next step is the one that produces evidence instead of more reading.
+The case I want: an effect that lands after the door closes. If it exists, the control everyone reaches for is narrower than it looks. If it does not, the recipe is the answer. Next step is the one that produces evidence.
