@@ -46,15 +46,26 @@ That is why I stopped using the word revoked for this. In one small runtime I ha
 building, the lifecycle has five separate observable events, and they are not
 interchangeable:
 
-- the stop was requested,
-- new admissions were closed,
-- a fresh login with the task credential fails,
-- an independent observer sees no remaining sessions for that task,
-- required cleanup is accounted for.
+```text
+what the word "revoked" hides
 
-The honest sentence is "admission closed and no sessions remain", not "revoked". A status
-line that says revoked is hiding four questions behind one word, and at least one of them
-is usually still true.
+  stop requested
+        |
+        v
+  +-----------+  +-----------+  +-----------+  +-----------+
+  | admission |  | credential|  | sessions  |  | cleanup   |
+  | closed    |  | rejected  |  | gone seen |  | accounted |
+  +-----------+  +-----------+  +-----------+  +-----------+
+        \             |             |             /
+         +------------+-------------+------------+
+                             |
+        a query admitted before the first box
+        can still deliver a result down here
+```
+
+The honest sentence is "admission closed and no sessions remain". A status line that says
+revoked is hiding four questions behind one word, and at least one of them is usually
+still true.
 
 ## Where each control stops
 
@@ -128,11 +139,26 @@ gateway I read, the endpoint filter is declared in one file and actually called 
 mitm proxy, on the request path, right before the credential swap. If I had stopped at the
 declaration I would have written a sentence that was true and misleading.
 
+```bash
+# five mentions in the tree, and one place that decides anything
+$ grep -rn "isEndpointAllowed" src --include="*.ts" | wc -l
+5
+$ grep -rn "isEndpointAllowed(provider.config" src --include="*.ts"
+src/docker/mitm-proxy.ts:1105:    if (!isEndpointAllowed(provider.config, method, path)) {
+```
+
+Five hits, two of them comments, one an import. Exactly one of them runs on the request
+path, which is the one that decides whether the filter means anything.
+
 ## How you would actually find out
 
 Reading gets you a defensible hypothesis and a set of testable seams. It does not tell you
 whether a stopped grant can still land an effect, and that is the question worth
 answering, so the plan is a measurement first.
+
+![Where the authority sits, and where a stop acts](/assets/img/authority-map.png)
+
+*The roles, and the claim under test. A stop acts at the top of that flow, the effect lands at the service, the direct attempt from the sandbox is tested as a case, and the observer is a separate process that the task cannot see.*
 
 The shape I settled on, which is deliberately small at first: one issuer, one service, one
 observer. Freeze the expected outcome for each case before running anything, because an
