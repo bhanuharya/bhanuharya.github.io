@@ -167,6 +167,16 @@ going to justify itself. The version of this I would be happy to publish either 
 measurement: which clock actually stopped, what the observer saw, and what the lab could
 not tell apart.
 
+I am still exploring this, so treat the above as the current shape of the question and not
+as a conclusion. The next step is deliberately unexciting: pin the versions, write down
+what each case should show before running anything, and get one honest measurement out of
+an issuer, a service and an observer. The gateway only joins the lab after that, and only
+if the small version produces something that needs it.
+
+If it turns out that the existing controls close the gap once they are configured
+carefully, that is a result worth writing up, and I will write it up as one. Either way
+the useful part is the measurement. More when I have it.
+
 <!--
 Still to explore, before this can leave drafts:
 - the adapter registration question: whether a non-model service can be registered as a
