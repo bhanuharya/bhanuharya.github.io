@@ -1,20 +1,10 @@
 ---
 layout: post
 title: "Task-scoped access to private infrastructure, and where it leaks"
-date: 2026-09-21
+date: 2026-09-21 05:50:00 +0700
 author: bhanuharya
 tags: [agents, security, access-control, self-hosting]
-status: wip
 ---
-
-<!--
-WIP draft. Not ready to publish, kept here so the reasoning can be argued with.
-
-Everything in this post that describes a third-party project comes from reading that
-project's documentation and source, not from running it. File and line references were
-taken from one revision and have not been re-checked against a pinned release. Nothing
-described here has been executed yet.
--->
 
 I have a job I would like to hand to an agent: compare a set of local migration files
 against the versions recorded in a staging database, and tell me which ones are missing.
@@ -202,12 +192,3 @@ if the small version produces something that needs it.
 If it turns out that the existing controls close the gap once they are configured
 carefully, that is a result worth writing up, and I will write it up as one. Either way
 the useful part is the measurement. More when I have it.
-
-<!--
-Still to explore, before this can leave drafts:
-- the adapter registration question: whether a non-model service can be registered as a
-  configured provider at all, which decides whether the endpoint filter can be reused
-- whether the second escape hatch interacts with the post-resolution address screen
-- what the issuer's own cleanup semantics guarantee, in its own words
-- one real measurement, even a small one
--->
