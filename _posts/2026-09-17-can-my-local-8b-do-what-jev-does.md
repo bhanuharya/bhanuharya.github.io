@@ -7,7 +7,9 @@ tags: [local-llm, evals, calibration, llama.cpp, email]
 redirect_from: /blog/email-triage-local-8b-vs-hosted/
 ---
 
-TypeSafe's Jev kept landing in my feed, twice in one day, and both posts were pushing the same idea. [Hassan El Mghari](https://x.com/nutlope/status/2100426999546184123) classified 1,018 AI research papers into 24 topics for eight cents, at a median 256 ms per paper. A [browser demo](https://x.com/gregpr07/status/2100411066966749359) from the Browser Use founder drove a flight search in seven seconds for $0.0039. Different tasks, one primitive: code enumerates the answers, the model picks one, and what comes back is the pick, a probability for every option offered, and a confidence you can threshold.
+TypeSafe's Jev kept landing in my feed, twice in one day, and both posts were pushing the same idea. [Hassan El Mghari](https://x.com/nutlope/status/2100426999546184123) classified 1,018 AI research papers into 24 topics for eight cents, at a median 256 ms per paper. A [browser demo](https://x.com/gregpr07/status/2100411066966749359) from the Browser Use founder drove a flight search in seven seconds for $0.0039.
+
+Different tasks, one primitive: code enumerates the answers, the model picks one, and what comes back is the pick, a probability for every option offered, and a confidence you can threshold.
 
 Both were hosted, so the question was whether my local lane could return that same shape on a task of mine, at an accuracy cost I could live with, and whether anything it returned would be safe to gate. Mail triage is the task, and in a security team it is a compliance question before a cost question. A router that reads mail sends the mail somewhere.
 
@@ -17,7 +19,9 @@ The short version. The local model is level with the hosted one on three of eigh
 
 ## What Jev is
 
-[TypeSafe](https://docs.typesafe.ai/) sells small units of AI as programming primitives, and Jev is the first of its System One models. There is no text for you to parse. It takes a state, a question and the answers you will accept, and returns a typed judgment: for the Choice primitive, the option it picked, a probability for every option offered, and a confidence. The answer cannot be a queue that does not exist. Choice sits next to Noul for yes or no and Score for how far along a dimension something sits, and all three come back as values.
+[TypeSafe](https://docs.typesafe.ai/) sells small units of AI as programming primitives, and Jev is the first of its System One models. There is no text for you to parse. It takes a state, a question and the answers you will accept, and returns a typed judgment: for the Choice primitive, the option it picked, a probability for every option offered, and a confidence. The answer cannot be a queue that does not exist.
+
+Choice sits next to Noul for yes or no and Score for how far along a dimension something sits, and all three come back as values.
 
 The difference from an LLM is the training target. A general model produces a plausible continuation, so structure is something you ask for politely and verify afterwards. Jev is pointed at the judgment: choose among these options and say how sure you are. Code owns the loop, the model owns one bounded decision.
 
@@ -81,7 +85,9 @@ Lab 2 moves the trick one level up: the model chooses among 25 natural descripti
 
 **The distribution.** Jev hands back a probability for every option offered. Locally there is no such field, so it gets rebuilt from the token log probabilities: take the greedy token as the trunk, read the top 20 alternatives at each step, keep only the prefixes that can still become a valid option, accumulate the ones that finish, and renormalise across options, which in lab 2 also means folding the 25 descriptions back into the 8 queues.
 
-Renormalising is not optional. The probabilities the server reports are raw, computed before the grammar mask, so reading `top_logprobs` straight gives a distribution that does not sum to one. The expansion is approximate too: alternatives are only reported along the greedy path, so a branch abandoned at the first token is scored against a prefix it never had. Exact scoring means one call per option and needs teacher forcing, and the completions endpoint returned zero prompt tokens for `echo` when I tested it.
+Renormalising is not optional. The probabilities the server reports are raw, computed before the grammar mask, so reading `top_logprobs` straight gives a distribution that does not sum to one. The expansion is approximate too: alternatives are only reported along the greedy path, so a branch abandoned at the first token is scored against a prefix it never had.
+
+Exact scoring means one call per option and needs teacher forcing, and the completions endpoint returned zero prompt tokens for `echo` when I tested it.
 
 **The confidence.** Jev's confidence is separate from the top probability, so you can gate on one number and inspect the other. Locally there is nothing to return but the renormalised probability of the chosen option, so the two fields collapse into one.
 
@@ -99,7 +105,9 @@ Three setups over the same 94 item ids:
 | local 8B, grammar constrained | 63.8% (60/94) | 0.269 | 3,948 ms |
 | local 8B, unconstrained | 52.1% (49/94) | n/a | 21,850 ms |
 
-Constrained decoding beat the unconstrained run by 11.7 points, which was my first version of the finding. Then the correction: nine of the unconstrained run's answers contained no label at all, and those nine account for 9.6 of the 11.7 points. On the answers it actually produced it scored 57.6% against 63.8%, six items in 94, which is noise. The grammar bought machine-readable output and speed, 454 output tokens per decision down to 4 and 21.8 seconds down to 3.9. On accuracy it changed nothing.
+Constrained decoding beat the unconstrained run by 11.7 points, which was my first version of the finding. Then the correction: nine of the unconstrained run's answers contained no label at all, and those nine account for 9.6 of the 11.7 points. On the answers it actually produced it scored 57.6% against 63.8%, six items in 94, which is noise.
+
+The grammar bought machine-readable output and speed, 454 output tokens per decision down to 4 and 21.8 seconds down to 3.9. On accuracy it changed nothing.
 
 ## The gate is the real result
 
@@ -144,7 +152,9 @@ Two negative results. Vocabulary the model actually uses did not buy accuracy, a
 
 ## The local model cannot be recalibrated
 
-ECE 0.339 raw, and fitting a temperature on held-out data left it in the 0.32 to 0.36 band, which is to say it did nothing. The reason is in the coverage: gate coverage is identical at 0.7, 0.8 and 0.9, 84.9% at every threshold. Every answer the model is willing to gate arrives at high confidence, so nothing ever occupies the uncertain band for a temperature to rescale. 31 of its 205 answers produced no usable distribution either, and those rows cannot be presented to a gate at all.
+ECE 0.339 raw, and fitting a temperature on held-out data left it in the 0.32 to 0.36 band, which is to say it did nothing. The reason is in the coverage: gate coverage is identical at 0.7, 0.8 and 0.9, 84.9% at every threshold. Every answer the model is willing to gate arrives at high confidence, so nothing ever occupies the uncertain band for a temperature to rescale.
+
+31 of its 205 answers produced no usable distribution either, and those rows cannot be presented to a gate at all.
 
 ![Stated confidence against observed accuracy](/assets/img/reliability.png)
 

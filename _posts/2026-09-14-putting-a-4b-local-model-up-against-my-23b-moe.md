@@ -27,7 +27,9 @@ That last number is why the two models take turns. There is not enough room for 
 
 The incumbent: GLM-4.7-Flash, a mixture of experts at 23B total and about 3B active per token, REAP-pruned into a community decensored build and quantised to IQ3_S mix at 3.66 bits per weight. 10.18 GB on disk, 131K context window, 22.9B parameters reported by the runtime. It uses 11,444 MiB of the 12 GB card, so there is no room for a second model.
 
-The challenger: Spark-X2.5-4B from XHToken, 4.11B dense, 36 layers, GQA with 4-to-1 key/value heads, 131K vocab, tied embeddings, hybrid attention with one full attention layer per three sliding-window layers. Shipped as Q6_K, 3.37 GB, in an abliterated GGUF build. The most widely linked abliteration of this base ships safetensors only, so the GGUF I ran is a separate abliteration of the same model. The card reports 6,425 MiB with a 131K context loaded, which is the most attractive number in this whole post. The model nameplate claims 1M context. I treated that as marketing until a recall test said otherwise.
+The challenger: Spark-X2.5-4B from XHToken, 4.11B dense, 36 layers, GQA with 4-to-1 key/value heads, 131K vocab, tied embeddings, hybrid attention with one full attention layer per three sliding-window layers. Shipped as Q6_K, 3.37 GB, in an abliterated GGUF build.
+
+The most widely linked abliteration of this base ships safetensors only, so the GGUF I ran is a separate abliteration of the same model. The card reports 6,425 MiB with a 131K context loaded, which is the most attractive number in this whole post. The model nameplate claims 1M context. I treated that as marketing until a recall test said otherwise.
 
 ## How I tested
 
