@@ -34,22 +34,9 @@ They stop separately:
 
 The runtime I have been building tracks this as five separate events:
 
-```text
-what the word "revoked" hides
+![What the word revoked hides](/assets/img/revoked-lifecycle.svg)
 
-  stop requested
-        |
-        v
-  +-----------+  +-----------+  +-----------+  +-----------+
-  | admission |  | credential|  | sessions  |  | cleanup   |
-  | closed    |  | rejected  |  | gone seen |  | accounted |
-  +-----------+  +-----------+  +-----------+  +-----------+
-        \             |             |             /
-         +------------+-------------+------------+
-                             |
-        a query admitted before the first box
-        can still deliver a result down here
-```
+*One status word, four separate events. Late effects land in the last box.*
 
 I trust one sentence here: "admission closed and no sessions remain". A status line that says revoked packs four open questions into one word.
 
