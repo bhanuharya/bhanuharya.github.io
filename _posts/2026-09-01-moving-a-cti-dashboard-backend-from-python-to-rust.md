@@ -8,9 +8,7 @@ redirect_from:
   - /blog/how-nyaabot-helped-validate-a-cti-rust-migration/
 ---
 
-I moved the backend of my CTI Radar dashboard from Python to Rust a while back. Frontend and data model untouched. This is the late writeup: what actually changed, what got faster, and what the numbers do not cover.
-
-Short version: authenticated dashboard reads got about twice as fast at half the memory, every security control survived the move, and the old Python service is still running next to the Rust one as a behavioral reference.
+I moved the CTI Radar backend from Python to Rust. The frontend and data model stayed put. I kept the old service running as a reference and compared each Rust route against it, including errors and security checks. This is the late write-up: the read-path benchmark improved; scan-path performance is still unmeasured.
 
 ## What got rewritten
 
@@ -74,9 +72,9 @@ record the remaining difference
 
 The bot traced code paths, proposed implementations, and ran bounded checks. Risk calls, benchmark data, and the release decision stayed with me.
 
-## Benchmark
+## What I measured
 
-I measured the part where the backend implementation should matter: authenticated, CPU-heavy dashboard reads. Same machine, same demo org data, same four paths (`/api/summary`, `/api/findings`, `/api/graph`, `/api/dashboard`), 16 concurrent clients, five 3-second runs per backend.
+The benchmark covers authenticated dashboard reads, not full scans. Same machine and demo data, four API paths, 16 concurrent clients, five 3-second runs per backend.
 
 ```text
 metric                         Python/FastAPI       Rust/axum
@@ -96,8 +94,4 @@ It does not mean everything is 2.19x faster. A full passive scan is dominated by
 
 The next measurement should be a controlled scan run: authorized targets, identical settings, wall-clock time, CPU, RSS, external request counts, and output equivalence. That is the number that matters for the scan path. Requests per second was the right number for the API path.
 
-## Where it landed
-
-The Rust backend runs loopback-bound on its own port with the same frontend and data layout. Python is still available for comparison until the Rust service has done a stretch of unattended runs.
-
-Net: the local read path is about twice as fast at half the memory, with the same controls in front of it. The review setup (reference implementation, written-down invariants, small checkpoints, benchmarks matched to the workload) is what made the rewrite trustworthy. Rust was just the tool.
+The Rust service is running on loopback beside the Python reference. I am keeping both until it has more unattended run time.

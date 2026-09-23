@@ -6,11 +6,9 @@ author: bhanuharya
 tags: [local-llm, llama.cpp, hardware, self-hosting, testing]
 ---
 
-The local lane on the GPU box runs a 23B mixture-of-experts model, about 3B parameters active per token, quantised down to IQ3_S so it fits on a 12 GB card. It writes well, it is fast enough, and it is unreliable in exactly the ways a 3.66-bit quant after pruning is unreliable.
+The local lane on my GPU box runs GLM-4.7-Flash, a 23B MoE quantised to fit on a 12 GB RTX 3060. It writes well, but the quantisation and pruning leave it unreliable in some ways.
 
-So when a 4B model showed up as a fresh GGUF, I wanted the obvious question answered: is the small dense model simply better? Same box, same port, same prompts, one model at a time, two full runs.
-
-Short version: the 4B reads long documents about seven times faster and uses half the VRAM, and it is still not the better model. The 23B keeps the lane.
+A new 4B GGUF made me wonder if smaller might be better. I ran both models on the same machine, same port, same prompts, one at a time. The 4B read long prompts much faster and used less VRAM. I kept the 23B.
 
 ## The box
 

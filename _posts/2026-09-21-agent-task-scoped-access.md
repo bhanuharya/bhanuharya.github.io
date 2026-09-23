@@ -6,15 +6,7 @@ author: bhanuharya
 tags: [agents, security, access-control, self-hosting]
 ---
 
-I have a job I would like to hand to an agent: compare a set of local migration files against the versions recorded in a staging database, and tell me which ones are missing. It reads one view, compares, and writes a short report.
-
-That needs two things I would rather not hand an agent: a credential for the database and a network route to it. The usual advice comes in three forms: give the agent a scoped credential, put a proxy in front of the service, put the agent in a sandbox that cannot reach anything else.
-
-Short version:
-
-* Stopping access stops new work. Work already admitted can still finish.
-* Each control covers one part: the secret, the admission, the reachability.
-* My question is which part leaks once I pull the grant.
+I want an agent to compare migration files with staging and report what's missing. For that job it needs database access. The hard part is stopping it: once a task is revoked, can work already admitted still change the database? I have not tested this yet. This post is the design question and a small lab plan.
 
 ## Three clocks
 
@@ -114,6 +106,4 @@ The gateway earns its place once the small version produces something that needs
 
 ## Where this stands
 
-Everything above is documentation and source reading at one revision. Nothing has been run. No version is pinned. One gateway's allowlist and its pair of escape hatches say nothing about the category. One lab says nothing general.
-
-The case I want: an effect that lands after the door closes. If it exists, the control everyone reaches for is narrower than it looks. If it does not, the recipe is the answer. Next step is the one that produces evidence.
+I have only read the docs and source at one revision. I have not pinned a release or run the lab, so I do not know whether an admitted operation can land after access is pulled. That is the next thing to test.

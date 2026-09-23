@@ -6,15 +6,7 @@ author: bhanuharya
 tags: [security, devsecops, sonarqube, go, python, side-project]
 ---
 
-Every security team eventually hits the same wall: the standard tools give answers, but not *your* answers. That happened to me, and the solution was, characteristically, to spend my free time building another tool. This is the story of that.
-
-## The itch
-
-At work we run SonarQube and the usual pipeline stuff. It is fine. But when I looked at a codebase I cared about, Sonar would show me a handful of hotspots and I would think: is that... it? The answer turned out to be no. Not because Sonar is bad, but because its security rules cover a narrow slice.
-
-When I ran a wider net (pattern-based SAST over 140+ rules, a secrets scanner, and a dependency checker) over the same code, the counts jumped from "a few" to 77-91 findings per service, depending on the codebase.
-
-Both numbers are true at once. They just measure different things. I wanted the wider net, and I wanted it running automatically, with a policy gate, producing something a human could actually review instead of a raw export nobody opens.
+I built a security scanner because SonarQube showed me a handful of hotspots in a codebase I cared about, and I wanted to know what else was there. A wider scan found 77 to 91 findings per service. That was not a fair comparison of the tools; they were looking for different things. I wanted a way to run the wider set and reconcile its output with what the team already reviewed.
 
 ## The first version was a platform
 
@@ -26,9 +18,7 @@ It was a web app first, not a CLI. FastAPI with SQLite, a dashboard, and seven s
 
 Intake came from Bitbucket, or a ZIP, a local folder, or an approved DAST target. Findings kept an 8 KiB code context, and credential-shaped values were redacted before anything got stored. 35 Python files, about 6,000 lines.
 
-The engines worked. The shape was wrong. A verdict that lives in a dashboard only helps if somebody opens the dashboard, and what I actually wanted was a gate: one line of output, a non-zero exit, evidence left behind, running wherever the code already is.
-
-A server, a database, a dashboard, and provider-coupled intake have no counterpart in that design, so the gap was architectural rather than incremental. I wrote it down as [ADR 0001](https://github.com/bhanuharya/secure-development-tools/blob/main/docs/adr/0001-implementation-language-go.md), dated 2026-09-04, and rebuilt the runtime in Go. The Python tree is still in the repo, untouched, as reference.
+The tool now runs the scanners locally, checks policy, and leaves artifacts even when a gate fails. The first version was a web app; I wanted one command in the repo and a non-zero exit code. So I rewrote it as a Go CLI ([ADR 0001](https://github.com/bhanuharya/secure-development-tools/blob/main/docs/adr/0001-implementation-language-go.md)) and left the Python version in the repo as reference.
 
 ## The rebuild
 
@@ -61,32 +51,14 @@ The scanners were the easy part. The hard part was reconciliation, the unglamoro
 
 I pointed `sdt` at three real Java microservices and imported everything into a local SonarQube lab. First result: 77 findings exported, zero visible. My gut said "the import failed." My gut was wrong. My rule naming did not match Sonar's `external_<engine>:<rule>` format, so the findings were there, just invisible to the filter I was using.
 
-Once the naming clicked, the reconciliation went from "gap = 77" to "gap = 6 out of 255". That is 97.6% of findings showing up in Sonar's Issues tab. The remaining six come from one systematic cause: dotfiles that Sonar's scanner never indexes, so any finding inside `.npmrc` or `.yo-rc.json` has nowhere to land.
+The Sonar import finally showed 249 of 255 findings. I had been staring at zero because I named the rules wrong. The other six were in dotfiles Sonar did not index. I also found three quieter gaps:
 
-I also learned the hard way that Sonar pipes several findings into a black hole quietly:
+- dependency findings were excluded by narrow source scopes
+- a tree-wide scan collided with `sonar.tests`
+- imported issues appeared under Issues, not Security Hotspots
 
-- narrow source scopes make dependency findings vanish (they live on `pom.xml`, not in `src/`)
-- tree-wide scans collide with the app's own `sonar.tests` setting
-- imported issues land in Issues, never in the Security Hotspots view your team actually reviews
+That loop, scanner says something, Sonar disagrees, then I find out why, took more time than writing the scanner. The tool was the easy part.
 
-Three different ways a scan can "pass" while half its output quietly never gets displayed.
+The scanner caught an assumption I had not checked: the published repository history still held identifiers the current tree no longer had. The cleanup was easy; deciding how to handle an already-public history was not. That is still open.
 
-That loop, scanner says something, Sonar disagrees, find out why, is most of what I actually did. The tool is a byproduct.
-
-## What I built without meaning to
-
-Two things fell out of the pilot that I did not plan.
-
-**A governance engine.** Forcing every scan to declare its scope: was this a snapshot commit or full history? Are dependencies fully resolved, or did offline mode silently skip some? It turns vague claims ("we scanned it") into checkable assertions. A green dashboard that hides a failed dependency resolution is a lie. A green dashboard that shows "partial coverage" is honest.
-
-**A history audit.** I git-audited the published repo expecting a clean pass. I got a partial pass. The sanitize commit I did earlier had cleaned the current tree, but earlier commits, already merged, already public, still contained internal identifiers. Fixing it is not a technical problem, it is a process problem (a force push breaks everyone's clone), and the honest status is "open decision".
-
-That last one is the part I keep thinking about. I built a scanner to catch vulnerabilities in code, and it is most useful as a tool for catching my own assumptions: that the pipeline works, that the numbers are not inflated, that the history I published is actually clean. All false at one point or another during this :-)
-
-## Where it is going
-
-Right now: advisory mode everywhere, nothing blocked, humans review everything. Next: PR-level feedback, then strict enforcement for the most unambiguous category, leaked credentials, and nowhere else. At least for a while.
-
-The takeaway if you are considering something similar: do not build a scanner. Build a *reconciliation* layer that tells you every time your scanner and your review tools disagree, and fix the disagreements one by one. Most of "security tooling" is that loop, made repetitive.
-
-And accept that you will spend a nontrivial fraction of the project fighting your own bugs. The scanner had a bug where two internal commands reported different rule counts for the same rule pack, 24 vs 137, because they used different discovery logic. Two tools, one opinion, both mine. That is the real work: making your own tool stop lying to you.
+I also added scope checks, so a scan has to say whether it covered a snapshot or full history and whether dependency resolution completed. That caught a bug: two commands reported 24 and 137 rules for the same pack. I have not turned on blocking. For now, scans report findings and people review them. Leaked credentials are the first category I would consider blocking.

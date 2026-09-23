@@ -7,15 +7,9 @@ tags: [local-llm, evals, calibration, llama.cpp, email]
 redirect_from: /blog/email-triage-local-8b-vs-hosted/
 ---
 
-TypeSafe's Jev kept landing in my feed, twice in one day, and both posts were pushing the same idea. [Hassan El Mghari](https://x.com/nutlope/status/2100426999546184123) classified 1,018 AI research papers into 24 topics for eight cents, at a median 256 ms per paper. A [browser demo](https://x.com/gregpr07/status/2100411066966749359) from the Browser Use founder drove a flight search in seven seconds for $0.0039.
+TypeSafe's Jev kept landing in my feed, twice in one day. Both posts showed bounded choices rather than free-form chat. [One](https://x.com/nutlope/status/2100426999546184123) classified 1,018 research papers into 24 topics for eight cents, at a median 256 ms per paper; [another](https://x.com/gregpr07/status/2100411066966749359) ran a flight search in seven seconds for $0.0039.
 
-Different tasks, one primitive: code enumerates the answers, the model picks one, and what comes back is the pick, a probability for every option offered, and a confidence you can threshold.
-
-Both were hosted, so the question was whether my local lane could return that same shape on a task of mine, at an accuracy cost I could live with, and whether anything it returned would be safe to gate. Mail triage is the task, and in a security team it is a compliance question before a cost question. A router that reads mail sends the mail somewhere.
-
-So I ran it as an experiment with a frozen protocol: sort synthetic email into queues, one on Jev, one on the local model, and gate every answer on confidence the way an unattended router would have to.
-
-The short version. The local model is level with the hosted one on three of eight queues and nowhere near it on the rest. What decides whether either can run unattended is not accuracy, it is how many wrong answers walk through the gate, and the local model cannot be rescued by plumbing because it never reports doubt.
+I wanted to try the same shape on my local machine. I used synthetic email triage and compared Jev with an 8B local model. The local model matched Jev on three of eight queues. More importantly, its confidence was not useful for deciding which answers to route automatically.
 
 ## What Jev is
 
@@ -216,4 +210,4 @@ Cost was never going to decide this. The hosted model is about eight cents per t
 
 The run behind it: 158 tool calls, 1,286,819 input tokens, 428,852 output, and 41,917,952 cache reads, which are context reprocessed on the way in. Cost is recorded as zero because the route is unpriced in the usage table. Nothing here was free.
 
-So the 8B stays a candidate prefilter for the queues it already handles, and stops auditioning as the router :-)
+I would test the queues where the local model held up as a prefilter, with the others sent to Jev or a person. I would not let its confidence decide that split yet.

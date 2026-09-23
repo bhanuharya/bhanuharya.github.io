@@ -8,23 +8,15 @@ permalink: /about/
   <span class="prompt">bhanuharya@sec</span><span class="loc">:~/about$</span> <span class="cmd">cat about.txt</span>
 </div>
 
-Hi, I'm Harya/Wishnu. I work in information security, mostly around financial systems and the infrastructure underneath them.
+I'm Harya/Wishnu. I got into security in college by tinkering with Linux and taking my machines apart. I wanted to know why something broke, and what happened when software got used in a way its author did not expect.
 
-I got into it in college, mostly by tinkering with Linux and taking my own machines apart. I wanted to know why something stopped working, and what happened when you used it in a way the author did not expect.
+I studied computer science at Bandung Institute of Technology. My undergraduate project was a Python compiler for a 32-bit RISC-V processor. I still like the parts of computing most people never see.
 
-I studied computer science at Bandung Institute of Technology. My undergraduate work was a Python compiler for a 32-bit RISC-V processor, which is where the interest in compilers and low-level systems stuck. I still like the parts of computing that stay out of sight.
+Since then, I have worked in fintech, banking, securities, and capital markets. Most of my work sits between security operations and engineering: cloud and network security, identity, incident response, and secure software development.
 
-Since then I've worked across fintech, banking, securities, and capital markets.
+Lately I have been spending time on AI security and on whether security controls keep working outside a diagram. This site is where I write about experiments, tools, and the things I have had to correct along the way.
 
-Most of the work sits between security operations and engineering: cloud and network security, firewalls and WAFs, identity, incident response, secure software development, and whatever small automation stops a repetitive task from staying repetitive.
-
-Right now I'm most interested in AI and security. The attacking side adopted it first. Teams on defense are still working out where it fits, usually with less time than the problem deserves.
-
-I also care about how security decisions get made, not only how a control works. Whether it still works on an ordinary Tuesday matters more to me than whether it looks right in a document.
-
-Outside work: privacy, open source, self-hosting, and more music than I can keep track of. I still spend too long tinkering with things that did not need tinkering :-)
-
-This site is where I keep notes and experiments.
+Outside work, I tinker with Linux, self-hosted services, and whatever else catches my attention. Some of it probably did not need tinkering :-)
 
 <p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
 

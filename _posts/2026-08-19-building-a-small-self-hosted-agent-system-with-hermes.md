@@ -8,21 +8,9 @@ redirect_from:
   - /2026/08/19/building-a-small-self-hosted-agent-system-with-hermes.html
 ---
 
-I have been experimenting with a small self-hosted agent environment built around Hermes.
+I set up Hermes on an old ThinkPad because I wanted an assistant that could use tools and remember project context without sending every task to an expensive model. It started as a few scripts and bots. It has grown into a system I have to maintain, so this is a snapshot of how it is put together and where I still do not trust it.
 
-The original idea was simple: have an assistant that could remember context, use tools, run scheduled jobs, and help with different kinds of work without turning every task into a large, expensive model call.
-
-Over time, it became less like a single chatbot and more like a small operating environment for agents.
-
-This post is an overview of the design and the decisions behind it. It intentionally leaves out hostnames, addresses, bot identifiers, filesystem paths, schedules, credentials, provider configuration, and details that would make the environment easier to identify or attack.
-
-## In brief
-
-I built this because I wanted an assistant that could do more than answer questions. Hermes is the open-source agent software that connects AI models with tools, files, memory, and scheduled tasks. It lets me work with files, run checks, remember useful context, and help with the small systems I maintain.
-
-I use it for a mix of things: preparing financial digests, running read-only security checks, watching service health, and helping with software projects. Different tasks can use different AI models, but from my side it still feels like one assistant.
-
-It runs on a repurposed laptop using Ubuntu Linux. Linux is the operating system that manages the laptop’s hardware and services. I connect to Hermes through the terminal and private messaging. The setup is small, imperfect, and deliberately limited. It helps reduce repetitive work, but I still keep the important decisions and sensitive actions under human review.
+I leave hostnames, addresses, bot IDs, paths, schedules, and provider details out of this post.
 
 ## The hardware
 
@@ -143,28 +131,9 @@ Linux homelab host
 
 The host can still reach the ordinary network for updates, package downloads, and selected external APIs. The important distinction is that outbound connectivity is not the same as inbound public exposure. Services are bound and allowlisted deliberately, while the overlay provides the path for trusted remote access.
 
-## A necessary disclaimer
+## Limits
 
-I do not consider this setup fully secure, and I would not present it as a reference architecture for production use.
-
-It is a personal homelab system with multiple moving parts: agent gateways, model providers, local services, scheduled jobs, shared capabilities, and isolated memories. Each layer introduces its own failure modes, including configuration mistakes, accidental data exposure, prompt injection, provider-side risk, and imperfect isolation.
-
-I know this setup still carries meaningful risk, so I do not treat a private network or a container boundary as proof of safety. I use several layers to reduce the chance and impact of a mistake:
-
-```text
-├── private network access rather than public exposure
-├── gateway and proxy layers between clients, agents, and services
-├── contained or disposable runtimes for higher-risk workflows where practical
-├── no unrestricted direct host access for ordinary agent tasks
-├── separate profiles and isolated memory
-├── limited shared skills and controlled tool permissions
-├── read-only and non-intrusive security jobs
-├── no credentials embedded in prompts or source code
-├── baseline-based reporting to reduce unnecessary activity
-└── manual judgment and approval for sensitive or high-impact actions
-```
-
-The boundaries are deliberate, but they are not absolute. A proxy can be misconfigured, a container can expose more than intended, and an agent can still make a poor decision inside an apparently safe workflow. The goal is to make failures narrower, more visible, and easier to recover from rather than pretending that self-hosting eliminates risk.
+This is a personal setup, not a production reference architecture. Private networking, containers, and separate profiles reduce exposure; none proves an agent or host is safe. I still review sensitive actions and assume configuration mistakes can happen.
 
 ## The basic architecture
 
@@ -604,46 +573,13 @@ Prompt injection is only one part of the problem. Content poisoning can also hap
 
 The security boundary therefore sits between retrieval and action. Search, fetch, and crawl tools may collect evidence, but they should not silently authorize tool calls, disclose secrets, modify systems, or expand the task's scope.
 
-## What I have learned so far
+## What I would keep
 
-The most important lessons have been architectural rather than model-specific.
+A few choices have held up:
 
-### Memory needs ownership
+- Separate memory by profile; share skills only when they are genuinely common.
+- Use scripts for repeatable checks. I do not need a model in the loop to compare a result with yesterday's baseline.
+- Route by explicit rules. A second model call to pick the first model is usually wasted work.
+- Treat retrieved pages as data, not instructions. Keep the source URL and check important claims against primary sources.
 
-Shared skills are convenient. Shared memory is risky.
-
-Every profile should have a clear owner for its memory, and that ownership should be visible in the filesystem and service configuration. If two profiles can silently write to the same memory files, isolation is only an assumption.
-
-### Deterministic work should remain deterministic
-
-If a shell script, database query, or scheduled check can do the job reliably, there is no reason to place an LLM in the middle of it.
-
-Agents are most useful where interpretation, planning, synthesis, or judgment is actually required.
-
-### Routing rules should be explicit
-
-A small routing policy is easier to understand and debug than a second model trying to decide which model should handle every request.
-
-### Baselines reduce noise
-
-Monitoring everything all the time creates too much output. Comparing current state with a known baseline makes changes easier to notice and easier to review.
-
-### Isolation is also a productivity feature
-
-Separate profiles are not only about security. They also make the system easier to reason about. A project agent can stay focused on project context, while a general agent remains clean and reusable.
-
-## What comes next
-
-The setup is still evolving. The next priorities are improving its security, reliability, and maintainability:
-
-```text
-├── make model fallbacks more resilient
-├── keep the architecture documentation aligned with the actual system
-├── improve health checks for gateways and model lanes
-├── add better observability for scheduled jobs
-└── continue documenting the system without exposing sensitive details
-```
-
-The goal is not to build the most complicated agent stack possible. It is to build a small system that is useful every day, inexpensive to keep running, carefully isolated, and simple enough to troubleshoot when something breaks.
-
-What interests me most is not only using agents, but designing and securing the environment around them.
+The system is still changing. My next work is better gateway health checks and a cleaner record of which model lane handled each job.
