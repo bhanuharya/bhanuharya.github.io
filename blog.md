@@ -2,6 +2,7 @@
 layout: page
 title: Blog
 permalink: /blog/
+description: Notes on security engineering, software tools, local models, and systems tested in practice.
 ---
 
 <div class="page-prompt" aria-hidden="true">
@@ -21,16 +22,19 @@ permalink: /blog/
   {% endfor %}
 
   {% if all_tags.size > 0 %}
-  <div class="tag-filter-bar" aria-label="Filter posts by tag">
-    <span class="tag-filter-label dim">filter:</span>
-    <button type="button" class="tag-btn is-active" data-tag="all" aria-pressed="true">all</button>
-    {% for tag in all_tags %}
-      <button type="button" class="tag-btn" data-tag="{{ tag }}" aria-pressed="false">{{ tag }}</button>
-    {% endfor %}
+  <div class="tag-filter-bar">
+    <label class="tag-filter-label dim" for="tag-filter">filter:</label>
+    <select class="tag-filter-select" id="tag-filter" aria-controls="post-list">
+      <option value="all">all topics</option>
+      {% for tag in all_tags %}
+        <option value="{{ tag | escape }}">{{ tag | escape }}</option>
+      {% endfor %}
+    </select>
+    <span class="visually-hidden" id="filter-status" role="status" aria-live="polite"></span>
   </div>
   {% endif %}
 
-<ul class="post-list">
+<ul class="post-list" id="post-list">
   {% for post in site.posts %}
     <li data-tags="{{ post.tags | join: ',' }}">
       <article class="post-card">
@@ -57,12 +61,13 @@ permalink: /blog/
 
 <script>
 (function() {
-  var buttons = document.querySelectorAll('.tag-btn');
+  var select = document.querySelector('.tag-filter-select');
   var items = document.querySelectorAll('.post-list > li');
   var emptyMsg = document.querySelector('.tag-empty-msg');
-  if (!buttons.length || !items.length) return;
+  var status = document.getElementById('filter-status');
+  if (!select || !items.length) return;
 
-  function filterTag(selectedTag) {
+  function filterTag(selectedTag, announce) {
     var visibleCount = 0;
     items.forEach(function(item) {
       var itemTags = (item.getAttribute('data-tags') || '').split(',');
@@ -74,27 +79,32 @@ permalink: /blog/
       }
     });
     if (emptyMsg) emptyMsg.hidden = (visibleCount > 0);
-    buttons.forEach(function(btn) {
-      var isActive = btn.getAttribute('data-tag') === selectedTag;
-      btn.classList.toggle('is-active', isActive);
-      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-    });
+    if (announce && status) {
+      status.textContent = selectedTag === 'all'
+        ? 'Showing all ' + visibleCount + (visibleCount === 1 ? ' post.' : ' posts.')
+        : 'Showing ' + visibleCount + (visibleCount === 1 ? ' post tagged ' : ' posts tagged ') + selectedTag + '.';
+    }
   }
 
-  buttons.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var tag = btn.getAttribute('data-tag');
-      filterTag(tag);
-      if (history.replaceState) {
-        history.replaceState(null, '', tag === 'all' ? window.location.pathname : '#' + encodeURIComponent(tag));
-      }
-    });
+  select.addEventListener('change', function() {
+    var tag = select.value;
+    filterTag(tag, true);
+    if (history.replaceState) {
+      var target = window.location.pathname + window.location.search;
+      history.replaceState(null, '', tag === 'all' ? target : target + '#' + encodeURIComponent(tag));
+    }
   });
 
-  var hash = decodeURIComponent(window.location.hash.replace(/^#/, ''));
+  var hash = window.location.hash.replace(/^#/, '');
+  try { hash = decodeURIComponent(hash); } catch (e) { hash = ''; }
   if (hash) {
-    var matchBtn = Array.prototype.find.call(buttons, function(b) { return b.getAttribute('data-tag') === hash; });
-    if (matchBtn) filterTag(hash);
+    var hasTag = Array.prototype.some.call(select.options, function(option) {
+      return option.value === hash;
+    });
+    if (hasTag) {
+      select.value = hash;
+      filterTag(hash, false);
+    }
   }
 })();
 </script>

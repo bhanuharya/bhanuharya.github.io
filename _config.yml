@@ -8,6 +8,7 @@ baseurl: ""
 theme: minima
 show_excerpts: true
 lang: en
+timezone: Asia/Jakarta
 
 permalink: /blog/:title/
 include:

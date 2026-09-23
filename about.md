@@ -1,7 +1,8 @@
 ---
 layout: page
-title: about
+title: About
 permalink: /about/
+description: Harya writes about information security, AI security, and the systems and tools he tests.
 ---
 
 <div class="page-prompt" aria-hidden="true">

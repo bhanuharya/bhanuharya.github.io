@@ -1,6 +1,6 @@
-# bnhrya.github.io — personal site
+# bhanuharya.github.io — personal site
 
-A Jekyll site on GitHub Pages: dark terminal aesthetic, mobile-first, no external fonts or JS dependencies. Content is Markdown plus a small interactive terminal on the homepage.
+A Jekyll site on GitHub Pages with custom layouts and a separate interactive terminal view at `/terminal/`. The rendered pages use local CSS and JavaScript, with no external fonts or JavaScript libraries.
 
 ## Write a post
 
@@ -19,7 +19,7 @@ A Jekyll site on GitHub Pages: dark terminal aesthetic, mobile-first, no externa
 
 3. Write the body in Markdown below the front matter, then commit and push to `main`. GitHub Actions builds and deploys automatically.
 
-Posts appear on `/blog/` newest-first with title, date, reading time, tags, and excerpt. The homepage shows a terminal introduction plus a "Latest note" card linking to the newest post. Drafts live in `_drafts/` and are not published.
+Posts appear on `/blog/` newest-first with title, date, reading time, tags, and excerpt. The homepage introduces Harya and lists recent posts; `/terminal/` is a separate interactive view. Drafts live in `_drafts/` and are not published.
 
 ## Structure
 
@@ -27,7 +27,7 @@ Posts appear on `/blog/` newest-first with title, date, reading time, tags, and 
 - `_drafts/` — unpublished template (`next-article-template.md`)
 - `_layouts/` — custom layouts (default, home, post, page) that override minima
 - `assets/css/style.css` — site styles (terminal + prose typography)
-- `index.md` — homepage (layout: home, terminal + latest post)
+- `index.md` — homepage (layout: home, introduction + recent posts)
 - `blog.md` — blog index at `/blog/`
 - `about.md` — about page at `/about/`
 - `_config.yml` — site config (title, description, url, theme)
@@ -70,4 +70,4 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 - Terminal chrome uses monospace; article prose uses a system sans-serif stack for readability.
 - Code blocks preserve indentation with horizontal scroll; prose and tables reflow or scroll on mobile.
-- Interactive elements meet 44px minimum touch targets and visible focus states.
+- The blog tag selector has a 44px minimum target and a visible keyboard focus ring. Other controls retain the browser's native focus behavior.
