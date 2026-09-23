@@ -14,22 +14,17 @@ I leave hostnames, addresses, bot IDs, paths, schedules, and provider details ou
 
 ## The hardware
 
-I could have rented a small fleet of cloud VMs, but an unused ThinkPad at home already had plenty of computing power and no plans for the evening. So I promoted it to server. It is not exactly enterprise infrastructure, but it is quiet, cheap, and good enough for a personal lab.
+An unused ThinkPad was enough for a small home server. It runs Ubuntu 24.04 LTS, and the services are reachable only over my private network.
 
 | Component | Specification |
 |---|---|
-| Device | ThinkPad homelab |
 | Processor | AMD Ryzen 5 PRO 4650U |
 | Memory | 30 GiB RAM |
 | Storage | 212 GiB NVMe |
-| Operating system | Ubuntu 24.04 LTS |
-| Network exposure | Private overlay network only |
 
-The point is not that this hardware is impressive. The point is that a useful agent environment does not need a rack of servers to be worth building. It needs clear boundaries, sensible defaults, and enough capacity to run the workloads that actually matter.
+## A snapshot of the host
 
-## Measuring the host
-
-A laptop can be a perfectly reasonable small server when its workload is understood and measured. I keep an eye on load, memory, storage, uptime, and temperature rather than treating the machine as an invisible appliance. A recent sanitized snapshot looked like this:
+I check load, memory, disk, and temperature when I troubleshoot or before a heavier job. This is one reading, not a capacity guarantee:
 
 ```text
 == uptime and load ==
@@ -50,86 +45,15 @@ thermal zone 0: 44.0°C
 thermal zone 1: 46.0°C
 ```
 
-The output is intentionally ordinary: it can be saved to a log, inspected during troubleshooting, or checked before starting a heavier job. The values above are a point-in-time example rather than a promise of constant capacity. Temperature readings depend on the laptop firmware and kernel drivers, so an absent sensor is not automatically a fault. Sustained thermal throttling, repeated memory pressure, a nearly full disk, or load that remains high while the system is otherwise idle are more useful signals than a single number.
-
 ## Keeping services available
 
-A laptop server also needs a recovery policy. User-facing services are managed as `systemd` units with an explicit restart rule rather than relying on a terminal session remaining open. A generic unit can look like this:
-
-```ini
-[Unit]
-Description=example self-hosted service
-After=network-online.target
-Wants=network-online.target
-StartLimitIntervalSec=60
-StartLimitBurst=5
-
-[Service]
-Type=simple
-ExecStart=/path/to/service --serve
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
-
-The executable, arguments, user, and working directory should be specific to the service and kept least-privileged. After installing a unit, the useful checks are:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now example.service
-systemctl status example.service --no-pager
-journalctl -u example.service -n 50 --no-pager
-```
-
-`Restart=on-failure` handles ordinary crashes, but it is not a complete monitoring system. I still check logs, disk space, temperatures, and network reachability. Automatic restart should recover a transient failure, not hide a repeated configuration error or an unhealthy machine. Sleep settings, battery health, firmware updates, and planned reboots also matter when a laptop is expected to stay available.
+The services run under `systemd`, so they restart after a crash and I can inspect their logs without keeping a terminal open. Restart policy is not health monitoring. I still check disk, temperature, and network reachability, and plan for reboots and battery wear.
 
 ## Operating system and network boundary
 
-The host runs Ubuntu 24.04 LTS. Linux keeps the system understandable: services are explicit, logs are inspectable, scheduled work is visible, and most of the environment can be managed with ordinary tools rather than a large control plane.
+The host runs Ubuntu 24.04. Remote access is through Tailscale. Agent gateways and dashboards are not public. Tailscale controls reachability, not authorization, so services still need their own authentication and least-privilege settings.
 
-Networking is handled through Tailscale as a private overlay. The services are reachable from trusted devices on the tailnet rather than being exposed directly to the public internet. This makes remote access practical without opening every agent gateway, dashboard, or local service to the wider internet.
-
-Tailscale is not treated as a complete security boundary. It controls network reachability, but it does not replace authentication, least privilege, service-level hardening, or careful tool permissions. The useful boundary is layered:
-
-```text
-Linux host
-    │
-    ▼
-Tailscale private overlay
-    │
-    ▼
-allowlisted gateways and services
-    │
-    ▼
-profile isolation · authentication · tool constraints
-```
-
-The network setup is intentionally unremarkable. There is no need for a public-facing agent endpoint for this kind of personal system, so public exposure is disabled and access stays inside the private overlay.
-
-Tailscale can use a Google identity for authentication, which means the Google account's two-factor authentication becomes part of the access path for trusted devices. That is useful, but it is still only one layer: device approval, service authentication, and least-privilege permissions remain important after a device joins the tailnet.
-
-Keys and tokens are treated as credentials, not as convenient configuration strings. Authentication keys should be scoped as narrowly as possible, rotated when their purpose ends, and revoked if they are exposed. API tokens and service credentials stay outside prompts, blog posts, and source code; they belong in environment-level secret storage or another controlled local mechanism. The goal is to make credential lifetime and ownership visible rather than letting long-lived secrets quietly spread across scripts and services.
-
-The topology is roughly:
-
-```text
-trusted device
-      │
-      │  encrypted Tailscale connection
-      ▼
-private overlay network
-      │
-      ▼
-Linux homelab host
-      ├── Hermes gateways and bot profiles
-      ├── local web interfaces
-      ├── scheduled security jobs
-      └── supporting services and containers
-```
-
-The host can still reach the ordinary network for updates, package downloads, and selected external APIs. The important distinction is that outbound connectivity is not the same as inbound public exposure. Services are bound and allowlisted deliberately, while the overlay provides the path for trusted remote access.
+Tokens stay out of prompts, posts, and source code. I keep them in local secret storage and rotate or revoke them when their purpose ends.
 
 ## Limits
 
@@ -137,9 +61,7 @@ This is a personal setup, not a production reference architecture. Private netwo
 
 ## The basic architecture
 
-The setup runs on a small private Linux host. It is reachable only through a private overlay network, with no public-facing entry point.
-
-There are several isolated bot profiles. Each profile has its own memory and runtime context, while selected skills and tools are shared across the system.
+The main split is between profiles with private memory and the tools they can share:
 
 <figure class="diagram-wrap">
 <svg class="architecture-diagram architecture-diagram-wide" style="display:block;width:100%;height:auto" preserveAspectRatio="xMidYMid meet" viewBox="0 0 760 650" role="img" aria-labelledby="architecture-title architecture-desc" xmlns="http://www.w3.org/2000/svg">
@@ -283,116 +205,13 @@ Skills are procedural. They describe how a task should be performed and can be r
 
 That distinction sounds obvious, but it is easy to accidentally create shared state when profiles are assembled from symlinks, shared directories, or common configuration files.
 
-| Layer | Purpose | Boundary |
-|---|---|---|
-| Chat interface | Receives requests and returns results | Separate bot entry points |
-| Agent profile | Defines identity, configuration, and context | One profile per operating role |
-| Memory | Stores contextual information | Isolated per profile |
-| Skills and tools | Provides reusable procedures and capabilities | Shared selectively |
-| Gateways | Runs each profile as a service | Separate service processes |
-| Model router | Selects an appropriate execution lane | Policy-driven rather than automatic classification |
+## Routing tasks
 
-## Why multiple profiles?
+I route by rules instead of asking another model to choose a model. Scripts handle deterministic work; routine questions go to a fast general model; bounded coding tasks go to a coding model; higher-risk analysis gets a stronger model and review. The point is to spend more only when the task needs it.
 
-The profiles are not separate personalities for the sake of presentation. They are separate operating contexts.
+## Scheduled work
 
-One profile is general-purpose. Another is dedicated to project and security work. A third is kept isolated for experiments that should not inherit the assumptions or memory of the other profiles.
-
-This separation gives each profile a smaller context and a clearer responsibility. It also reduces the chance that a project-specific instruction or memory entry silently affects unrelated work.
-
-The profiles run through separate gateway services. From the outside, they look like independent bots. Internally, they share a controlled capability layer while retaining separate memory boundaries.
-
-| Profile type | Intended use | Memory | Shared capabilities |
-|---|---|---|---|
-| General | Everyday assistance and broad tasks | Private | Selected common skills |
-| Project | Focused project and security work | Private | Security and automation tools |
-| Isolated | Experiments and testing | Private | Only what the experiment needs |
-
-## Routing instead of using one model for everything
-
-One of the more useful changes was moving from a single default model to a policy-driven routing approach.
-
-Different tasks have different requirements:
-
-```text
-deterministic task ───────► local tool or script
-ordinary reasoning ───────► fast general model
-delegated implementation ─► efficient coding model
-specialist analysis ──────► specialist model
-high-risk reasoning ──────► stronger reasoning model
-```
-
-The router does not try to classify every message with another model before doing the actual work. That would add latency, consume tokens, and sometimes make a simple task more complicated than necessary.
-
-Instead, the routing rules are explicit. The task type, required depth, and risk determine which lane is appropriate.
-
-The goal is not to always use the most powerful model. The goal is to use the least expensive and least complex path that is still reliable for the task.
-
-| Task category | Preferred path | Reason |
-|---|---|---|
-| Deterministic check | Local script or tool | No model call required |
-| Routine reasoning | Fast general model | Low latency and lower cost |
-| Delegated implementation | Efficient coding model | Suitable for bounded build work |
-| Specialist analysis | Specialist model | Better domain performance |
-| High-impact reasoning | Stronger reasoning model plus review | More scrutiny for consequential work |
-
-The policy can be represented with simple logic rather than another model call:
-
-```python
-if task.is_deterministic:
-    execute_local_tool(task)
-elif task.requires_specialist_knowledge:
-    route_to_specialist_lane(task)
-elif task.is_high_impact:
-    route_to_deep_reasoning_lane(task)
-else:
-    route_to_fast_general_lane(task)
-```
-
-## Scheduled work without an agent in the loop
-
-Not every useful job needs an LLM.
-
-Some of the recurring work is handled by ordinary scripts and scheduled services. These jobs perform bounded checks, compare the result with a previous baseline, and send an update only when something is new or changed.
-
-This is useful for monitoring because it keeps routine work cheap and predictable. It also avoids asking an agent to repeatedly rediscover the same state.
-
-For security-related checks, the design is intentionally conservative:
-
-```text
-authorized scope only
-        │
-        ▼
-read-only or non-intrusive checks
-        │
-        ▼
-disposable execution environment
-        │
-        ▼
-compare with known baseline
-        │
-        ▼
-report only new or changed results
-```
-
-The scripts are designed around explicit authorization, bounded requests, no brute force, no credential attempts, no destructive actions, and no exploitation. The agent is not used as a substitute for those controls.
-
-| Control | What it helps with | What it does not guarantee |
-|---|---|---|
-| Private network access | Reduces public exposure | Does not prevent compromise of an allowed host |
-| Read-only checks | Limits the impact of a bad request | Does not make every check harmless |
-| Disposable containers | Limits persistent changes | Does not eliminate container or host risk |
-| Baseline comparison | Reduces alert noise | Does not detect every new condition |
-| No-agent scripts | Removes unnecessary model uncertainty | Does not replace proper review |
-| Manual approval | Adds a human decision point | Humans can still make mistakes |
-
-In many cases, the safest and most efficient design is simply:
-
-```text
-script → stdout → notification
-```
-
-No model call is required.
+Recurring checks run as scripts, not agents. They use authorized scope, stay read-only or non-intrusive, run in disposable environments where needed, and report changes against a baseline. For many jobs, the whole pipeline is `script → stdout → notification`.
 
 ## The tooling layer
 
@@ -452,9 +271,7 @@ The relationship is closer to a control plane sitting above several independent 
 </svg>
 </figure>
 
-The important design choice is that these tools remain useful without an agent. Hermes can help decide when to use them, interpret their output, or summarize a result, but the underlying scanners and dashboards should not depend on an LLM to function.
-
-That separation makes the system easier to test, easier to operate at low cost, and easier to constrain when working with security-sensitive data.
+These tools still run without Hermes. It schedules work or summarizes results.
 
 ## Verification as a separate concern
 
