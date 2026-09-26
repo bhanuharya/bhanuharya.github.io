@@ -4,6 +4,8 @@ title: "my scanner and SonarQube"
 date: 2026-09-10
 author: bhanuharya
 tags: [security, devsecops, sonarqube, go, python, side-project]
+description: >-
+  Running a homegrown security scanner alongside SonarQube and explaining the disagreements instead of trusting either tool alone.
 ---
 
 I built a security scanner because SonarQube showed me a handful of hotspots in a codebase I cared about, and I wanted to know what else was there. A wider scan found 77 to 91 findings per service. That was not a fair comparison of the tools; they were looking for different things. I wanted a way to run the wider set and reconcile its output with what the team already reviewed.

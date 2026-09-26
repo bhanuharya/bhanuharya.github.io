@@ -4,6 +4,8 @@ title: "4B vs 23B on the 3060"
 date: 2026-09-14
 author: bhanuharya
 tags: [local-llm, llama.cpp, hardware, self-hosting, testing]
+description: >-
+  A 4B thinking model against a 23B MoE on the same 12 GB card: prefill speed, VRAM, fact accuracy, and the token-cap cost of reasoning.
 ---
 
 The local lane on my GPU box runs GLM-4.7-Flash, a 23B MoE quantised to fit on a 12 GB RTX 3060. It writes well, but the quantisation and pruning leave it unreliable in some ways.

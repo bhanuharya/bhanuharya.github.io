@@ -6,6 +6,8 @@ author: bhanuharya
 tags: [agents, self-hosting, automation, security]
 redirect_from:
   - /2026/08/19/building-a-small-self-hosted-agent-system-with-hermes.html
+description: >-
+  How a self-hosted agent setup is put together: profiles, routing, scheduled work, and where the separation between shared skills and private memory matters.
 ---
 
 I set up Hermes on an old ThinkPad because I wanted an assistant that could use tools and remember project context without sending every task to an expensive model. It started as a few scripts and bots. It has grown into a system I have to maintain, so this is a snapshot of how it is put together and where I still do not trust it.
