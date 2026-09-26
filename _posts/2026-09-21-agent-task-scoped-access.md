@@ -4,6 +4,8 @@ title: "What happens when I revoke an agent's access"
 date: 2026-09-21 05:50:00 +0700
 author: bhanuharya
 tags: [agents, security, access-control, self-hosting]
+description: >-
+  Grant, credential, and connection clocks run separately when agent access is revoked. A design question and lab plan for the late effects.
 ---
 
 I want an agent to compare migration files with staging and report what's missing. For that job it needs database access. The hard part is stopping it: once a task is revoked, can work already admitted still change the database? I have not tested this yet. This post is the design question and a small lab plan.

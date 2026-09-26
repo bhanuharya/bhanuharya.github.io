@@ -5,6 +5,8 @@ date: 2026-09-17
 author: bhanuharya
 tags: [local-llm, evals, calibration, llama.cpp, email]
 redirect_from: /blog/email-triage-local-8b-vs-hosted/
+description: >-
+  A 94-item routing eval comparing a confidence-gated hosted model against a local 8B, where calibration decides the winner.
 ---
 
 TypeSafe's Jev kept landing in my feed, twice in one day. Both posts showed bounded choices rather than free-form chat. [One](https://x.com/nutlope/status/2100426999546184123) classified 1,018 research papers into 24 topics for eight cents, at a median 256 ms per paper; [another](https://x.com/gregpr07/status/2100411066966749359) ran a flight search in seven seconds for $0.0039.

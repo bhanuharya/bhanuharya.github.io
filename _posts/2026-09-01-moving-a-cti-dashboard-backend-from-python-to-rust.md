@@ -6,6 +6,8 @@ author: bhanuharya
 tags: [rust, python, performance, security, agents, cti, self-hosting]
 redirect_from:
   - /blog/how-nyaabot-helped-validate-a-cti-rust-migration/
+description: >-
+  Comparing each Rust route against the Python service it replaced, including error paths, before switching traffic.
 ---
 
 I moved the CTI Radar backend from Python to Rust. The frontend and data model stayed put. I kept the old service running as a reference and compared each Rust route against it, including errors and security checks. This is the late write-up: the read-path benchmark improved; scan-path performance is still unmeasured.
