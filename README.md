@@ -58,7 +58,7 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 **No Ruby available?** Validate front matter and generated HTML structure by inspection (one h1 per page, canonical/OG tags, valid internal links); CI will still build on push.
 
-> Note: posts use the `/blog/:title/` permalink format. The previous date-based URL for the Hermes article remains available through a redirect. `_site/`, `.jekyll-cache/`, `.bundle/`, and `vendor/` are ignored, as are exported `pi-session-*.html` files.
+> Note: posts use the `/blog/:title/` permalink format. `_site/`, `.jekyll-cache/`, `.bundle/`, and `vendor/` are ignored, as are exported `pi-session-*.html` files.
 
 ## Privacy
 

@@ -4,7 +4,7 @@ This document describes the current Jekyll site after the rebuild and refinement
 
 ## Identity
 
-- `_config.yml` keeps `title: bhanuharya@sec` and `author: harya`; added `url`, `baseurl`, `lang`, and the `/blog/:title/` permalink format. The existing Hermes article retains its prior date-based URL through `redirect_from`.
+- `_config.yml` keeps `title: bhanuharya@sec` and `author: harya`; added `url`, `baseurl`, `lang`, and the `/blog/:title/` permalink format.
 - No Gemfile required for Pages; remains GitHub Pages-safe (minima theme, plain CSS, no unsupported gems). Local build uses `github-pages` gem if available, otherwise CI builds.
 
 ## Layouts
@@ -20,7 +20,7 @@ This document describes the current Jekyll site after the rebuild and refinement
 - `index.md` — layout home (terminal + progressively stacked pulsar waves + games + latest).
 - `blog.md` — `/blog/` with lead, interactive tag filtering, post cards (title, date, reading time, tags, excerpt, CTA). Empty state kept.
 - `about.md` — `/about/` standalone about page; `#about` anchor still exists on home for deep link.
-- `_posts/2026-08-19-...` — existing Hermes article retained, with tags and sanitized content.
+- `_posts/2026-09-21-agent-task-scoped-access.md` — sole published post, "What happens when I revoke an agent's access".
 - `_drafts/next-article-template.md` — working template retained.
 
 ## Design & Retro Aesthetics
