@@ -68,8 +68,6 @@ You can point the server at your own rule directories too.
 
 **Secrets in git history have no line to sit on.** A key deleted two years ago is still in every clone, but the file isn't in the checkout anymore. Those findings go on the project instead of a file, as their own rule (`sdt:secret-in-history`), so they don't get dropped.
 
-**How much of this I'd do by typing "go".** Most of the code here came out of sessions with Claude. My job was mostly reading logs, saying "go", and saying "no, that sounds like AI" about its own blog drafts. The one thing it couldn't do was click through Jenkins settings, because its own safety check wouldn't let it. So I did that part, and copied a stray period into the branch name.
-
 That last one comes from the wider setup: [sdt](https://github.com/bhanuharya/secure-development-tools) runs Gitleaks and Trivy next to OpenGrep, and the plugin also imports secrets and vulnerable dependencies as native rules. A dependency nothing imports becomes a hotspot. One that's imported becomes a vulnerability.
 
 ## Limits
