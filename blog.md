@@ -9,8 +9,6 @@ description: Notes on security engineering, software tools, local models, and sy
   <span class="prompt">bhanuharya@sec</span><span class="loc">:~/blog$</span> <span class="cmd">ls -la</span>
 </div>
 
-<p class="page-lead dim">Things I've built, tested, and had to fix, mostly in security and self-hosting.</p>
-
 {% if site.posts.size > 0 %}
   {% assign all_tags = "" | split: "" %}
   {% for post in site.posts %}
