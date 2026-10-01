@@ -64,9 +64,11 @@ You can point the server at your own rule directories too.
 
 **sonar-flutter runs `flutter analyze` itself by default.** If `flutter` isn't on the scanner's PATH, the whole analysis fails. In CI I run `dart analyze --format=machine` first and point sonar-flutter at that file with `sonar.dart.analyzer.mode=MANUAL` and `report.mode=MACHINE`.
 
-**Zero-length diagnostics crash the import.** Some `dart analyze` results come with a length of 0, file-name lints at line 1 for example. sonar-flutter throws on those and the whole scan fails. My scan script rewrites them to a one-character span before handing the file over.
+**Zero-length diagnostics crash the import.** Some `dart analyze` results come with a length of 0, file-name lints at line 1 for example. sonar-flutter throws on those and the whole scan fails. My scan script rewrites them to a one-character span before handing the file over. ("My" is doing some work in that sentence. Claude wrote it. I found the stack trace.)
 
 **Secrets in git history have no line to sit on.** A key deleted two years ago is still in every clone, but the file isn't in the checkout anymore. Those findings go on the project instead of a file, as their own rule (`sdt:secret-in-history`), so they don't get dropped.
+
+**How much of this I'd do by typing "go".** Most of the code here came out of sessions with Claude. My job was mostly reading logs, saying "go", and saying "no, that sounds like AI" about its own blog drafts. The one thing it couldn't do was click through Jenkins settings, because its own safety check wouldn't let it. So I did that part, and copied a stray period into the branch name.
 
 That last one comes from the wider setup: [sdt](https://github.com/bhanuharya/secure-development-tools) runs Gitleaks and Trivy next to OpenGrep, and the plugin also imports secrets and vulnerable dependencies as native rules. A dependency nothing imports becomes a hotspot. One that's imported becomes a vulnerability.
 
