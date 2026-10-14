@@ -95,7 +95,15 @@ The week I tried this, SideStore failed to sign in to my Apple ID with error -80
 
 ![The iOS build's startup screen: Game data not found. Copy SlayTheSpire2.pck (game version v0.107.1) into this app's folder in the Files app, then reopen the game.](/assets/img/sts2-ios-game-data-not-found.png)
 
-After a day of builds, a screen that correctly complains about a missing file is the best thing I'd seen. I copied the pck over, and the game started.
+After a day of builds, a screen that correctly complains about a missing file is the best thing I'd seen. I copied the pck over, and the game started:
+
+![Slay the Spire 2's main menu running on an iPhone, version v0.107.1 in the corner](/assets/img/sts2-ios-main-menu.jpg)
+
+The version in the top-right corner is v0.107.1, the same as the build, so the app's version check agreed with the pck.
+
+And of course the first fight was Silent, with Cloak and Dagger in hand. Shivs on iOS, compiled ahead of time:
+
+![A Silent fight on an iPhone: Prepared+, Strike, Hand Trick+, Neutralize+, Cloak and Dagger and Survivor in hand, against a tentacled yellow enemy](/assets/img/sts2-ios-silent-fight.jpg)
 
 One more honest note. Before the real game, Claude built a tiny test app to check the toolchain on my phone. It closed right after the Godot splash. The real game, which is far bigger, did not. Nobody has gone back to find out why.
 
