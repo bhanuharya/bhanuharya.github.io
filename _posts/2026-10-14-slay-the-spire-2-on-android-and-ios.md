@@ -137,6 +137,6 @@ Applies to Steam. Also to AI agents.
 
 The code is at [bhanuharya/sts-2-launcher-mobile](https://github.com/bhanuharya/sts-2-launcher-mobile). If you own the game and have a Windows PC or a Mac, the README walks through the iOS build. If you don't own the game, none of this helps you, by design.
 
-One last thing. Mega Crit [has said](https://thegameslayer.com/news/slay-the-spire-2-mobile-release/) an official mobile version of Slay the Spire 2 is coming "at some point", just not during Early Access. Theirs will be better than mine: no GitHub issue full of Steam Guard codes, no re-signing every 7 days, and probably cloud saves. When it ships, I'll happily buy it again. I just couldn't wait. "At some point" is a lot longer than "one more run", and I've been on one more run since March.
+One last thing. Mega Crit [has said](https://thegameslayer.com/news/slay-the-spire-2-mobile-release/) an official mobile version of Slay the Spire 2 is coming "at some point", just not during Early Access. Theirs will be better than mine: no GitHub issue full of Steam Guard codes, no re-signing every 7 days, and probably cloud saves. When it ships, I'll happily buy it again. I just couldn't wait. "At some point" is a lot longer than "one more run", and I've been on one more run since June.
 
 Now if you'll excuse me, I have a Silent run to lose on a six-inch screen.
