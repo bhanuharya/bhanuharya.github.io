@@ -20,7 +20,7 @@ This document describes the current Jekyll site after the rebuild and refinement
 - `index.md` — layout home (terminal + progressively stacked pulsar waves + games + latest).
 - `blog.md` — `/blog/` with lead, interactive tag filtering, post cards (title, date, reading time, tags, excerpt, CTA). Empty state kept.
 - `about.md` — `/about/` standalone about page; `#about` anchor still exists on home for deep link.
-- `_posts/` — five published posts: agent access revocation, 4B vs 23B on the 3060, local 8B vs Jev, the SAST setup on SonarQube, and Dart rules for SonarQube Community.
+- `_posts/` — six published posts: agent access revocation, 4B vs 23B on the 3060, local 8B vs Jev, the SAST setup on SonarQube, Dart rules for SonarQube Community, and Slay the Spire 2 on Android and iOS.
 - `_drafts/next-article-template.md` — working template retained.
 
 ## Design & Retro Aesthetics
