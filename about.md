@@ -1,13 +1,11 @@
 ---
-layout: page
-title: About
+layout: status
+title: Status
 permalink: /about/
+floor: Party · Member 1
+lead: Harya / Wishnu. Security engineer, occasional tinkerer.
 description: Harya writes about information security, AI security, and the systems and tools he tests.
 ---
-
-<div class="page-prompt" aria-hidden="true">
-  <span class="prompt">bhanuharya@sec</span><span class="loc">:~/about$</span> <span class="cmd">cat about.txt</span>
-</div>
 
 I'm Harya/Wishnu. I got into security in college by tinkering with Linux and taking my machines apart. I wanted to know why something broke, and what happened when software got used in a way its author did not expect.
 

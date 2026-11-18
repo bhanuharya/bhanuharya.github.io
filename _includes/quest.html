@@ -1,0 +1,18 @@
+{%- comment -%}
+  One post as a quest card. include.post = the post, include.n = its number (oldest = 1),
+  include.new = true for the latest one.
+{%- endcomment -%}
+{%- assign q = include.post -%}
+{%- assign words = q.content | number_of_words -%}{%- assign mins = words | divided_by: 200 -%}{%- if mins == 0 -%}{%- assign mins = 1 -%}{%- endif -%}
+{%- assign num = include.n | prepend: '0' | slice: -2, 2 -%}
+<article class="quest win" data-url="{{ q.url | relative_url }}">
+  <div class="quest-no" aria-hidden="true"><span class="floor">No.</span><span class="n">{{ num }}</span></div>
+  <h{{ include.level | default: 3 }} class="quest-title"><a href="{{ q.url | relative_url }}">{{ q.title | escape }}</a></h{{ include.level | default: 3 }}>
+  <div class="quest-meta">
+    {% if include.new %}<span class="badge badge--new">NEW</span>{% endif %}
+    <time datetime="{{ q.date | date_to_xmlschema }}">{{ q.date | date: '%Y-%m-%d' }}</time>
+    <span>{{ mins }} min</span>
+    {% if q.tags.size > 0 %}<span class="tags">{% for tag in q.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</span>{% endif %}
+  </div>
+  <div class="quest-excerpt"><p>{{ q.excerpt | strip_html | normalize_whitespace | truncatewords: 34 }}</p></div>
+</article>

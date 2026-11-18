@@ -25,8 +25,12 @@ Posts appear on `/blog/` newest-first with title, date, reading time, tags, and 
 
 - `_posts/` — published posts
 - `_drafts/` — unpublished template (`next-article-template.md`)
-- `_layouts/` — custom layouts (default, home, post, page) that override minima
-- `assets/css/style.css` — site styles (terminal + prose typography)
+- `_layouts/` — custom layouts (default, home, post, page, status) that override minima
+- `_includes/` — `quest.html` (post card) and `hermit.svg` (tarot card art)
+- `_data/party.yml` — the character sheet shown on the home page and `/about/`
+- `assets/css/style.css` — site styles (JRPG windows + prose typography)
+- `assets/js/rpg.js` — Config, menu cursor, dialog box, moon phase, reading gauge
+- `assets/js/dungeon.js` — the corridor on the home page
 - `index.md` — homepage (layout: home, introduction + recent posts)
 - `blog.md` — blog index at `/blog/`
 - `about.md` — about page at `/about/`
@@ -62,12 +66,15 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 ## Privacy
 
-- The visitor CLI on the homepage runs entirely in the browser; no input is sent to a server.
+- The terminal view and the home page run entirely in the browser; no input is sent to a server. Config and "cleared" marks stay in localStorage.
 - Hosting/CDN access logs may still exist outside this page's control.
 - This repository is sanitized: no secrets, credentials, IP addresses, hostnames, or network identifiers.
 
 ## Design notes
 
-- Terminal chrome uses monospace; article prose uses a system sans-serif stack for readability.
-- Code blocks preserve indentation with horizontal scroll; prose and tables reflow or scroll on mobile.
-- The blog tag selector has a 44px minimum target and a visible keyboard focus ring. Other controls retain the browser's native focus behavior.
+- The site is styled like a late-90s occult JRPG: panels are menu windows, posts are quests, `/about/` is a character sheet. All artwork is original (CSS, inline SVG, and a canvas corridor in `assets/js/dungeon.js`).
+- Fonts are self-hosted (`assets/fonts/`, SIL OFL). Menus use DotGothic16; post prose uses a system sans-serif stack for readability.
+- The character sheet (HP, stats, skills, equipment) is plain YAML in `_data/party.yml`. Edit it without touching the layouts.
+- Config (header) sets window colour, text speed, sound, scanlines and animation, saved in this browser only.
+- Code blocks preserve indentation with horizontal scroll; tables scroll sideways on narrow screens.
+- Animations stop for `prefers-reduced-motion: reduce`; menus work with the keyboard and show a visible focus ring.

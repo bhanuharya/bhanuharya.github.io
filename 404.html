@@ -1,17 +1,50 @@
 ---
 layout: page
-title: "404 Not Found"
+title: "A Broken Link appears!"
 permalink: /404.html
+floor: "Unknown floor · ??F · 404"
+bare: true
 ---
 
-<div class="page-prompt" aria-hidden="true">
-  <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">curl -I https://bhanuharya.github.io/404</span>
-</div>
+<section class="win battle" aria-label="Encounter">
+  <div class="hud enemy-tag win" aria-hidden="true">
+    <span class="k">Enemy</span><br>Broken Link
+    <span class="gauge"><span class="k">HP</span><span class="bar bar--hp" style="--c: var(--bad)"><i style="--fill: 100%"></i></span><span class="v">404</span></span>
+  </div>
+  <svg class="enemy" viewBox="0 0 200 170" role="img" aria-label="The Broken Link, a snapped chain link with angry eyes">
+    <ellipse cx="100" cy="160" rx="62" ry="8" fill="#000" fill-opacity="0.45"/>
+    <!-- left half of the link -->
+    <g transform="rotate(-18 70 80)">
+      <path d="M92 52 H58 a30 30 0 0 0 0 60 H92" fill="none" stroke="#1a1028" stroke-width="26" stroke-linecap="round"/>
+      <path d="M92 52 H58 a30 30 0 0 0 0 60 H92" fill="none" stroke="#9aa3cf" stroke-width="18" stroke-linecap="round"/>
+      <path d="M90 56 H58 a26 26 0 0 0 -24 16" fill="none" stroke="#e9ecf8" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <!-- right half of the link -->
+    <g transform="rotate(14 135 92)">
+      <path d="M112 64 H146 a30 30 0 0 1 0 60 H112" fill="none" stroke="#1a1028" stroke-width="26" stroke-linecap="round"/>
+      <path d="M112 64 H146 a30 30 0 0 1 0 60 H112" fill="none" stroke="#7a84b4" stroke-width="18" stroke-linecap="round"/>
+      <path d="M114 68 H146 a26 26 0 0 1 22 12" fill="none" stroke="#c9cfe0" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <!-- sparks where it snapped -->
+    <g fill="#ffd75e">
+      <polygon points="100,62 104,72 114,74 104,78 100,88 96,78 86,74 96,72"/>
+      <rect x="108" y="96" width="4" height="4"/><rect x="88" y="100" width="3" height="3"/><rect x="112" y="54" width="3" height="3"/>
+    </g>
+    <!-- angry eyes on the left half -->
+    <g transform="rotate(-18 70 80)">
+      <polygon points="44,74 60,80 44,84" fill="#ff4d6a" stroke="#1a1028" stroke-width="2"/>
+      <polygon points="76,74 62,80 76,84" fill="#ff4d6a" stroke="#1a1028" stroke-width="2"/>
+      <rect x="47" y="78" width="4" height="4" fill="#fff"/><rect x="69" y="78" width="4" height="4" fill="#fff"/>
+    </g>
+  </svg>
+</section>
 
-<div class="not-found">
-<pre aria-hidden="true">┌──────────────────────────┐
-│   ERROR 404 : NOT FOUND  │
-└──────────────────────────┘</pre>
-<p>The page you asked for is not on this server. It probably moved during the redesign, or the link came from somewhere older than the internet itself.</p>
-<p>Try <a href="{{ '/' | relative_url }}">the front page</a> or <a href="{{ '/blog/' | relative_url }}">the blog index</a>. If a link here is broken, the site source is on <a href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener">GitHub</a> and I will fix it :-)</p>
+<div class="win battle-log">
+  <p>The page you asked for isn't on this floor.</p>
+  <p class="dim">It probably moved during the redesign, or the link came from somewhere older than the internet itself.</p>
+  <ul class="choices" aria-label="What will you do?">
+    <li><a class="choice" href="{{ '/' | relative_url }}">Flee <span class="dim">back to the front page</span></a></li>
+    <li><a class="choice" href="{{ '/blog/' | relative_url }}">Search <span class="dim">the quest log</span></a></li>
+    <li><a class="choice" href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener">Report <span class="dim">a broken link on GitHub, and I'll fix it :-)</span></a></li>
+  </ul>
 </div>

@@ -9,36 +9,40 @@ This document describes the current Jekyll site after the rebuild and refinement
 
 ## Layouts
 
-- `default` — HTML shell with skip link, canonical URL, Open Graph / Twitter meta, JSON-LD (WebSite for pages, BlogPosting for posts), RSS link, header nav (Blog, About, CRT toggle, Theme switcher, Shortcuts modal), footer with RSS and privacy note. Includes toggleable CRT scanline overlay, the locally sourced Joy Division pulsar SVG controller (`assets/js/pulsar-waves.js`), and retro games/audio synth engine (`assets/js/terminal-games.js`).
-- `home` — terminal article (window dots for close/minimize/maximize fullscreen workstation mode, Joy Division PSR B1919+21 pulsar SVG that progressively stacks its lines once per activation, banner, boot sequence decor), whoami / interests / about, ls navigation, accessible visitor CLI with playable retro mini-games (`snake`, `pong`, `hack`), rich Unix utilities (`solaris`, `cde`, `waves`, `crt`, `sound`, `cowsay`, `fortune`, `dmesg`, `cal`, `uname`), noscript fallback, plus "Latest note" section.
-- `post` — title, meta (date, reading time, author), tags, progressive TOC from h2/h3 (hidden until JS populates; dedupes slugs, handles empty slugs, hidden via `<noscript>` when JS disabled), content, code copy buttons, post nav (Back to blog + Home + next/previous).
-- `page` — title, content, nav (Back to home, Blog).
-- `404.html` — terminal-styled not-found with links home/blog.
+The site is themed as a late-90s occult JRPG: every panel is a "window" (gradient fill, silver bevel), menus have a blinking triangle cursor, and posts are "quests".
+
+- `default` — HTML shell with skip link, canonical URL, Open Graph / Twitter meta, BlogPosting JSON-LD on posts, RSS link. Header window with the menu (Quest Log, Status, Terminal, RSS, Config), a fixed backdrop (slowly turning summoning circle, `assets/img/circle.svg`, tinted per window colour, plus scanlines behind the windows), the Config dialog, and a "save point" footer. Loads `assets/js/rpg.js` and `assets/js/visits.js`.
+- `home` — title screen: a first-person corridor drawn live on a 320×180 canvas (`assets/js/dungeon.js`), the title, Location and moon-phase HUD windows, and a typewriter dialog box (click or Enter to advance). Below it: the Command menu (arrow keys move the cursor, a help bar describes the highlighted command), the Party window, and the six latest quests.
+- `post` — header window (quest number, B*n*F floor, date, word count, tags), the article in a reading window, an EXP gauge at the top of the viewport that tracks reading progress, code copy buttons, tables wrapped for sideways scroll, previous/next quest navigation.
+- `page` — header window with optional `floor` and `lead` front matter; content in a reading window unless `bare: true`.
+- `status` — the about page as a character sheet: tarot card (IX, The Hermit, `_includes/hermit.svg`), HP/SP/EXP, stats, Profile (the page content), Skills and Equipment. Values live in `_data/party.yml`.
+- `404.html` — a random encounter with a Broken Link, with Flee / Search / Report choices.
+- `_includes/quest.html` — one post as a quest card, shared by home and the blog index.
 
 ## Content
 
-- `index.md` — layout home (terminal + progressively stacked pulsar waves + games + latest).
-- `blog.md` — `/blog/` with lead, interactive tag filtering, post cards (title, date, reading time, tags, excerpt, CTA). Empty state kept.
-- `about.md` — `/about/` standalone about page; `#about` anchor still exists on home for deep link.
+- `index.md` — layout home (title screen, command menu, party window, latest quests).
+- `blog.md` — `/blog/`, the Quest Log: an "Affinity" tag filter (hash-linkable, announces counts), quest cards (number, title, date, reading time, tags, excerpt, NEW / CLEARED badges). Empty state kept.
+- `about.md` — `/about/`, layout status; the prose is the Profile window.
 - `_posts/` — seven published posts: agent access revocation, 4B vs 23B on the 3060, local 8B vs Jev, the SAST setup on SonarQube, Dart rules for SonarQube Community, Slay the Spire 2 on Android and iOS, and measuring Slay the Spire 2's performance on Android.
 - `_drafts/next-article-template.md` — working template retained.
 
 ## Design & Retro Aesthetics
 
-- Dark retro terminal & Unix themes: `default`, `solaris` (Sun CDE workstation), `pulsar` (stark Joy Division monochrome), `matrix` (phosphor green), `amber` (warm CRT amber), `cyber` (neon cyberpunk), and `monochrome` (silver/black).
-- Joy Division *Unknown Pleasures* (PSR B1919+21) stacked radio frequency wave SVG with a one-shot top-to-bottom reveal, replayed on activation and shown immediately for reduced-motion users.
-- Authentic CRT display mode: Scanline raster overlay, phosphor text bloom, tube vignette curvature, degauss flash animation, toggleable via `c` key or `crt` command.
-- In-terminal 8-bit games: `snake` (high score tracking), `pong` (1P vs CPU paddle match), `hack` (memory cipher decryption).
-- Web Audio API synthesizer for retro mechanical keyclicks, degauss hum, game score chimes, and beeps (opt-in / toggleable via `sound on`).
-- Body monospace globally; `.post-content` and `.page-content` use system sans-serif for readability.
-- Decorative animations respect `prefers-reduced-motion: reduce`.
-- Touch targets: nav links 44px, input 44px, suggestion buttons 32px, visible focus outlines.
+- Fonts are self-hosted in `assets/fonts/` (SIL OFL, licences alongside): DotGothic16 for menus, labels and headings; Cinzel 700 for the title. Post and page prose uses the system sans-serif stack for readability.
+- Window colours, chosen in Config and stored per browser (`localStorage` key `rpg-config`): Indigo (default), Crimson, Jade, Parchment (a light, paper-coloured window). `?theme=<name>` previews one.
+- Config also sets text speed (slow / normal / instant), sound effects (off by default; Web Audio square-wave blips), scanlines and animation.
+- The corridor is ray-cast per pixel against a straight hallway and dithered to 15-bit colour; it runs at 24 fps only while visible and draws one still frame when animation is off or `prefers-reduced-motion: reduce` is set.
+- The moon phase and time of day in the HUD come from the visitor's clock. Posts read to the end are marked CLEARED on the quest lists (`localStorage` key `rpg-cleared`).
+- Decorative animations respect `prefers-reduced-motion: reduce` and the Animation setting. Menu targets are at least 40px tall with a gold focus ring.
+- `assets/og-image.png` is a 1200×630 render of the title screen.
 
 ## Constraints honored
 
 - `.github/workflows/jekyll-gh-pages.yml` untouched.
-- No external fonts/CDN, zero external dependencies, no analytics.
+- No external fonts, CDNs or third-party requests; no analytics.
 - Sanitized: no secrets/IPs/hostnames in content.
+- The `/terminal/` view keeps its own layout and styles.
 
 ## Verification
 

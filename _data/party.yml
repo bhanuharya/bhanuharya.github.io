@@ -1,0 +1,43 @@
+# Character sheet used by the home page (Party window) and /about/ (Status).
+# Everything here is flavour text: edit freely.
+name: Harya
+class: Security Engineer
+arcana: IX · The Hermit
+arcana_note: Works by lantern light, mostly asking why something broke.
+origin: Computer science, Bandung Institute of Technology
+
+# [current, max]
+hp: [92, 100]
+sp: [41, 64]
+
+# shown as bars on /about/, 0-99
+stats:
+  - [Curiosity, 99]
+  - [Paranoia, 88]
+  - [Uptime, 72]
+  - [Patience, 41]
+  - [Luck, 13]
+
+skills:
+  - name: Cloud & network security
+    note: Where the packets actually go.
+  - name: Identity
+    note: Who can do what, and who said so.
+  - name: Incident response
+    note: The 2 a.m. kind.
+  - name: Secure software development
+    note: Catching it before it ships.
+  - name: AI security
+    note: Do the controls hold outside the diagram?
+  - name: Linux tinkering
+    note: Taking machines apart since college.
+
+equipment:
+  - slot: Weapon
+    item: A Linux box with the case off
+  - slot: Arcane focus
+    item: RTX 3060, 12 GB (local models)
+  - slot: Accessory
+    item: Xiaomi Pad 5 (Slay the Spire 2 test rig)
+  - slot: Accessory
+    item: An iPhone, reluctantly

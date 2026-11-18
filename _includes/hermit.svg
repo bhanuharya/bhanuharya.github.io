@@ -1,0 +1,83 @@
+{%- comment -%}
+  Low-poly tarot card: IX, The Hermit. Original artwork for this site.
+  include.crop = true  -> just the figure, for the small party portrait
+  include.id           -> prefix for gradient ids (unique per page)
+{%- endcomment -%}
+{%- assign p = include.id | default: 'h' -%}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="{% if include.crop %}52 92 116 156{% else %}0 0 220 360{% endif %}" role="img" aria-label="Tarot card: IX, The Hermit, a hooded figure holding up a lantern on a mountain at night"{% if include.crop %} preserveAspectRatio="xMidYMid slice"{% endif %}>
+  <defs>
+    <linearGradient id="{{ p }}-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#070a22"/>
+      <stop offset="0.6" stop-color="#1a1f4d"/>
+      <stop offset="1" stop-color="#2d2a5a"/>
+    </linearGradient>
+    <radialGradient id="{{ p }}-glow">
+      <stop offset="0" stop-color="#fff3b0" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#ffd75e" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ffd75e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="220" height="360" fill="url(#{{ p }}-sky)"/>
+  <!-- sky bands, a nod to 15-bit colour banding -->
+  <g fill="#ffffff" fill-opacity="0.025">
+    <rect x="0" y="60" width="220" height="30"/><rect x="0" y="120" width="220" height="30"/><rect x="0" y="180" width="220" height="30"/>
+  </g>
+  <!-- stars -->
+  <g fill="#dfe6ff">
+    <rect x="30" y="64" width="2" height="2"/><rect x="58" y="92" width="2" height="2"/><rect x="40" y="128" width="2" height="2"/>
+    <rect x="186" y="118" width="2" height="2"/><rect x="152" y="58" width="2" height="2"/><rect x="104" y="72" width="3" height="3"/>
+    <rect x="196" y="176" width="2" height="2"/><rect x="24" y="190" width="2" height="2"/><rect x="72" y="58" width="1" height="1"/>
+    <rect x="128" y="96" width="1" height="1"/><rect x="176" y="92" width="1" height="1"/>
+  </g>
+  <!-- crescent moon -->
+  <path d="M176 60a16 16 0 1 0 12 26a13 13 0 1 1 -12 -26z" fill="#eef1ff"/>
+  <!-- mountains, flat-shaded facets -->
+  <polygon points="11,262 58,214 84,240" fill="#2a2f5c"/>
+  <polygon points="58,214 84,240 70,300 11,300 11,262" fill="#1d2147"/>
+  <polygon points="84,240 124,236 140,300 70,300" fill="#262a55"/>
+  <polygon points="124,236 172,252 209,232 209,300 140,300" fill="#181c3f"/>
+  <polygon points="172,252 209,232 209,250" fill="#2e3466"/>
+  <polygon points="100,244 124,232 150,244 124,250" fill="#3a4078"/>
+  <rect x="11" y="296" width="198" height="14" fill="#11142f"/>
+  <!-- lantern glow -->
+  <circle cx="80" cy="174" r="58" fill="url(#{{ p }}-glow)"/>
+  <!-- staff -->
+  <line x1="152" y1="134" x2="160" y2="246" stroke="#3a2412" stroke-width="6" stroke-linecap="round"/>
+  <line x1="152" y1="134" x2="160" y2="246" stroke="#9a6732" stroke-width="3" stroke-linecap="round"/>
+  <!-- robe -->
+  <polygon points="100,242 126,242 120,152 112,152" fill="#7a84b4"/>
+  <polygon points="126,242 152,242 142,152 120,152" fill="#454d80"/>
+  <polygon points="100,242 112,152 106,200" fill="#9aa3cf"/>
+  <polygon points="126,242 140,242 132,200" fill="#353c6a"/>
+  <!-- right hand on staff -->
+  <polygon points="140,166 154,160 157,172 142,178" fill="#454d80"/>
+  <polygon points="151,160 158,162 158,172 151,172" fill="#c99a7a"/>
+  <!-- hood -->
+  <polygon points="106,164 125,110 122,170" fill="#8a94c4"/>
+  <polygon points="125,110 146,164 122,170" fill="#4a5288"/>
+  <polygon points="116,152 124,128 133,152 124,160" fill="#0d0f24"/>
+  <!-- beard -->
+  <polygon points="116,150 124,150 124,184" fill="#eef1fa"/>
+  <polygon points="124,150 132,150 124,184" fill="#b9bfd6"/>
+  <!-- eye glint -->
+  <rect x="120" y="140" width="2" height="2" fill="#ffd75e"/>
+  <!-- left arm holding the lantern out -->
+  <polygon points="112,164 84,148 81,157 110,180" fill="#6a74a6"/>
+  <polygon points="84,148 81,157 110,180 112,172" fill="#525b90"/>
+  <polygon points="76,146 85,146 85,156 76,156" fill="#c99a7a"/>
+  <!-- lantern -->
+  <line x1="80" y1="155" x2="80" y2="162" stroke="#3a2a10" stroke-width="2"/>
+  <polygon points="80,160 89,168 89,182 80,190 71,182 71,168" fill="#5a3c0c"/>
+  <polygon points="80,163 86,169 86,181 80,187 74,181 74,169" fill="#ffd75e"/>
+  <polygon points="80,167 83,175 80,183 77,175" fill="#fffbe0"/>
+  {%- unless include.crop %}
+  <!-- frame and labels -->
+  <rect x="6" y="6" width="208" height="348" rx="6" fill="none" stroke="#ffd75e" stroke-width="2"/>
+  <rect x="11" y="11" width="198" height="338" rx="3" fill="none" stroke="#c99a1e" stroke-width="1"/>
+  <rect x="88" y="18" width="44" height="30" rx="3" fill="#0a0c22" stroke="#c99a1e"/>
+  <text x="110" y="40" text-anchor="middle" font-family="DotGothic16, monospace" font-size="20" fill="#ffd75e">IX</text>
+  <rect x="11" y="310" width="198" height="39" fill="#0a0c22"/>
+  <line x1="11" y1="310" x2="209" y2="310" stroke="#c99a1e"/>
+  <text x="110" y="336" text-anchor="middle" font-family="DotGothic16, monospace" font-size="17" letter-spacing="3" fill="#f3f4ff">THE HERMIT</text>
+  {%- endunless %}
+</svg>

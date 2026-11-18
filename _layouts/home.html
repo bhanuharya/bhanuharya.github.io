@@ -1,28 +1,85 @@
 ---
 layout: default
 ---
-<h1 class="visually-hidden">Harya (Wishnu) · information security, systems, self-hosting</h1>
+{%- assign party = site.data.party -%}
+{%- assign latest = site.posts.first -%}
+{%- assign total_words = 0 -%}
+{%- for post in site.posts -%}{%- assign w = post.content | number_of_words -%}{%- assign total_words = total_words | plus: w -%}{%- endfor -%}
+{%- assign hp_pct = party.hp[0] | times: 100 | divided_by: party.hp[1] -%}
+{%- assign sp_pct = party.sp[0] | times: 100 | divided_by: party.sp[1] -%}
 
-<div class="intro">
-  <p>I'm Harya/Wishnu. I work in information security around financial systems.</p>
-  <p>This is where I write up side projects: local models, security tools, and the agent setup I run at home. There's a <a href="{{ '/terminal/' | relative_url }}">terminal view</a> too.</p>
-</div>
+<section class="hero" aria-labelledby="game-title">
+  <canvas id="dungeon" width="320" height="180" aria-hidden="true"></canvas>
+  <div class="hero-shade" aria-hidden="true"></div>
 
-<h2 class="section-head">notes</h2>
-<ul class="notes">
-  {% for post in site.posts limit: 8 %}
-  <li class="note">
-    <a class="note-title" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>{% if forloop.first %} <span class="note-new">new</span>{% endif %}
-    <div class="note-meta">
-      <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%Y-%m-%d' }}</time>
-      {% assign words = post.content | number_of_words %}{% assign mins = words | divided_by: 200 %}{% if mins == 0 %}{% assign mins = 1 %}{% endif %}
-      <span class="sep">·</span>{{ mins }} min
-      {% if post.tags.size > 0 %}<span class="sep">·</span>{{ post.tags | join: ', ' }}{% endif %}
+  <div class="title-card">
+    <h1 class="game-title" id="game-title">Bhanuharya<span class="visually-hidden">: Harya (Wishnu) on information security, systems and self-hosting</span></h1>
+    <p class="game-sub" aria-hidden="true">Notes from the lower floors</p>
+  </div>
+
+  <div class="hud hud--loc win" aria-hidden="true">
+    <span class="k">Location</span><br>Lobby · 1F
+  </div>
+  <div class="hud hud--moon win" aria-hidden="true">
+    <svg class="moon-icon" id="moon-icon" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#dfe6ff"/></svg>
+    <div><span class="k" id="moon-clock">Night</span><br><span id="moon-name">Moon</span></div>
+  </div>
+
+  <div class="dialog win" id="dialog">
+    <span class="win-label dialog-name">{{ party.name }}</span>
+    <div class="dialog-lines" id="dialog-lines">
+      <p>I'm Harya/Wishnu. I work in information security around financial systems.</p>
+      <p>This is where I write up side projects: local models, security tools, and the agent setup I run at home.</p>
+      <p>If menus aren't your thing, there's a terminal view too. Pick a command below.</p>
     </div>
-  </li>
+  </div>
+</section>
+
+<section class="camp" aria-label="Menu">
+  <nav class="win" aria-label="Command menu">
+    <span class="win-label">Command</span>
+    <ul class="cmd-menu" id="cmd-menu">
+      <li><a href="{{ '/blog/' | relative_url }}" data-help="Every note so far: security, local models, home projects.">Quest Log <span class="cmd-alt">blog</span></a></li>
+      {% if latest %}<li><a href="{{ latest.url | relative_url }}" data-help="Latest: {{ latest.title | escape }}">Continue <span class="cmd-alt">latest</span></a></li>{% endif %}
+      <li><a href="{{ '/about/' | relative_url }}" data-help="Who's writing this: background, skills and links.">Status <span class="cmd-alt">about</span></a></li>
+      <li><a href="{{ '/terminal/' | relative_url }}" data-help="The same notes, driven from a keyboard-only terminal.">Terminal <span class="cmd-alt">cli</span></a></li>
+      <li><a href="{{ '/feed.xml' | relative_url }}" data-help="Subscribe with any feed reader. No account, no tracking.">RSS <span class="cmd-alt">feed</span></a></li>
+    </ul>
+  </nav>
+
+  <div class="win party-win">
+    <span class="win-label">Party</span>
+    <div class="party">
+      <div class="portrait">{% include hermit.svg crop=true id="pm" %}</div>
+      <div>
+        <div class="party-name">{{ party.name | upcase }} <span class="lv">Lv {{ site.posts.size }}</span></div>
+        <div class="party-class">{{ party.class }} · {{ party.arcana }}</div>
+        <div class="gauge"><span class="k">HP</span><span class="bar bar--hp"><i style="--fill: {{ hp_pct }}%"></i></span><span class="v">{{ party.hp[0] }}/{{ party.hp[1] }}</span></div>
+        <div class="gauge"><span class="k">SP</span><span class="bar bar--sp"><i style="--fill: {{ sp_pct }}%"></i></span><span class="v">{{ party.sp[0] }}/{{ party.sp[1] }}</span></div>
+      </div>
+    </div>
+    <div class="party-meta">
+      <span>EXP <b>{{ total_words }}</b> words written</span>
+      <span>Quests <b>{{ site.posts.size }}</b></span>
+      <span>Next Lv <b>1 post</b></span>
+    </div>
+  </div>
+
+  <div class="help-bar win win--flat" id="help-bar" aria-hidden="true"><span class="gold">?</span> <span id="help-text">Every note so far: security, local models, home projects.</span></div>
+</section>
+
+<h2 class="section-head">Quest log</h2>
+<ul class="quests">
+  {% for post in site.posts limit: 6 %}
+  {% assign n = site.posts.size | minus: forloop.index0 %}
+  <li>{% include quest.html post=post n=n new=forloop.first %}</li>
   {% endfor %}
 </ul>
-<p class="dim" style="margin-top:14px"><a href="{{ '/blog/' | relative_url }}">all notes</a></p>
+{% if site.posts.size > 6 %}<a class="more-link" href="{{ '/blog/' | relative_url }}">All {{ site.posts.size }} quests ▸</a>{% else %}<a class="more-link" href="{{ '/blog/' | relative_url }}">Open the full quest log ▸</a>{% endif %}
 
-<h2 class="section-head">about this site</h2>
-<p class="dim">Jekyll builds the site from Markdown, hand-written templates, CSS, and a little JavaScript. No analytics or cookies. The source is <a href="https://github.com/bhanuharya/bhanuharya.github.io">on GitHub</a>.</p>
+<h2 class="section-head">About this site</h2>
+<div class="win win--flat">
+  <p class="dim" style="margin:0">Jekyll builds the site from Markdown, hand-written templates, CSS, and a little JavaScript. The corridor up top is drawn live on a 320×180 canvas. No analytics or cookies. The source is <a href="https://github.com/bhanuharya/bhanuharya.github.io">on GitHub</a>.</p>
+</div>
+
+<script defer src="{{ '/assets/js/dungeon.js' | relative_url }}"></script>

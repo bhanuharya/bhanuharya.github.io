@@ -1,45 +1,63 @@
 ---
 layout: default
 ---
+{%- assign qn = 0 -%}
+{%- for p in site.posts -%}{%- if p.url == page.url -%}{%- assign qn = site.posts.size | minus: forloop.index0 -%}{%- endif -%}{%- endfor -%}
+{%- assign words = page.content | number_of_words -%}{%- assign mins = words | divided_by: 200 -%}{%- if mins == 0 -%}{%- assign mins = 1 -%}{%- endif -%}
 <article class="post">
-  <header class="post-header">
+  <header class="page-head win">
+    <div class="floor-tag">Quest No.{{ qn | prepend: '0' | slice: -2, 2 }} <span class="dim">· B{{ qn }}F</span></div>
     <h1 class="post-title">{{ page.title | escape }}</h1>
     <div class="post-meta">
-      <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
-      {% assign words = page.content | number_of_words %}{% assign mins = words | divided_by: 200 %}{% if mins == 0 %}{% assign mins = 1 %}{% endif %}
+      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
+      <span class="sep" aria-hidden="true">◆</span>
       <span>{{ words }} words, {{ mins }} min</span>
       {% if page.tags.size > 0 %}
-      <span class="post-tags">
-        {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
-      </span>
+      <span class="sep" aria-hidden="true">◆</span>
+      <span class="tags" aria-label="Tags">{% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</span>
       {% endif %}
     </div>
   </header>
 
-  <div class="post-content">
-    {{ content }}
+  <div class="win prose-win">
+    <div class="post-content">
+      {{ content }}
+    </div>
   </div>
 
   <nav class="post-nav" aria-label="Post navigation">
-    <span>{% if page.previous %}<a href="{{ page.previous.url | relative_url }}">&larr; {{ page.previous.title | escape }}</a>{% endif %}</span>
-    <span>{% if page.next %}<a href="{{ page.next.url | relative_url }}">{{ page.next.title | escape }} &rarr;</a>{% endif %}</span>
+    {% if page.previous %}<a class="win prev" href="{{ page.previous.url | relative_url }}"><span class="k">◀ Previous quest</span>{{ page.previous.title | escape }}</a>{% else %}<span></span>{% endif %}
+    {% if page.next %}<a class="win next" href="{{ page.next.url | relative_url }}"><span class="k">Next quest ▶</span>{{ page.next.title | escape }}</a>{% else %}<span></span>{% endif %}
+    <a class="win win--flat back" href="{{ '/blog/' | relative_url }}"><span class="k">Return</span>Back to the quest log</a>
   </nav>
 </article>
 
 <script>
   (function () {
+    // tables: scroll sideways on small screens, and drop header rows that are all blank
+    document.querySelectorAll('.post-content table').forEach(function (t) {
+      var head = t.tHead;
+      if (head && !head.textContent.trim()) head.classList.add('is-blank');
+      var wrap = document.createElement('div');
+      wrap.className = 'table-scroll';
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    });
+  })();
+  (function () {
+    if (!navigator.clipboard) return;
     var blocks = document.querySelectorAll('.post-content pre');
     blocks.forEach(function (pre) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'code-copy-btn';
-      btn.textContent = 'copy';
+      btn.textContent = 'Copy';
       btn.addEventListener('click', function () {
         var text = pre.querySelector('code') ? pre.querySelector('code').innerText : pre.innerText;
         navigator.clipboard.writeText(text).then(function () {
-          btn.textContent = 'copied';
+          btn.textContent = 'Got it!';
           btn.classList.add('copy-success');
-          setTimeout(function () { btn.textContent = 'copy'; btn.classList.remove('copy-success'); }, 1400);
+          setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copy-success'); }, 1400);
         });
       });
       pre.appendChild(btn);
