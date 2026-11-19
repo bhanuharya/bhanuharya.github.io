@@ -72,10 +72,10 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 ## Design notes
 
-- The site looks like a protocol analyzer. Posts are packets; clicking a row opens its layers and a hex dump of its title and opening lines; a post opens as a followed TCP stream.
+- The site looks like an old desktop packet analyzer: grey 3D bevels, a gradient title bar, a menu bar with underlined access keys, sunken panes. Posts are packets; clicking a row opens its layers and a hex dump; a post opens in a "Follow TCP Stream" dialog that can also show the post as a hex dump.
 - The display filter is real: `tag == "sast"`, `proto == LLM`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
 - About is kept short on purpose; background sits in a collapsed section.
-- Fonts are self-hosted (`assets/fonts/`, SIL OFL): JetBrains Mono for the analyzer, Source Sans 3 for reading.
-- Light and dark follow the system; the Theme button saves an explicit choice in this browser.
+- No web fonts: period system fonts (Tahoma for the interface, Verdana for reading, Lucida Console for packets) with DejaVu fallbacks.
+- Day (classic grey) and Night follow the system; View in the menu bar saves an explicit choice in this browser.
 - Code blocks scroll sideways; tables scroll inside their own box on narrow screens.
 - No analytics, no cookies. Theme choice is the only thing stored, in localStorage.

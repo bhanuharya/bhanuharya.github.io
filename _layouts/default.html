@@ -28,7 +28,6 @@
       if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
     })();
   </script>
-  <link rel="preload" href="{{ '/assets/fonts/jetbrains-mono-400.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
@@ -47,29 +46,28 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="window">
   <header class="titlebar">
-    <a class="file" href="{{ '/' | relative_url }}">bhanuharya<span>.pcapng</span></a>
-    <span class="path" aria-hidden="true">{{ page.window_path | default: page.url }}</span>
-    <nav class="menubar" aria-label="Site">
-      <a href="{{ '/' | relative_url }}"{% if page.url == '/' %} aria-current="page"{% endif %}>Packets</a>
-      <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>About</a>
-      <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
-      <button type="button" id="theme-toggle" aria-label="Switch light or dark">Theme</button>
-    </nav>
+    <span class="app-icon" aria-hidden="true"></span>
+    <a class="caption" href="{{ '/' | relative_url }}">bhanuharya.pcapng - Packet Capture</a>
+    <span class="caption-btns" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span>
   </header>
+  <nav class="menubar" aria-label="Site">
+    <a href="{{ '/' | relative_url }}" accesskey="p"{% if page.url == '/' %} aria-current="page"{% endif %}><u>P</u>ackets</a>
+    <a href="{{ '/about/' | relative_url }}" accesskey="a"{% if page.url == '/about/' %} aria-current="page"{% endif %}><u>A</u>bout</a>
+    <a href="{{ '/feed.xml' | relative_url }}" accesskey="r"><u>R</u>SS</a>
+    <a href="{{ '/terminal/' | relative_url }}" accesskey="t"><u>T</u>erminal</a>
+    <button type="button" id="theme-toggle" accesskey="v"><u>V</u>iew: Night</button>
+  </nav>
 
   <main id="main">
     {{ content }}
   </main>
 
   <footer class="statusbar">
-    <span><span class="led" aria-hidden="true"></span>No trackers, no cookies</span>
-    <span id="visits" hidden>Visits: <span id="visit-count">0</span></span>
-    <span class="right">
-      <span>&copy; {{ site.time | date: '%Y' }} Harya</span>
-      <a href="https://github.com/bhanuharya" rel="me">github</a>
-      <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a>
-      <a href="{{ '/terminal/' | relative_url }}">terminal</a>
-    </span>
+    <span class="seg grow">No trackers, no cookies</span>
+    <span class="seg" id="visits" hidden>Visits: <span id="visit-count">0</span></span>
+    <span class="seg">&copy; {{ site.time | date: '%Y' }} Harya</span>
+    <span class="seg"><a href="https://github.com/bhanuharya" rel="me">github</a> · <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a></span>
+    <span class="grip" aria-hidden="true"></span>
   </footer>
 </div>
 <script defer src="{{ '/assets/js/capture.js' | relative_url }}"></script>

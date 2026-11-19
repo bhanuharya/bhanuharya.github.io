@@ -4,38 +4,39 @@ layout: default
 {%- assign qn = 0 -%}
 {%- for p in site.posts -%}{%- if p.url == page.url -%}{%- assign qn = site.posts.size | minus: forloop.index0 -%}{%- endif -%}{%- endfor -%}
 {%- include packet-vars.html post=page -%}
-<article class="post">
-  <div class="stream-bar">
-    <span>Follow TCP Stream (tcp.stream eq {{ qn }})</span>
-    <span>harya:443 → <b>you</b></span>
-    <span class="sp">{{ pk_words }} words · {{ pk_mins }} min</span>
-  </div>
-
-  <header class="post-head">
-    <div class="inner">
-      <div class="kicker">Frame {{ qn }} · <span class="proto {{ pk_family }}">{{ pk_proto }}</span></div>
-      <h1 class="post-title">{{ page.title | escape }}</h1>
-      <div class="post-meta">
-        <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
-        {% if page.tags.size > 0 %}<span class="tags" aria-label="Tags">{% for tag in page.tags %}<a href="{{ '/' | relative_url }}?filter={{ 'tag == "' | append: tag | append: '"' | uri_escape }}">{{ tag }}</a>{% endfor %}</span>{% endif %}
+<article class="dialog raised post">
+  <div class="dialog-title"><span>Follow TCP Stream (tcp.stream eq {{ qn }})</span><span class="caption-btns" aria-hidden="true"><i>×</i></span></div>
+  <div class="dialog-body">
+    <fieldset class="group">
+      <legend>Stream Content</legend>
+      <div class="text-area sunken">
+        <header class="post-head">
+          <div class="kicker">Frame {{ qn }} · {{ pk_proto }} · harya:443 → you</div>
+          <h1 class="post-title">{{ page.title | escape }}</h1>
+          <div class="post-meta">
+            <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
+            <span>{{ pk_words }} words, about {{ pk_mins }} min</span>
+            {% if page.tags.size > 0 %}<span class="tags" aria-label="Tags">{% for tag in page.tags %}<a href="{{ '/' | relative_url }}?filter={{ 'tag == "' | append: tag | append: '"' | uri_escape }}">{{ tag }}</a>{% endfor %}</span>{% endif %}
+          </div>
+        </header>
+        <div class="post-content" id="post-content">
+          {{ content }}
+        </div>
+        <pre class="hexview" id="hexview" hidden aria-label="Hex dump of this post"></pre>
       </div>
+    </fieldset>
+    <div class="dialog-row">
+      <span class="grow">Entire conversation ({{ pk_words }} words)</span>
+      <span class="radios" role="radiogroup" aria-label="Show as">
+        <span>Show as</span>
+        <label><input type="radio" name="show-as" value="ascii" checked> ASCII</label>
+        <label><input type="radio" name="show-as" value="hex"> Hex Dump</label>
+      </span>
     </div>
-  </header>
-
-  <div class="stream">
-    <div class="post-content" id="post-content">
-      {{ content }}
-    </div>
-    <aside class="side-hex" id="side-hex" aria-hidden="true"></aside>
+    <nav class="dialog-buttons" aria-label="Post navigation">
+      {% if page.previous %}<a class="btn" href="{{ page.previous.url | relative_url }}" title="{{ page.previous.title | escape }}">&lt; Previous</a>{% endif %}
+      {% if page.next %}<a class="btn" href="{{ page.next.url | relative_url }}" title="{{ page.next.title | escape }}">Next &gt;</a>{% endif %}
+      <a class="btn" href="{{ '/' | relative_url }}">Close</a>
+    </nav>
   </div>
-
-  <footer class="post-foot">
-    <div class="inner">
-      <nav class="post-nav" aria-label="Post navigation">
-        {% if page.previous %}<a class="prev" href="{{ page.previous.url | relative_url }}"><span class="k">← previous packet</span>{{ page.previous.title | escape }}</a>{% else %}<span></span>{% endif %}
-        {% if page.next %}<a class="next" href="{{ page.next.url | relative_url }}"><span class="k">next packet →</span>{{ page.next.title | escape }}</a>{% else %}<span></span>{% endif %}
-        <a class="back" href="{{ '/' | relative_url }}">back to the capture</a>
-      </nav>
-    </div>
-  </footer>
 </article>

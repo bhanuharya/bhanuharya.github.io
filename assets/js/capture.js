@@ -1,7 +1,7 @@
 /* bhanuharya.pcapng
    - light/dark toggle (an explicit choice is saved; otherwise the system decides)
    - home: display filter, packet selection, detail tree and hex dump
-   - posts: hovered paragraph's bytes in a side hex pane, copy buttons, reading gauge
+   - posts: "Show as" ASCII / Hex Dump, copy buttons, reading gauge
    Nothing leaves the browser. */
 (function () {
   'use strict';
@@ -14,7 +14,7 @@
     if (t) return t === 'dark';
     return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
-  function label() { if (toggle) toggle.textContent = dark() ? 'Light' : 'Dark'; }
+  function label() { if (toggle) toggle.innerHTML = '<u>V</u>iew: ' + (dark() ? 'Day' : 'Night'); }
   if (toggle) {
     label();
     toggle.addEventListener('click', function () {
@@ -78,7 +78,10 @@
     var help = document.getElementById('filter-help'), count = document.getElementById('pk-count');
     var noMatch = document.getElementById('no-match');
     var panes = document.getElementById('panes'), tree = document.getElementById('tree'), hex = document.getElementById('hex');
-    var quick = Array.prototype.slice.call(document.querySelectorAll('.quick button'));
+    var quick = Array.prototype.slice.call(document.querySelectorAll('.filterbar [data-expr]'));
+    var exprBtn = document.getElementById('expr-btn');
+    var showHelp = function (on) { if (help) help.hidden = !on; if (exprBtn) exprBtn.setAttribute('aria-expanded', String(on)); };
+    if (exprBtn) exprBtn.addEventListener('click', function () { showHelp(help.hidden); });
     var selected = packets.length ? packets[0] : null;
     var PROTOS = {};
     packets.forEach(function (p) { PROTOS[p.proto.toLowerCase()] = true; });
@@ -186,14 +189,13 @@
     function apply(expr, push) {
       var f = compile(expr);
       input.classList.remove('ok', 'bad', 'empty');
-      if (!f) { input.classList.add('bad'); if (help) help.hidden = false; return; }
+      if (!f) { input.classList.add('bad'); showHelp(true); return; }
       current = (expr || '').trim();
       var shown = packets.filter(function (p) { var ok = f(p); p.tr.hidden = !ok; return ok; });
       if (current) input.classList.add(shown.length ? 'ok' : 'empty');
-      if (help) help.hidden = true;
       noMatch.hidden = shown.length > 0;
-      count.textContent = 'Packets: ' + packets.length + ' · Displayed: ' + shown.length + ' (' + (packets.length ? (shown.length / packets.length * 100).toFixed(1) : '0.0') + '%)';
-      quick.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-expr') === current && current !== '')); });
+      count.textContent = 'P: ' + packets.length + ' D: ' + shown.length + ' M: 0';
+      quick.forEach(function (b) { if (b.hasAttribute('aria-pressed')) b.setAttribute('aria-pressed', String(b.getAttribute('data-expr') === current && current !== '')); });
       if (!selected || selected.tr.hidden) select(shown[0] || null);
       if (push && window.history && history.replaceState) {
         var url = window.location.pathname + (current ? '?filter=' + encodeURIComponent(current) : '');
@@ -278,25 +280,21 @@
         pre.appendChild(btn);
       });
     }
-    // the side pane shows the bytes of the block under the pointer
-    var side = document.getElementById('side-hex');
-    var blocks = Array.prototype.slice.call(content.children);
-    if (side && blocks.length) {
-      var hot = null;
-      var show = function (i) {
-        var b = blocks[i];
-        if (hot) hot.classList.remove('is-hot');
-        hot = b; b.classList.add('is-hot');
-        var text = b.textContent.replace(/\s+/g, ' ').trim();
-        var bytes = bytesOf(text);
-        side.innerHTML = '<span class="cap">offset 0x' + ('000' + (i * 64).toString(16)).slice(-4) + ' · ' + bytes.length + ' bytes</span>' +
-          dump(bytes, 8, 30, undefined, undefined, false, i * 64);
-      };
-      blocks.forEach(function (b, i) { b.addEventListener('mouseenter', function () { show(i); }); });
-      content.addEventListener('mouseleave', function () { if (hot) hot.classList.remove('is-hot'); });
-      show(0);
-      if (hot) hot.classList.remove('is-hot');
-    }
+    // "Show as": ASCII (the post) or a hex dump of its text
+    var hexview = document.getElementById('hexview');
+    var radios = Array.prototype.slice.call(document.querySelectorAll('input[name="show-as"]'));
+    var built = false;
+    radios.forEach(function (r) {
+      r.addEventListener('change', function () {
+        var asHex = r.checked && r.value === 'hex';
+        if (asHex && !built) {
+          hexview.innerHTML = dump(bytesOf(content.innerText.replace(/\s+/g, ' ').trim()), 16, 100000, undefined, undefined, true);
+          built = true;
+        }
+        content.hidden = asHex;
+        hexview.hidden = !asHex;
+      });
+    });
     // reading gauge
     var gauge = document.createElement('div');
     gauge.className = 'read-gauge';

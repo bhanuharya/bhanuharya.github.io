@@ -5,19 +5,20 @@ layout: default
 
 <div class="filterbar">
   <form class="filter-form" id="filter-form" role="search" autocomplete="off">
-    <label class="visually-hidden" for="filter">Display filter</label>
-    <input class="filter-input" id="filter" name="filter" type="text" spellcheck="false" autocapitalize="off" autocorrect="off"
-           placeholder="Apply a display filter… e.g. tag == &quot;sast&quot; or just a word">
-    <button class="filter-apply" type="submit" aria-label="Apply filter">→</button>
+    <label for="filter"><u>F</u>ilter:</label>
+    <input class="filter-input sunken" id="filter" name="filter" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" accesskey="f"
+           placeholder='tag == "sast", len > 1500, or a word'>
+    <button class="btn small" type="button" id="expr-btn" aria-controls="filter-help" aria-expanded="false">Expression…</button>
+    <button class="btn small" type="button" data-expr="">Clear</button>
+    <button class="btn small" type="submit">Apply</button>
   </form>
   <div class="quick" role="group" aria-label="Quick filters">
-    {% for f in site.data.filters %}<button type="button" data-expr="{{ f.expr | escape }}" aria-pressed="false">{{ f.label }}</button>{% endfor %}
-    <button type="button" data-expr="" aria-pressed="false">clear</button>
+    {% for f in site.data.filters %}<button class="btn small" type="button" data-expr="{{ f.expr | escape }}" aria-pressed="false">{{ f.label }}</button>{% endfor %}
   </div>
-  <p class="filter-help" id="filter-help" hidden>Fields: <code>tag</code> <code>proto</code> <code>family</code> <code>frame</code> <code>year</code> <code>len</code> · ops: <code>==</code> <code>!=</code> <code>contains</code> <code>&gt;</code> <code>&lt;</code> · join with <code>&amp;&amp;</code> <code>||</code>, negate with <code>!</code></p>
+  <p class="filter-help sunken" id="filter-help" hidden>Fields: <code>tag</code> <code>proto</code> <code>family</code> <code>frame</code> <code>year</code> <code>len</code> · ops: <code>==</code> <code>!=</code> <code>contains</code> <code>&gt;</code> <code>&lt;</code> · join with <code>&amp;&amp;</code> <code>||</code> · negate with <code>!</code> · or type any word</p>
 </div>
 
-<div class="packet-list">
+<div class="packet-list sunken">
   <table class="packets" aria-label="Posts">
     <thead>
       <tr><th class="num" scope="col">No.</th><th class="col-time" scope="col">Time</th><th class="col-src" scope="col">Source</th><th class="col-dst" scope="col">Destination</th><th scope="col">Protocol</th><th class="num col-len" scope="col">Length</th><th scope="col">Info</th></tr>
@@ -41,12 +42,14 @@ layout: default
   </table>
 </div>
 
-<div class="panes" id="panes" hidden>
-  <div class="tree" id="tree" aria-live="polite"></div>
-  <div class="hex" id="hex" aria-hidden="true"></div>
+<div id="panes" hidden>
+  <div class="splitter" aria-hidden="true"></div>
+  <div class="tree sunken" id="tree" aria-live="polite"></div>
+  <div class="splitter before-hex" aria-hidden="true"></div>
+  <div class="hex sunken" id="hex" aria-hidden="true"></div>
 </div>
 
-<div class="statusbar" style="border-top:1px solid var(--line)">
-  <span id="pk-count">Packets: {{ site.posts.size }} · Displayed: {{ site.posts.size }} (100.0%)</span>
-  <span class="right"><span>Click a row for details · Enter opens it</span></span>
+<div class="statusline">
+  <span class="seg grow">Click a row for details · Enter or double-click opens it</span>
+  <span class="seg" id="pk-count">P: {{ site.posts.size }} D: {{ site.posts.size }} M: 0</span>
 </div>
