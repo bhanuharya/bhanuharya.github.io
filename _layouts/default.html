@@ -1,12 +1,12 @@
 ---
 ---
 <!DOCTYPE html>
-<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="indigo" data-visits-endpoint="">
+<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="green" data-visits-endpoint="">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#0c1240">
+  <meta name="theme-color" content="#020403">
   {% assign seo_title = page.title | default: site.title %}{% if page.title %}{% assign seo_title = page.title | append: ' · ' | append: site.title %}{% endif %}
   {% assign seo_description = page.description | default: page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
   <title>{{ seo_title | escape }}{% unless page.title %} · notes on security and systems{% endunless %}</title>
@@ -22,21 +22,20 @@
   <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
   <script>
-    /* apply saved Config before first paint so the window colour never flashes */
+    /* apply saved Config before first paint */
     (function () {
       var cfg = {};
-      try { cfg = JSON.parse(localStorage.getItem('rpg-config') || '{}') || {}; } catch (e) {}
-      var themes = ['indigo', 'crimson', 'jade', 'parchment'];
+      try { cfg = JSON.parse(localStorage.getItem('summon-config') || '{}') || {}; } catch (e) {}
+      var themes = ['green', 'amber', 'blood', 'ice'];
       var param = null;
       try { param = new URLSearchParams(window.location.search).get('theme'); } catch (e) {}
-      var theme = themes.indexOf(param) !== -1 ? param : (themes.indexOf(cfg.theme) !== -1 ? cfg.theme : 'indigo');
       var root = document.documentElement;
-      root.setAttribute('data-theme', theme);
+      root.setAttribute('data-theme', themes.indexOf(param) !== -1 ? param : (themes.indexOf(cfg.theme) !== -1 ? cfg.theme : 'green'));
       root.setAttribute('data-scanlines', cfg.scanlines === 'off' ? 'off' : 'on');
       root.setAttribute('data-motion', cfg.motion === 'off' ? 'off' : 'on');
     })();
   </script>
-  <link rel="preload" href="{{ '/assets/fonts/dotgothic16-latin-400.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ '/assets/fonts/vt323-latin-400.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
@@ -54,14 +53,17 @@
 <body class="layout-{{ page.layout | default: 'default' }}">
 <a class="skip" href="#main">Skip to content</a>
 <div class="backdrop" aria-hidden="true"></div>
-<div class="scanlines" aria-hidden="true"></div>
+<div class="screen-fx" aria-hidden="true"></div>
 
 <div class="wrap">
-  <header class="site-head win">
-    <a class="site-name" href="{{ '/' | relative_url }}">bhanuharya<span class="at">@sec</span></a>
+  <header class="site-head">
+    <a class="site-name" href="{{ '/' | relative_url }}">
+      <svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="16" cy="16" r="14.5"/><path d="M16 29.5 L7.6 5.4 L29.3 20.2 L2.7 20.2 L24.4 5.4 Z"/></svg>
+      bhanuharya@sec <span class="sys">// SUMMON.SYS</span>
+    </a>
     <nav class="site-nav" aria-label="Site">
-      <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' %} aria-current="page"{% endif %}>Quest Log</a>
-      <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>Status</a>
+      <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' %} aria-current="page"{% endif %}>Entities</a>
+      <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>Operator</a>
       <a href="{{ '/terminal/' | relative_url }}">Terminal</a>
       <a href="{{ '/feed.xml' | relative_url }}">RSS</a>
       <button type="button" id="config-open" aria-haspopup="dialog">Config</button>
@@ -72,38 +74,23 @@
     {{ content }}
   </main>
 
-  <footer class="footer win win--flat">
-    <p class="save"><span class="save-crystal" aria-hidden="true"></span>&copy; {{ site.time | date: '%Y' }} Harya. Notes and experiments, nothing here is advice.</p>
-    <p>No trackers, no cookies. <a href="{{ '/feed.xml' | relative_url }}">RSS</a> · <a href="https://github.com/bhanuharya" rel="me">GitHub</a> · <a href="https://www.linkedin.com/in/wishnumurti" rel="me">LinkedIn</a></p>
-    <p id="visits" hidden>Visits: <span id="visit-count">0</span> <span class="dim">(first-party counter, one hit per browser per day, nothing else stored)</span></p>
+  <footer class="footer">
+    <p class="pact">!! PACT TERMS: NO TRACKERS · NO COOKIES · NOTHING HERE IS ADVICE</p>
+    <p>&copy; {{ site.time | date: '%Y' }} Harya · <a href="{{ '/feed.xml' | relative_url }}">rss</a> · <a href="https://github.com/bhanuharya" rel="me">github</a> · <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a></p>
+    <p id="visits" hidden>visits: <span id="visit-count">0</span> <span class="dim">(first-party counter, one hit per browser per day, nothing else stored)</span></p>
   </footer>
 </div>
 
-<dialog class="config win" id="config" aria-labelledby="config-title">
+<dialog class="config" id="config" aria-labelledby="config-title">
   <form method="dialog">
     <h2 id="config-title">Config</h2>
     <fieldset>
-      <legend>Window color</legend>
+      <legend>Phosphor</legend>
       <div class="opt-row">
-        <label class="opt"><input type="radio" name="theme" value="indigo"><span class="swatch swatch--indigo" aria-hidden="true"></span>Indigo</label>
-        <label class="opt"><input type="radio" name="theme" value="crimson"><span class="swatch swatch--crimson" aria-hidden="true"></span>Crimson</label>
-        <label class="opt"><input type="radio" name="theme" value="jade"><span class="swatch swatch--jade" aria-hidden="true"></span>Jade</label>
-        <label class="opt"><input type="radio" name="theme" value="parchment"><span class="swatch swatch--parchment" aria-hidden="true"></span>Parchment</label>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Text speed</legend>
-      <div class="opt-row">
-        <label class="opt"><input type="radio" name="speed" value="slow">Slow</label>
-        <label class="opt"><input type="radio" name="speed" value="normal">Normal</label>
-        <label class="opt"><input type="radio" name="speed" value="instant">Instant</label>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Sound effects</legend>
-      <div class="opt-row">
-        <label class="opt"><input type="radio" name="sound" value="off">Off</label>
-        <label class="opt"><input type="radio" name="sound" value="on">On</label>
+        <label class="opt"><input type="radio" name="theme" value="green"><span class="swatch" style="color:#7dff9a;background:#7dff9a"></span>Green</label>
+        <label class="opt"><input type="radio" name="theme" value="amber"><span class="swatch" style="color:#ffb347;background:#ffb347"></span>Amber</label>
+        <label class="opt"><input type="radio" name="theme" value="blood"><span class="swatch" style="color:#ff4d6a;background:#ff4d6a"></span>Blood</label>
+        <label class="opt"><input type="radio" name="theme" value="ice"><span class="swatch" style="color:#8fe3ff;background:#8fe3ff"></span>Ice</label>
       </div>
     </fieldset>
     <fieldset>
@@ -114,18 +101,18 @@
       </div>
     </fieldset>
     <fieldset>
-      <legend>Animation</legend>
+      <legend>Motion</legend>
       <div class="opt-row">
         <label class="opt"><input type="radio" name="motion" value="on">On</label>
         <label class="opt"><input type="radio" name="motion" value="off">Off</label>
       </div>
     </fieldset>
-    <p class="dim pixel" style="font-size:14px;margin:0 0 12px">Saved in this browser only.</p>
+    <p class="dim" style="font-size:14px;margin:0 0 12px">Saved in this browser only.</p>
     <div class="config-actions"><button class="btn" value="close">Close</button></div>
   </form>
 </dialog>
 
-<script defer src="{{ '/assets/js/rpg.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/summon.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/visits.js' | relative_url }}"></script>
 </body>
 </html>

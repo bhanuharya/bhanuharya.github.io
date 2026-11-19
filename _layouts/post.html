@@ -3,32 +3,31 @@ layout: default
 ---
 {%- assign qn = 0 -%}
 {%- for p in site.posts -%}{%- if p.url == page.url -%}{%- assign qn = site.posts.size | minus: forloop.index0 -%}{%- endif -%}{%- endfor -%}
-{%- assign words = page.content | number_of_words -%}{%- assign mins = words | divided_by: 200 -%}{%- if mins == 0 -%}{%- assign mins = 1 -%}{%- endif -%}
+{%- include entity-vars.html post=page n=qn -%}
 <article class="post">
-  <header class="page-head win">
-    <div class="floor-tag">Quest No.{{ qn | prepend: '0' | slice: -2, 2 }} <span class="dim">· B{{ qn }}F</span></div>
-    <h1 class="post-title">{{ page.title | escape }}</h1>
-    <div class="post-meta">
-      <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
-      <span class="sep" aria-hidden="true">◆</span>
-      <span>{{ words }} words, {{ mins }} min</span>
-      {% if page.tags.size > 0 %}
-      <span class="sep" aria-hidden="true">◆</span>
-      <span class="tags" aria-label="Tags">{% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</span>
-      {% endif %}
+  <header class="panel page-head">
+    <div>
+      <div class="kicker">ANALYSIS // ENTITY {{ ent_num }} · LV {{ ent_lv }} · <span class="al-{{ ent_align | downcase }}">ALIGN {{ ent_align }}</span></div>
+      <h1 class="post-title">{{ page.title | escape }}</h1>
+      <div class="post-meta">
+        <span>manifested <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time></span>
+        <span>{{ ent_words }} words</span>
+        {% if page.tags.size > 0 %}<span class="tags" aria-label="Tags">{% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</span>{% endif %}
+      </div>
     </div>
+    <span class="sigil sigil--lg" data-sigil="{{ page.title | escape }}" aria-hidden="true"></span>
   </header>
 
-  <div class="win prose-win">
+  <div class="panel reading">
     <div class="post-content">
       {{ content }}
     </div>
   </div>
 
   <nav class="post-nav" aria-label="Post navigation">
-    {% if page.previous %}<a class="win prev" href="{{ page.previous.url | relative_url }}"><span class="k">◀ Previous quest</span>{{ page.previous.title | escape }}</a>{% else %}<span></span>{% endif %}
-    {% if page.next %}<a class="win next" href="{{ page.next.url | relative_url }}"><span class="k">Next quest ▶</span>{{ page.next.title | escape }}</a>{% else %}<span></span>{% endif %}
-    <a class="win win--flat back" href="{{ '/blog/' | relative_url }}"><span class="k">Return</span>Back to the quest log</a>
+    {% if page.previous %}<a class="panel prev" href="{{ page.previous.url | relative_url }}" data-summon><span class="k">&lt; PREV ENTITY</span>{{ page.previous.title | escape }}</a>{% else %}<span></span>{% endif %}
+    {% if page.next %}<a class="panel next" href="{{ page.next.url | relative_url }}" data-summon><span class="k">NEXT ENTITY &gt;</span>{{ page.next.title | escape }}</a>{% else %}<span></span>{% endif %}
+    <a class="panel back" href="{{ '/blog/' | relative_url }}"><span class="k">RETURN</span>ls /entities --all</a>
   </nav>
 </article>
 
@@ -46,18 +45,16 @@ layout: default
   })();
   (function () {
     if (!navigator.clipboard) return;
-    var blocks = document.querySelectorAll('.post-content pre');
-    blocks.forEach(function (pre) {
+    document.querySelectorAll('.post-content pre').forEach(function (pre) {
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'code-copy-btn';
-      btn.textContent = 'Copy';
+      btn.textContent = '[copy]';
       btn.addEventListener('click', function () {
         var text = pre.querySelector('code') ? pre.querySelector('code').innerText : pre.innerText;
         navigator.clipboard.writeText(text).then(function () {
-          btn.textContent = 'Got it!';
-          btn.classList.add('copy-success');
-          setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('copy-success'); }, 1400);
+          btn.textContent = '[copied]';
+          setTimeout(function () { btn.textContent = '[copy]'; }, 1400);
         });
       });
       pre.appendChild(btn);

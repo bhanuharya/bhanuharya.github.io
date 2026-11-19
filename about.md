@@ -1,8 +1,8 @@
 ---
-layout: status
-title: Status
+layout: operator
+title: Operator File
 permalink: /about/
-floor: Party · Member 1
+kicker: "> cat /etc/operator"
 lead: Harya / Wishnu. Security engineer, occasional tinkerer.
 description: Harya writes about information security, AI security, and the systems and tools he tests.
 ---

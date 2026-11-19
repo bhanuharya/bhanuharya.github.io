@@ -1,24 +1,17 @@
-# Character sheet used by the home page (Party window) and /about/ (Status).
-# Everything here is flavour text: edit freely.
-name: Harya
+# The operator file shown on /about/. Flavour text: edit freely.
+name: Harya / Wishnu
 class: Security Engineer
-arcana: IX · The Hermit
-arcana_note: Works by lantern light, mostly asking why something broke.
 origin: Computer science, Bandung Institute of Technology
 
-# [current, max]
-hp: [92, 100]
-sp: [41, 64]
-
-# shown as bars on /about/, 0-99
-stats:
+# 0-99, drawn as bars
+attributes:
   - [Curiosity, 99]
   - [Paranoia, 88]
   - [Uptime, 72]
   - [Patience, 41]
   - [Luck, 13]
 
-skills:
+rites:
   - name: Cloud & network security
     note: Where the packets actually go.
   - name: Identity
@@ -32,12 +25,12 @@ skills:
   - name: Linux tinkering
     note: Taking machines apart since college.
 
-equipment:
-  - slot: Weapon
-    item: A Linux box with the case off
-  - slot: Arcane focus
-    item: RTX 3060, 12 GB (local models)
-  - slot: Accessory
-    item: Xiaomi Pad 5 (Slay the Spire 2 test rig)
-  - slot: Accessory
-    item: An iPhone, reluctantly
+artifacts:
+  - name: A Linux box with the case off
+    note: Primary focus
+  - name: RTX 3060, 12 GB
+    note: Runs the local models
+  - name: Xiaomi Pad 5
+    note: Slay the Spire 2 test rig
+  - name: An iPhone
+    note: Reluctantly

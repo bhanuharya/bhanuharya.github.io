@@ -1,0 +1,18 @@
+{%- comment -%}
+  One post as an entity card. include.post, include.n (oldest = 1), include.new, include.level (heading level).
+{%- endcomment -%}
+{%- include entity-vars.html post=include.post n=include.n -%}
+{%- assign q = include.post -%}
+<article class="entity" data-url="{{ q.url | relative_url }}">
+  <span class="sigil" data-sigil="{{ q.title | escape }}" aria-hidden="true"></span>
+  <div>
+    <div class="entity-meta">
+      <span>ENTITY {{ ent_num }}</span><span>LV {{ ent_lv }}</span><span class="al-{{ ent_align | downcase }}">ALIGN {{ ent_align }}</span>
+      <time datetime="{{ q.date | date_to_xmlschema }}">{{ q.date | date: '%Y-%m-%d' }}</time>
+      {% if include.new %}<span class="badge badge--new">NEW</span>{% endif %}
+    </div>
+    <h{{ include.level | default: 2 }} class="entity-title"><a href="{{ q.url | relative_url }}" data-summon>{{ q.title | escape }}</a></h{{ include.level | default: 2 }}>
+    {% if q.tags.size > 0 %}<div class="tags">{% for tag in q.tags %}<span class="tag">{{ tag }}</span>{% endfor %}</div>{% endif %}
+    <p class="entity-excerpt">{{ q.excerpt | strip_html | normalize_whitespace | truncatewords: 34 }}</p>
+  </div>
+</article>

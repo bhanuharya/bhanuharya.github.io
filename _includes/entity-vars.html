@@ -1,0 +1,8 @@
+{%- comment -%} Sets ent_num, ent_lv, ent_align, ent_words for include.post / include.n. {%- endcomment -%}
+{%- assign ent_words = include.post.content | number_of_words -%}
+{%- assign ent_mins = ent_words | divided_by: 200 -%}{%- if ent_mins == 0 -%}{%- assign ent_mins = 1 -%}{%- endif -%}
+{%- assign ent_lv = ent_mins | prepend: '0' | slice: -2, 2 -%}
+{%- assign ent_num = include.n | prepend: '0' | slice: -2, 2 -%}
+{%- assign ent_align = 'NEUTRAL' -%}
+{%- if include.post.tags contains 'ai-agents' or include.post.tags contains 'performance' or include.post.tags contains 'godot' -%}{%- assign ent_align = 'CHAOS' -%}{%- endif -%}
+{%- if include.post.tags contains 'security' or include.post.tags contains 'appsec' or include.post.tags contains 'sast' or include.post.tags contains 'access-control' -%}{%- assign ent_align = 'LAW' -%}{%- endif -%}

@@ -1,8 +1,9 @@
 ---
 layout: page
-title: Quest Log
+title: Entity Index
 permalink: /blog/
-floor: Archive · B1F
+kicker: "> ls /entities --all"
+sigil: entity-index
 lead: Things I've built, tested, and had to fix, mostly in security and self-hosting.
 bare: true
 description: Notes on security engineering, software tools, local models, and systems tested in practice.
@@ -19,25 +20,25 @@ description: Notes on security engineering, software tools, local models, and sy
   {% endfor %}
 
   {% if all_tags.size > 0 %}
-  <div class="filter-bar win win--flat">
-    <label for="tag-filter">Affinity</label>
+  <div class="filter-bar">
+    <label for="tag-filter">--tag</label>
     <select class="filter-select" id="tag-filter" aria-controls="post-list">
-      <option value="all">All quests</option>
+      <option value="all">all</option>
       {% for tag in all_tags %}
         <option value="{{ tag | escape }}">{{ tag | escape }}</option>
       {% endfor %}
     </select>
-    <span class="filter-count" id="filter-status" role="status" aria-live="polite">{{ site.posts.size }} quests</span>
+    <span class="filter-count" id="filter-status" role="status" aria-live="polite">{{ site.posts.size }} entities bound</span>
   </div>
   {% endif %}
 
-<ul class="quests" id="post-list">
+<ul class="entity-list" id="post-list">
   {% for post in site.posts %}
     {% assign n = site.posts.size | minus: forloop.index0 %}
-    <li data-tags="{{ post.tags | join: ',' }}">{% include quest.html post=post n=n new=forloop.first level=2 %}</li>
+    <li data-tags="{{ post.tags | join: ',' }}" class="panel">{% include entity.html post=post n=n new=forloop.first level=2 %}</li>
   {% endfor %}
 </ul>
-<p class="empty-msg" hidden>No quests with that affinity yet.</p>
+<p class="empty-msg" hidden>ERROR: no entity bound to that tag.</p>
 
 <script>
 (function() {
@@ -58,8 +59,8 @@ description: Notes on security engineering, software tools, local models, and sy
     if (emptyMsg) emptyMsg.hidden = (visibleCount > 0);
     if (status) {
       status.textContent = selectedTag === 'all'
-        ? visibleCount + (visibleCount === 1 ? ' quest' : ' quests')
-        : visibleCount + (visibleCount === 1 ? ' quest' : ' quests') + ' tagged ' + selectedTag;
+        ? visibleCount + (visibleCount === 1 ? ' entity' : ' entities') + ' bound'
+        : visibleCount + (visibleCount === 1 ? ' entity' : ' entities') + ' tagged #' + selectedTag;
     }
   }
 
@@ -86,5 +87,5 @@ description: Notes on security engineering, software tools, local models, and sy
 })();
 </script>
 {% else %}
-<div class="win"><p class="pixel" style="margin:0">No quests yet. Check back soon :-)</p></div>
+<div class="panel"><p class="crt" style="margin:0">No entities bound yet. Check back soon :-)</p></div>
 {% endif %}
