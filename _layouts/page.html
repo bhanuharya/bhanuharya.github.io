@@ -1,13 +1,15 @@
 ---
 layout: default
 ---
-<article class="page">
-  <header class="page-header">
-    {% if page.title and page.title != 'home' %}
+<article class="dialog raised">
+  <div class="dialog-title"><span>{{ page.title | escape }}</span><span class="caption-btns" aria-hidden="true"><i>×</i></span></div>
+  <div class="dialog-body">
+    <div class="text-area sunken">
       <h1 class="page-title">{{ page.title | escape }}</h1>
-    {% endif %}
-  </header>
-  <div class="page-content">
-    {{ content }}
+      <div class="page-content">
+        {{ content }}
+      </div>
+    </div>
+    <div class="dialog-buttons"><a class="btn" href="{{ '/' | relative_url }}">Close</a></div>
   </div>
 </article>

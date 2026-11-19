@@ -1,0 +1,15 @@
+{%- comment -%}
+  Sets pk_proto, pk_family, pk_words, pk_mins for include.post.
+{%- endcomment -%}
+{%- assign pk_words = include.post.content | number_of_words -%}
+{%- assign pk_mins = pk_words | divided_by: 200 -%}{%- if pk_mins == 0 -%}{%- assign pk_mins = 1 -%}{%- endif -%}
+{%- assign pk_proto = 'TCP' -%}{%- assign pk_family = 'misc' -%}{%- assign pk_found = false -%}
+{%- for rule in site.data.protocols -%}
+  {%- unless pk_found -%}
+    {%- for t in include.post.tags -%}
+      {%- if rule.tags contains t -%}{%- assign pk_proto = rule.proto -%}{%- assign pk_family = rule.family -%}{%- assign pk_found = true -%}{%- endif -%}
+    {%- endfor -%}
+  {%- endunless -%}
+{%- endfor -%}
+{%- if include.post.proto -%}{%- assign pk_proto = include.post.proto -%}{%- endif -%}
+{%- if include.post.family -%}{%- assign pk_family = include.post.family -%}{%- endif -%}

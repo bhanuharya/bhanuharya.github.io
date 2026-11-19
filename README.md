@@ -19,19 +19,23 @@ A Jekyll site on GitHub Pages with custom layouts and a separate interactive ter
 
 3. Write the body in Markdown below the front matter, then commit and push to `main`. GitHub Actions builds and deploys automatically.
 
-Posts appear on `/blog/` newest-first with title, date, reading time, tags, and excerpt. The homepage introduces Harya and lists recent posts; `/terminal/` is a separate interactive view. Drafts live in `_drafts/` and are not published.
+The homepage is the whole archive: every post is a row in a packet list, coloured by topic. Its protocol comes from its tags via `_data/protocols.yml`; set `proto:` (and `family:`) in front matter to override. `/terminal/` is a separate interactive view. Drafts live in `_drafts/` and are not published.
 
 ## Structure
 
 - `_posts/` — published posts
 - `_drafts/` — unpublished template (`next-article-template.md`)
-- `_layouts/` — custom layouts (default, home, post, page) that override minima
-- `assets/css/style.css` — site styles (terminal + prose typography)
-- `index.md` — homepage (layout: home, introduction + recent posts)
-- `blog.md` — blog index at `/blog/`
-- `about.md` — about page at `/about/`
+- `_layouts/` — default (the analyzer window), home (the packet list), post (a followed stream), properties (`/about/`), page, terminal
+- `_includes/packet-vars.html` — works out a post's protocol, colour family, word count and reading time
+- `_data/protocols.yml` — coloring rules: which tags make a post SAST, ACL, AI, PERF, PORT…
+- `_data/filters.yml` — the quick filter buttons above the packet list
+- `assets/css/style.css` — site styles, light and dark
+- `assets/js/capture.js` — display filter, packet details and hex dump, theme toggle, post extras
+- `index.md` — homepage (layout: home)
+- `blog.md` — `/blog/` redirects to the homepage, which lists every post
+- `about.md` — `/about/`, laid out as capture file properties
 - `_config.yml` — site config (title, description, url, theme)
-- `404.html` — custom not-found page
+- `404.html` — "no packets match"
 - `.github/workflows/jekyll-gh-pages.yml` — Pages deployment workflow (do not modify)
 
 ## Local build
@@ -62,12 +66,16 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 ## Privacy
 
-- The visitor CLI on the homepage runs entirely in the browser; no input is sent to a server.
+- The terminal view and the display filter run entirely in the browser; no input is sent to a server. Only the light/dark choice is stored, in localStorage.
 - Hosting/CDN access logs may still exist outside this page's control.
 - This repository is sanitized: no secrets, credentials, IP addresses, hostnames, or network identifiers.
 
 ## Design notes
 
-- Terminal chrome uses monospace; article prose uses a system sans-serif stack for readability.
-- Code blocks preserve indentation with horizontal scroll; prose and tables reflow or scroll on mobile.
-- The blog tag selector has a 44px minimum target and a visible keyboard focus ring. Other controls retain the browser's native focus behavior.
+- The site looks like an old desktop packet analyzer: grey 3D bevels, a gradient title bar, a menu bar with underlined access keys, sunken panes. Posts are packets; clicking a row opens its layers and a hex dump; a post opens in a "Follow TCP Stream" dialog that can also show the post as a hex dump.
+- The display filter is real: `tag == "sast"`, `proto == AI`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
+- About is kept short on purpose; background sits in a collapsed section.
+- No web fonts: period system fonts (Tahoma for the interface, Verdana for reading, Lucida Console for packets) with DejaVu fallbacks.
+- Day (classic grey) and Night follow the system; View in the menu bar saves an explicit choice in this browser.
+- Code blocks scroll sideways; tables scroll inside their own box on narrow screens.
+- No analytics, no cookies. Theme choice is the only thing stored, in localStorage.

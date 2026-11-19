@@ -1,17 +1,26 @@
 ---
-layout: page
-title: "404 Not Found"
+layout: default
+title: "Not found"
 permalink: /404.html
 ---
-
-<div class="page-prompt" aria-hidden="true">
-  <span class="prompt">bhanuharya@sec</span><span class="loc">:~$</span> <span class="cmd">curl -I https://bhanuharya.github.io/404</span>
+<div class="dialog raised msgbox" role="alertdialog" aria-labelledby="nf-title" aria-describedby="nf-text">
+  <div class="dialog-title"><span id="nf-title">Packet Capture</span><span class="caption-btns" aria-hidden="true"><i>×</i></span></div>
+  <div class="dialog-body">
+    <div class="msg">
+      <span class="msg-icon" aria-hidden="true">×</span>
+      <div id="nf-text">
+        <h1 class="visually-hidden">Not found</h1>
+        <p>No packets matched the display filter:</p>
+        <p><code id="nf-filter">http.request.uri == "this page"</code></p>
+        <p class="dim">It may have moved, or never existed.</p>
+      </div>
+    </div>
+    <div class="dialog-buttons"><a class="btn" href="{{ '/' | relative_url }}">OK</a></div>
+  </div>
 </div>
-
-<div class="not-found">
-<pre aria-hidden="true">┌──────────────────────────┐
-│   ERROR 404 : NOT FOUND  │
-└──────────────────────────┘</pre>
-<p>The page you asked for is not on this server. It probably moved during the redesign, or the link came from somewhere older than the internet itself.</p>
-<p>Try <a href="{{ '/' | relative_url }}">the front page</a> or <a href="{{ '/blog/' | relative_url }}">the blog index</a>. If a link here is broken, the site source is on <a href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener">GitHub</a> and I will fix it :-)</p>
-</div>
+<script>
+  (function () {
+    var f = document.getElementById('nf-filter');
+    if (f) f.textContent = 'http.request.uri == "' + window.location.pathname + '"';
+  })();
+</script>

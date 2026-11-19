@@ -8,7 +8,7 @@
   <meta name="color-scheme" content="light dark">
   {% assign seo_title = page.title | default: site.title %}{% if page.title %}{% assign seo_title = page.title | append: ' · ' | append: site.title %}{% endif %}
   {% assign seo_description = page.description | default: page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
-  <title>{{ seo_title | escape }}{% unless page.title %} · notes on security and systems{% endunless %}</title>
+  <title>{{ seo_title | escape }}</title>
   <meta name="description" content="{{ seo_description | escape }}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">
   <link rel="icon" type="image/svg+xml" href="{{ '/assets/favicon.svg' | relative_url }}">
@@ -21,12 +21,11 @@
   <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
   <script>
+    /* an explicit light/dark choice wins; otherwise follow the system */
     (function () {
-      var stored = null;
-      try { stored = localStorage.getItem('theme'); } catch (e) {}
-      var param = new URLSearchParams(window.location.search).get('theme');
-      var choice = (param === 'dark' || param === 'light') ? param : (stored === 'dark' ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', choice);
+      var t = null;
+      try { t = localStorage.getItem('theme'); } catch (e) {}
+      if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
     })();
   </script>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
@@ -43,47 +42,35 @@
   </script>
   {% endif %}
 </head>
-<body>
-<a class="skip" href="#main">skip to content</a>
-<div class="wrap">
-  <header class="site-head">
-    <a class="site-name" href="{{ '/' | relative_url }}">bhanuharya@sec</a>
-    <nav class="site-nav" aria-label="Site">
-      <a href="{{ '/blog/' | relative_url }}"{% if page.url contains '/blog' %} aria-current="page"{% endif %}>blog</a>
-      <a href="{{ '/about/' | relative_url }}"{% if page.url == '/about/' %} aria-current="page"{% endif %}>about</a>
-      <a href="{{ '/terminal/' | relative_url }}"{% if page.url == '/terminal/' %} aria-current="page"{% endif %}>terminal</a>
-      <a href="{{ '/feed.xml' | relative_url }}">rss</a>
-      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch color theme">theme</button>
-    </nav>
+<body class="layout-{{ page.layout | default: 'default' }}">
+<a class="skip" href="#main">Skip to content</a>
+<div class="window">
+  <header class="titlebar">
+    <span class="app-icon" aria-hidden="true"></span>
+    <a class="caption" href="{{ '/' | relative_url }}">bhanuharya.pcapng - Packet Capture</a>
+    <span class="caption-btns" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span>
   </header>
+  <nav class="menubar" aria-label="Site">
+    <a href="{{ '/' | relative_url }}" accesskey="p"{% if page.url == '/' %} aria-current="page"{% endif %}><u>P</u>ackets</a>
+    <a href="{{ '/about/' | relative_url }}" accesskey="a"{% if page.url == '/about/' %} aria-current="page"{% endif %}><u>A</u>bout</a>
+    <a href="{{ '/feed.xml' | relative_url }}" accesskey="r"><u>R</u>SS</a>
+    <a href="{{ '/terminal/' | relative_url }}" accesskey="t"><u>T</u>erminal</a>
+    <button type="button" id="theme-toggle" accesskey="v"><u>V</u>iew: Night</button>
+  </nav>
 
   <main id="main">
     {{ content }}
   </main>
 
-  <footer class="footer">
-    <p>&copy; {{ site.time | date: '%Y' }} Harya. Notes and experiments, nothing here is advice.</p>
-    <p>No trackers, no cookies. <a href="{{ '/feed.xml' | relative_url }}">rss</a>, <a href="https://github.com/bhanuharya" rel="me">github</a>, <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a>.</p>
-    <p id="visits" hidden>visits: <span id="visit-count">0</span> <span class="dim">(first-party counter, one hit per browser per day, nothing else stored)</span></p>
+  <footer class="statusbar">
+    <span class="seg grow">No trackers, no cookies</span>
+    <span class="seg" id="visits" hidden>Visits: <span id="visit-count">0</span></span>
+    <span class="seg">&copy; {{ site.time | date: '%Y' }} Harya</span>
+    <span class="seg"><a href="https://github.com/bhanuharya" rel="me">github</a> · <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a></span>
+    <span class="grip" aria-hidden="true"></span>
   </footer>
 </div>
+<script defer src="{{ '/assets/js/capture.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/visits.js' | relative_url }}"></script>
-<script>
-  (function () {
-    var btn = document.getElementById('theme-toggle');
-    var root = document.documentElement;
-    function label() {
-      btn.textContent = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      btn.title = 'Switch to ' + btn.textContent + ' theme';
-    }
-    label();
-    btn.addEventListener('click', function () {
-      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      try { localStorage.setItem('theme', next); } catch (e) {}
-      label();
-    });
-  })();
-</script>
 </body>
 </html>

@@ -1,48 +1,42 @@
 ---
 layout: default
 ---
-<article class="post">
-  <header class="post-header">
-    <h1 class="post-title">{{ page.title | escape }}</h1>
-    <div class="post-meta">
-      <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
-      {% assign words = page.content | number_of_words %}{% assign mins = words | divided_by: 200 %}{% if mins == 0 %}{% assign mins = 1 %}{% endif %}
-      <span>{{ words }} words, {{ mins }} min</span>
-      {% if page.tags.size > 0 %}
-      <span class="post-tags">
-        {% for tag in page.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+{%- assign qn = 0 -%}
+{%- for p in site.posts -%}{%- if p.url == page.url -%}{%- assign qn = site.posts.size | minus: forloop.index0 -%}{%- endif -%}{%- endfor -%}
+{%- include packet-vars.html post=page -%}
+<article class="dialog raised post">
+  <div class="dialog-title"><span>Follow TCP Stream (tcp.stream eq {{ qn }})</span><span class="caption-btns" aria-hidden="true"><i>×</i></span></div>
+  <div class="dialog-body">
+    <fieldset class="group">
+      <legend>Stream Content</legend>
+      <div class="text-area sunken">
+        <header class="post-head">
+          <div class="kicker">Frame {{ qn }} · {{ pk_proto }} · harya:443 → you</div>
+          <h1 class="post-title">{{ page.title | escape }}</h1>
+          <div class="post-meta">
+            <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
+            <span>{{ pk_words }} words, about {{ pk_mins }} min</span>
+            {% if page.tags.size > 0 %}<span class="tags" aria-label="Tags">{% for tag in page.tags %}<a href="{{ '/' | relative_url }}?filter={{ 'tag == "' | append: tag | append: '"' | uri_escape }}">{{ tag }}</a>{% endfor %}</span>{% endif %}
+          </div>
+        </header>
+        <div class="post-content" id="post-content">
+          {{ content }}
+        </div>
+        <pre class="hexview" id="hexview" hidden aria-label="Hex dump of this post"></pre>
+      </div>
+    </fieldset>
+    <div class="dialog-row">
+      <span class="grow">Entire conversation ({{ pk_words }} words)</span>
+      <span class="radios" role="radiogroup" aria-label="Show as">
+        <span>Show as</span>
+        <label><input type="radio" name="show-as" value="ascii" checked> ASCII</label>
+        <label><input type="radio" name="show-as" value="hex"> Hex Dump</label>
       </span>
-      {% endif %}
     </div>
-  </header>
-
-  <div class="post-content">
-    {{ content }}
+    <nav class="dialog-buttons" aria-label="Post navigation">
+      {% if page.previous %}<a class="btn" href="{{ page.previous.url | relative_url }}" title="{{ page.previous.title | escape }}">&lt; Previous</a>{% endif %}
+      {% if page.next %}<a class="btn" href="{{ page.next.url | relative_url }}" title="{{ page.next.title | escape }}">Next &gt;</a>{% endif %}
+      <a class="btn" href="{{ '/' | relative_url }}">Close</a>
+    </nav>
   </div>
-
-  <nav class="post-nav" aria-label="Post navigation">
-    <span>{% if page.previous %}<a href="{{ page.previous.url | relative_url }}">&larr; {{ page.previous.title | escape }}</a>{% endif %}</span>
-    <span>{% if page.next %}<a href="{{ page.next.url | relative_url }}">{{ page.next.title | escape }} &rarr;</a>{% endif %}</span>
-  </nav>
 </article>
-
-<script>
-  (function () {
-    var blocks = document.querySelectorAll('.post-content pre');
-    blocks.forEach(function (pre) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'code-copy-btn';
-      btn.textContent = 'copy';
-      btn.addEventListener('click', function () {
-        var text = pre.querySelector('code') ? pre.querySelector('code').innerText : pre.innerText;
-        navigator.clipboard.writeText(text).then(function () {
-          btn.textContent = 'copied';
-          btn.classList.add('copy-success');
-          setTimeout(function () { btn.textContent = 'copy'; btn.classList.remove('copy-success'); }, 1400);
-        });
-      });
-      pre.appendChild(btn);
-    });
-  })();
-</script>
