@@ -1,0 +1,7 @@
+# Quick filter buttons above the packet list. expr uses the display filter syntax.
+- label: security
+  expr: 'family == "sec"'
+- label: local llm
+  expr: 'family == "llm"'
+- label: games
+  expr: 'family == "game"'

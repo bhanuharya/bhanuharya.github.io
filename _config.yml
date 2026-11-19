@@ -1,8 +1,7 @@
 title: bhanuharya@sec
 author: harya
 description: >-
-  Things Harya has built, tested, and had to fix, mostly in security
-  and self-hosting.
+  Harya's notes on security tooling, local models and self-hosted setups.
 url: "https://bhanuharya.github.io"
 baseurl: ""
 theme: minima

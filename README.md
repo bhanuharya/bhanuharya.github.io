@@ -19,23 +19,23 @@ A Jekyll site on GitHub Pages with custom layouts and a separate interactive ter
 
 3. Write the body in Markdown below the front matter, then commit and push to `main`. GitHub Actions builds and deploys automatically.
 
-Posts appear on `/blog/` newest-first with title, date, reading time, tags, and excerpt. The homepage introduces Harya and lists recent posts; `/terminal/` is a separate interactive view. Drafts live in `_drafts/` and are not published.
+The homepage is the whole archive: every post is a row in a packet list, coloured by topic. Its protocol comes from its tags via `_data/protocols.yml`; set `proto:` (and `family:`) in front matter to override. `/terminal/` is a separate interactive view. Drafts live in `_drafts/` and are not published.
 
 ## Structure
 
 - `_posts/` — published posts
 - `_drafts/` — unpublished template (`next-article-template.md`)
-- `_layouts/` — custom layouts (default, home, post, page, status) that override minima
-- `_includes/` — `quest.html` (post card) and `hermit.svg` (tarot card art)
-- `_data/party.yml` — the character sheet shown on the home page and `/about/`
-- `assets/css/style.css` — site styles (JRPG windows + prose typography)
-- `assets/js/rpg.js` — Config, menu cursor, dialog box, moon phase, reading gauge
-- `assets/js/dungeon.js` — the corridor on the home page
-- `index.md` — homepage (layout: home, introduction + recent posts)
-- `blog.md` — blog index at `/blog/`
-- `about.md` — about page at `/about/`
+- `_layouts/` — default (the analyzer window), home (the packet list), post (a followed stream), properties (`/about/`), page, terminal
+- `_includes/packet-vars.html` — works out a post's protocol, colour family, word count and reading time
+- `_data/protocols.yml` — coloring rules: which tags make a post SAST, ACL, LLM, PERF, PORT…
+- `_data/filters.yml` — the quick filter buttons above the packet list
+- `assets/css/style.css` — site styles, light and dark
+- `assets/js/capture.js` — display filter, packet details and hex dump, theme toggle, post extras
+- `index.md` — homepage (layout: home)
+- `blog.md` — `/blog/` redirects to the homepage, which lists every post
+- `about.md` — `/about/`, laid out as capture file properties
 - `_config.yml` — site config (title, description, url, theme)
-- `404.html` — custom not-found page
+- `404.html` — "no packets match"
 - `.github/workflows/jekyll-gh-pages.yml` — Pages deployment workflow (do not modify)
 
 ## Local build
@@ -66,15 +66,16 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 ## Privacy
 
-- The terminal view and the home page run entirely in the browser; no input is sent to a server. Config and "cleared" marks stay in localStorage.
+- The terminal view and the display filter run entirely in the browser; no input is sent to a server. Only the light/dark choice is stored, in localStorage.
 - Hosting/CDN access logs may still exist outside this page's control.
 - This repository is sanitized: no secrets, credentials, IP addresses, hostnames, or network identifiers.
 
 ## Design notes
 
-- The site is styled like a late-90s occult JRPG: panels are menu windows, posts are quests, `/about/` is a character sheet. All artwork is original (CSS, inline SVG, and a canvas corridor in `assets/js/dungeon.js`).
-- Fonts are self-hosted (`assets/fonts/`, SIL OFL). Menus use DotGothic16; post prose uses a system sans-serif stack for readability.
-- The character sheet (HP, stats, skills, equipment) is plain YAML in `_data/party.yml`. Edit it without touching the layouts.
-- Config (header) sets window colour, text speed, sound, scanlines and animation, saved in this browser only.
-- Code blocks preserve indentation with horizontal scroll; tables scroll sideways on narrow screens.
-- Animations stop for `prefers-reduced-motion: reduce`; menus work with the keyboard and show a visible focus ring.
+- The site looks like a protocol analyzer. Posts are packets; clicking a row opens its layers and a hex dump of its title and opening lines; a post opens as a followed TCP stream.
+- The display filter is real: `tag == "sast"`, `proto == LLM`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
+- About is kept short on purpose; background sits in a collapsed section.
+- Fonts are self-hosted (`assets/fonts/`, SIL OFL): JetBrains Mono for the analyzer, Source Sans 3 for reading.
+- Light and dark follow the system; the Theme button saves an explicit choice in this browser.
+- Code blocks scroll sideways; tables scroll inside their own box on narrow screens.
+- No analytics, no cookies. Theme choice is the only thing stored, in localStorage.

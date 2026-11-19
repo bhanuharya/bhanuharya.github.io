@@ -1,57 +1,52 @@
 ---
 layout: default
 ---
-{%- assign total_words = 0 -%}
-{%- for post in site.posts -%}{%- assign w = post.content | number_of_words -%}{%- assign total_words = total_words | plus: w -%}{%- endfor -%}
-<h1 class="visually-hidden">Harya (Wishnu) · information security, systems, self-hosting</h1>
+<h1 class="visually-hidden">Harya's notes on security, local models and self-hosting</h1>
 
-<section class="altar" aria-label="Summoning program">
-  <div class="circle-wrap" id="circle-wrap">
-    {% include summon-circle.svg %}
-    <p class="circle-status" aria-hidden="true">CIRCLE: <b>OPEN</b> · MOON: <b id="moon-name">--</b> · <span id="clock">--:--</span></p>
+<div class="filterbar">
+  <form class="filter-form" id="filter-form" role="search" autocomplete="off">
+    <label class="visually-hidden" for="filter">Display filter</label>
+    <input class="filter-input" id="filter" name="filter" type="text" spellcheck="false" autocapitalize="off" autocorrect="off"
+           placeholder="Apply a display filter… e.g. tag == &quot;sast&quot; or just a word">
+    <button class="filter-apply" type="submit" aria-label="Apply filter">→</button>
+  </form>
+  <div class="quick" role="group" aria-label="Quick filters">
+    {% for f in site.data.filters %}<button type="button" data-expr="{{ f.expr | escape }}" aria-pressed="false">{{ f.label }}</button>{% endfor %}
+    <button type="button" data-expr="" aria-pressed="false">clear</button>
   </div>
+  <p class="filter-help" id="filter-help" hidden>Fields: <code>tag</code> <code>proto</code> <code>family</code> <code>frame</code> <code>year</code> <code>len</code> · ops: <code>==</code> <code>!=</code> <code>contains</code> <code>&gt;</code> <code>&lt;</code> · join with <code>&amp;&amp;</code> <code>||</code>, negate with <code>!</code></p>
+</div>
 
-  <div class="panel console" id="console">
-    <span class="panel-title">SUMMON.SYS v0.7</span>
-    <p class="sys">bhanuharya@sec · {{ site.posts.size }} entities bound · {{ total_words }} words inscribed</p>
-    <p class="rule" aria-hidden="true">────────────────────────────────────────────────────</p>
-    <p class="cmd">whoami</p>
-    <p class="out">I'm Harya/Wishnu. I work in information security around financial systems. This is where I write up side projects: local models, security tools, and the agent setup I run at home.</p>
-    <p class="cmd">list --entities</p>
-    <ul class="entities" id="entities" aria-label="Posts">
-      <li aria-hidden="true"><span class="entity-row head"><span>ID</span><span>ENTITY</span><span>LV</span><span class="al">ALIGN</span></span></li>
+<div class="packet-list">
+  <table class="packets" aria-label="Posts">
+    <thead>
+      <tr><th class="num" scope="col">No.</th><th class="col-time" scope="col">Time</th><th class="col-src" scope="col">Source</th><th class="col-dst" scope="col">Destination</th><th scope="col">Protocol</th><th class="num col-len" scope="col">Length</th><th scope="col">Info</th></tr>
+    </thead>
+    <tbody id="packets">
       {% for post in site.posts %}
       {% assign n = site.posts.size | minus: forloop.index0 %}
-      {% include entity-vars.html post=post n=n %}
-      <li><a class="entity-row" href="{{ post.url | relative_url }}" data-summon data-sigil-for="{{ post.title | escape }}"><span>{{ ent_num }}</span><span class="name">{{ post.title | upcase | escape }}</span><span>{{ ent_lv }}</span><span class="al al-{{ ent_align | downcase }}">{{ ent_align }}</span></a></li>
+      {% include packet-vars.html post=post %}
+      <tr class="pk {{ pk_family }}" data-n="{{ n }}" data-proto="{{ pk_proto }}" data-family="{{ pk_family }}" data-tags="{{ post.tags | join: ' ' }}" data-date="{{ post.date | date: '%Y-%m-%d' }}" data-words="{{ pk_words }}" data-mins="{{ pk_mins }}" data-url="{{ post.url | relative_url }}" data-excerpt="{{ post.excerpt | strip_html | normalize_whitespace | truncatewords: 40 | escape }}">
+        <td class="num">{{ n }}</td>
+        <td class="col-time">{{ post.date | date: '%Y-%m-%d' }}</td>
+        <td class="col-src">harya</td>
+        <td class="col-dst">you</td>
+        <td>{{ pk_proto }}</td>
+        <td class="num col-len">{{ pk_words }}</td>
+        <td class="info"><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>{% if forloop.first %}<span class="new">new</span>{% endif %}</td>
+      </tr>
       {% endfor %}
-    </ul>
-    <div class="console-log" id="console-log" aria-live="polite"></div>
-    <form class="prompt-line" id="prompt-form" autocomplete="off" hidden>
-      <label for="prompt">&gt;</label>
-      <input id="prompt" name="prompt" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="type help">
-    </form>
-    <p class="hint" id="prompt-hint" hidden>try <kbd>summon 07</kbd>, <kbd>tags</kbd>, <kbd>help</kbd> · hover an entity to see its sigil</p>
-  </div>
-</section>
-
-<script type="application/json" id="entity-data">[
-{%- for post in site.posts -%}
-{%- assign n = site.posts.size | minus: forloop.index0 -%}
-{%- include entity-vars.html post=post n=n -%}
-{"id":"{{ ent_num }}","title":{{ post.title | jsonify }},"url":{{ post.url | relative_url | jsonify }},"lv":"{{ ent_lv }}","align":"{{ ent_align }}","date":"{{ post.date | date: '%Y-%m-%d' }}","tags":{{ post.tags | jsonify }}}{% unless forloop.last %},{% endunless %}
-{%- endfor -%}
-]</script>
-
-{% if site.posts.size > 0 %}
-<h2 class="section-head">latest manifestation</h2>
-<div class="panel">
-  <span class="panel-title">ENTITY {{ site.posts.size | prepend: '0' | slice: -2, 2 }}</span>
-  {% include entity.html post=site.posts.first n=site.posts.size new=true level=3 %}
+      <tr class="no-match" id="no-match" hidden><td colspan="7">No packets match this filter.</td></tr>
+    </tbody>
+  </table>
 </div>
-{% endif %}
 
-<h2 class="section-head">about this site</h2>
-<div class="panel">
-  <p class="dim" style="margin:0">Jekyll builds the site from Markdown, hand-written templates, CSS, and a little JavaScript. The circle and every sigil are SVG; each post's sigil is generated from its title, so no two match. No analytics or cookies. The source is <a href="https://github.com/bhanuharya/bhanuharya.github.io">on GitHub</a>.</p>
+<div class="panes" id="panes" hidden>
+  <div class="tree" id="tree" aria-live="polite"></div>
+  <div class="hex" id="hex" aria-hidden="true"></div>
+</div>
+
+<div class="statusbar" style="border-top:1px solid var(--line)">
+  <span id="pk-count">Packets: {{ site.posts.size }} · Displayed: {{ site.posts.size }} (100.0%)</span>
+  <span class="right"><span>Click a row for details · Enter opens it</span></span>
 </div>

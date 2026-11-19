@@ -1,22 +1,14 @@
 ---
-layout: operator
-title: Operator File
+layout: properties
+title: About
 permalink: /about/
-kicker: "> cat /etc/operator"
-lead: Harya / Wishnu. Security engineer, occasional tinkerer.
-description: Harya writes about information security, AI security, and the systems and tools he tests.
+description: Harya's notes on security tooling, local models and self-hosted setups.
 ---
 
-I'm Harya/Wishnu. I got into security in college by tinkering with Linux and taking my machines apart. I wanted to know why something broke, and what happened when software got used in a way its author did not expect.
+Harya (Wishnu). I work in security. This is where I keep notes on things I set up, test and break, mostly local models, security tooling and the agent setup at home, plus the odd game port.
 
-I studied computer science at Bandung Institute of Technology. My undergraduate project was a Python compiler for a 32-bit RISC-V processor. I still like the parts of computing most people never see.
-
-Since then, I have worked in fintech, banking, securities, and capital markets. Most of my work sits between security operations and engineering: cloud and network security, identity, incident response, and secure software development.
-
-Lately I have been spending time on AI security and on whether security controls keep working outside a diagram. This site is where I write about experiments, tools, and the things I have had to correct along the way.
-
-Outside work, I tinker with Linux, self-hosted services, and whatever else catches my attention. Some of it probably did not need tinkering :-)
-
-<p class="about-links"><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a><br><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></p>
-
-You can also find a condensed terminal view at [bhanuharya.github.io/terminal]({{ '/terminal/' | relative_url }}).
+<details>
+<summary>Background</summary>
+<p>Computer science at Bandung Institute of Technology. My final project was a Python compiler for a 32-bit RISC-V processor.</p>
+<p>Since then: security work in fintech, banking and capital markets, mostly where security operations meets engineering. Lately a lot of AI security.</p>
+</details>

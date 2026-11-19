@@ -1,35 +1,26 @@
 ---
-layout: page
-title: "Summoning failed"
+layout: default
+title: "Not found"
 permalink: /404.html
-kicker: "ERROR 404 // NO ENTITY BOUND TO THIS PATH"
-bare: true
 ---
-
-<div class="panel failed">
-  <svg viewBox="0 0 300 300" role="img" aria-label="A broken summoning circle, cracked through the middle">
-    <circle cx="150" cy="150" r="138" class="faint"/>
-    <g class="broken">
-      <path d="M150 12 A138 138 0 0 1 286 128"/>
-      <path d="M282 170 A138 138 0 0 1 120 285"/>
-      <path d="M92 276 A138 138 0 0 1 22 96"/>
-      <path d="M150 250 L92 70 L244 182 L56 182 L208 70 Z"/>
-      <path d="M150 150 L176 120 L162 104 L196 70" />
-      <path d="M150 150 L128 182 L140 196 L110 236" />
-      <circle cx="150" cy="150" r="40"/>
-    </g>
-  </svg>
-  <div class="console">
-    <p class="cmd">summon <span id="missing-path">this page</span></p>
-    <p class="red">ERROR: no entity is bound to this path.</p>
-    <p class="out">It probably moved during the redesign, or the link came from somewhere older than the internet itself.</p>
-    <ul class="choices">
-      <li><a href="{{ '/' | relative_url }}">cd / <span class="dim">(back to the circle)</span></a></li>
-      <li><a href="{{ '/blog/' | relative_url }}">ls /entities --all</a></li>
-      <li><a href="https://github.com/bhanuharya/bhanuharya.github.io" rel="noopener">report the broken link <span class="dim">on GitHub</span></a></li>
-    </ul>
+<div class="filterbar">
+  <div class="filter-form">
+    <label class="visually-hidden" for="nf-filter">Display filter</label>
+    <input class="filter-input empty" id="nf-filter" type="text" readonly value='http.request.uri == "this page"'>
+    <span class="filter-apply" aria-hidden="true">→</span>
+  </div>
+</div>
+<div class="page-wrap">
+  <div class="inner notfound">
+    <h1 class="page-title">No packets match</h1>
+    <p class="dim">Displayed: 0 (0.0%). This page moved or never existed.</p>
+    <p><a href="{{ '/' | relative_url }}">Clear the filter and go back to the capture</a></p>
+    <p class="dim">If a link here sent you, the site source is on <a href="https://github.com/bhanuharya/bhanuharya.github.io">GitHub</a>.</p>
   </div>
 </div>
 <script>
-  (function () { var el = document.getElementById('missing-path'); if (el) el.textContent = window.location.pathname; })();
+  (function () {
+    var f = document.getElementById('nf-filter');
+    if (f) f.value = 'http.request.uri == "' + window.location.pathname + '"';
+  })();
 </script>

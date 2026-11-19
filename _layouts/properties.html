@@ -1,0 +1,52 @@
+---
+layout: default
+---
+{%- assign total_words = 0 -%}
+{%- assign first = site.posts.last -%}
+{%- assign last = site.posts.first -%}
+{%- for post in site.posts -%}{%- assign w = post.content | number_of_words -%}{%- assign total_words = total_words | plus: w -%}{%- endfor -%}
+{%- assign protos = "" | split: "" -%}
+{%- for post in site.posts -%}{%- include packet-vars.html post=post -%}{%- assign protos = protos | push: pk_proto -%}{%- endfor -%}
+{%- assign proto_names = protos | uniq -%}
+<div class="page-wrap">
+  <div class="inner">
+    <div class="kicker">Statistics › Capture File Properties</div>
+    <h1 class="page-title">{{ page.title | escape }}</h1>
+
+    <div class="props">
+      <section aria-labelledby="pc-comment">
+        <h2 id="pc-comment">Capture file comment</h2>
+        <div class="comment">
+          {{ content }}
+        </div>
+      </section>
+      <section aria-labelledby="pc-time">
+        <h2 id="pc-time">Time</h2>
+        <dl>
+          {% if first %}
+          <dt>First packet</dt><dd>{{ first.date | date: '%Y-%m-%d' }}</dd>
+          <dt>Last packet</dt><dd>{{ last.date | date: '%Y-%m-%d' }}</dd>
+          {% assign t0 = first.date | date: '%s' %}{% assign t1 = last.date | date: '%s' %}{% assign days = t1 | minus: t0 | divided_by: 86400 %}
+          <dt>Elapsed</dt><dd>{{ days }} days</dd>
+          {% endif %}
+        </dl>
+      </section>
+      <section aria-labelledby="pc-stats">
+        <h2 id="pc-stats">Statistics</h2>
+        <dl>
+          <dt>Packets</dt><dd>{{ site.posts.size }}</dd>
+          <dt>Words</dt><dd>{{ total_words }}</dd>
+          <dt>Protocols</dt><dd>{% for name in proto_names %}{% assign c = 0 %}{% assign fam = 'misc' %}{% for post in site.posts %}{% include packet-vars.html post=post %}{% if pk_proto == name %}{% assign c = c | plus: 1 %}{% assign fam = pk_family %}{% endif %}{% endfor %}<span class="proto-chip {{ fam }}">{{ name }} {{ c }}</span>{% endfor %}</dd>
+        </dl>
+      </section>
+      <section aria-labelledby="pc-if">
+        <h2 id="pc-if">Interfaces</h2>
+        <dl>
+          <dt>github</dt><dd><a href="https://github.com/bhanuharya" rel="me">github.com/bhanuharya</a></dd>
+          <dt>linkedin</dt><dd><a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin.com/in/wishnumurti</a></dd>
+          <dt>rss</dt><dd><a href="{{ '/feed.xml' | relative_url }}">{{ '/feed.xml' | absolute_url }}</a></dd>
+        </dl>
+      </section>
+    </div>
+  </div>
+</div>
