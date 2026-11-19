@@ -1,4 +1,4 @@
 ---
 layout: home
-description: Notes from Harya on information security, AI, security tools, and home projects.
+description: Notes on things Harya set up, tested and broke.
 ---

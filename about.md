@@ -2,13 +2,13 @@
 layout: properties
 title: About
 permalink: /about/
-description: Harya's notes on security tooling, AI and self-hosted setups.
+description: About Harya, who writes this site.
 ---
 
-Harya (Wishnu). I work in security. This is where I keep notes on things I set up, test and break: security tooling, AI, the agent setup at home, and the odd game port.
+Harya (Wishnu). I write things down here after I set something up and see where it breaks: code scanners, models running on my own graphics card, an agent I want to be able to stop, a game I wanted on my tablet.
 
 <details>
 <summary>Background</summary>
-<p>Computer science at Bandung Institute of Technology. My final project was a Python compiler for a 32-bit RISC-V processor.</p>
-<p>Since then: security work in fintech, banking and capital markets, mostly where security operations meets engineering. Lately a lot of AI security.</p>
+<p>I studied computer science at ITB in Bandung. My final project was a Python compiler for a 32-bit RISC-V processor.</p>
+<p>Since then I've worked on security at banks and other finance companies.</p>
 </details>
