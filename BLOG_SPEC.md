@@ -29,7 +29,7 @@ The site is styled as an early-2000s desktop protocol analyzer: grey 3D bevels, 
 
 ## Design & Retro Aesthetics
 
-- Coloring rules map tags to a protocol and a colour family: security (lavender), local LLM (light blue), games (light green), other (white), as in classic analyzer defaults. Night mode uses dim tinted rows.
+- Coloring rules map tags to a protocol and a colour family: security (lavender), AI (light blue), games (light green), other (white), as in classic analyzer defaults. Night mode uses dim tinted rows.
 - Display filter grammar: fields `tag`, `proto`, `family`, `frame`, `title`, `year`, `len`/`words`, `min`; operators `==`, `!=`, `contains`, `matches`, `>`, `<`, `>=`, `<=`; `&&`/`and`, `||`/`or`, `!`/`not`. A bare word searches titles, excerpts and tags. Valid filters turn the bar green, invalid red, valid-but-empty yellow. Old `/blog/#tag` hashes become `tag == "…"`.
 - Keyboard: Tab into the list, arrows move the selection, Enter opens the post; double-click also opens.
 - No web fonts: Tahoma (UI), Verdana (reading), Lucida Console (packets), with DejaVu fallbacks.

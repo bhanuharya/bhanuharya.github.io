@@ -27,7 +27,7 @@ The homepage is the whole archive: every post is a row in a packet list, coloure
 - `_drafts/` — unpublished template (`next-article-template.md`)
 - `_layouts/` — default (the analyzer window), home (the packet list), post (a followed stream), properties (`/about/`), page, terminal
 - `_includes/packet-vars.html` — works out a post's protocol, colour family, word count and reading time
-- `_data/protocols.yml` — coloring rules: which tags make a post SAST, ACL, LLM, PERF, PORT…
+- `_data/protocols.yml` — coloring rules: which tags make a post SAST, ACL, AI, PERF, PORT…
 - `_data/filters.yml` — the quick filter buttons above the packet list
 - `assets/css/style.css` — site styles, light and dark
 - `assets/js/capture.js` — display filter, packet details and hex dump, theme toggle, post extras
@@ -73,7 +73,7 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 ## Design notes
 
 - The site looks like an old desktop packet analyzer: grey 3D bevels, a gradient title bar, a menu bar with underlined access keys, sunken panes. Posts are packets; clicking a row opens its layers and a hex dump; a post opens in a "Follow TCP Stream" dialog that can also show the post as a hex dump.
-- The display filter is real: `tag == "sast"`, `proto == LLM`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
+- The display filter is real: `tag == "sast"`, `proto == AI`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
 - About is kept short on purpose; background sits in a collapsed section.
 - No web fonts: period system fonts (Tahoma for the interface, Verdana for reading, Lucida Console for packets) with DejaVu fallbacks.
 - Day (classic grey) and Night follow the system; View in the menu bar saves an explicit choice in this browser.

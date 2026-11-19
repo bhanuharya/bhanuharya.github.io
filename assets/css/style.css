@@ -30,7 +30,7 @@
   --bad: #ffafaf;
   --empty: #ffffaf;
   --sec: #e7e6ff;
-  --llm: #daeeff;
+  --ai: #daeeff;
   --game: #e4ffc7;
   --misc: #ffffff;
   --row-text: #000000;
@@ -50,7 +50,7 @@
     --title-a: #0d1f4d; --title-b: #3d5f93; --title-text: #ffffff;
     --sel: #2f5fb3; --sel-text: #ffffff; --link: #8ab4ff; --visited: #c3a3ff;
     --ok: #1f4a24; --bad: #5a1f22; --empty: #4f4718;
-    --sec: #34304d; --llm: #213549; --game: #2b4124; --misc: #25282d; --row-text: #ececec;
+    --sec: #34304d; --ai: #213549; --game: #2b4124; --misc: #25282d; --row-text: #ececec;
     --hl: #5c5a1c; --code-bg: #181a1e; --new: #ff8a8a;
   }
 }
@@ -61,7 +61,7 @@
   --title-a: #0d1f4d; --title-b: #3d5f93; --title-text: #ffffff;
   --sel: #2f5fb3; --sel-text: #ffffff; --link: #8ab4ff; --visited: #c3a3ff;
   --ok: #1f4a24; --bad: #5a1f22; --empty: #4f4718;
-  --sec: #34304d; --llm: #213549; --game: #2b4124; --misc: #25282d; --row-text: #ececec;
+  --sec: #34304d; --ai: #213549; --game: #2b4124; --misc: #25282d; --row-text: #ececec;
   --hl: #5c5a1c; --code-bg: #181a1e; --new: #ff8a8a;
 }
 
@@ -183,7 +183,7 @@ main { display: block; padding: 4px 2px; }
 .packets td.info a, .packets td.info a:visited { color: inherit; text-decoration: none; }
 .packets td.info a:hover { text-decoration: underline; }
 .packets tr.sec { background: var(--sec); }
-.packets tr.llm { background: var(--llm); }
+.packets tr.ai { background: var(--ai); }
 .packets tr.game { background: var(--game); }
 .packets tr.misc { background: var(--misc); }
 .packets tr.pk.on, .packets tr.pk.on td { background: var(--sel); color: var(--sel-text); }
@@ -300,7 +300,7 @@ figcaption { font-family: var(--ui); font-size: 12px; color: var(--dim); margin-
 .props details p { margin: 0.5em 0 0.6em; }
 .proto-chip { display: inline-block; padding: 0 5px; margin: 0 4px 3px 0; font-family: var(--mono); font-size: 12px; color: var(--row-text); border: 1px solid var(--shadow); }
 .proto-chip.sec { background: var(--sec); }
-.proto-chip.llm { background: var(--llm); }
+.proto-chip.ai { background: var(--ai); }
 .proto-chip.game { background: var(--game); }
 .proto-chip.misc { background: var(--misc); }
 

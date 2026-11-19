@@ -2,10 +2,10 @@
 layout: properties
 title: About
 permalink: /about/
-description: Harya's notes on security tooling, local models and self-hosted setups.
+description: Harya's notes on security tooling, AI and self-hosted setups.
 ---
 
-Harya (Wishnu). I work in security. This is where I keep notes on things I set up, test and break, mostly local models, security tooling and the agent setup at home, plus the odd game port.
+Harya (Wishnu). I work in security. This is where I keep notes on things I set up, test and break: security tooling, AI, the agent setup at home, and the odd game port.
 
 <details>
 <summary>Background</summary>

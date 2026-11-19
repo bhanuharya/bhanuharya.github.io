@@ -1,14 +1,14 @@
 # Coloring rules: each post shows as a "protocol" picked from its tags.
 # The first rule with a matching tag wins. A post can override with `proto:` in front matter.
-# family picks the row colour: sec, llm, game, misc.
+# family picks the row colour: sec, ai, game, misc.
 - proto: SAST
   family: sec
   tags: [sast, appsec, sonarqube, opengrep]
 - proto: ACL
   family: sec
   tags: [access-control, agents, security]
-- proto: LLM
-  family: llm
+- proto: AI
+  family: ai
   tags: [local-llm, llama.cpp, evals, calibration]
 - proto: PERF
   family: game
