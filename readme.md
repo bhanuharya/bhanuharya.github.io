@@ -11,11 +11,15 @@ text: |
   log on as anyone.
 
   Double-click an icon to open it. Windows can be dragged,
-  resized, minimized, maximized and closed. On a phone, tap.
-  Right-click things. Some of them have menus.
+  resized, minimized, maximized and closed. Right-click
+  things. Some of them have menus.
+
+  On a phone: tap to open, press and hold for menus. The
+  button next to Start shows the desktop.
 
   Packet Capture  every post, newest first. Click a row to
-                  look inside, double-click to read it.
+                  look inside, double-click to read it
+                  (on a phone, tap it twice).
                   The filter takes things like: tag == "sast"
   Browser         where posts open.
   Terminal        the same notes, if you prefer typing.

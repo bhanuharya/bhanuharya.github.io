@@ -94,7 +94,8 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 - Double-click icons to open them (tap on a phone). Drag windows by the title bar, resize from the edges, double-click a title bar to maximize. Right-click the desktop, icons, title bars and taskbar buttons for menus. Drag icons onto the Recycle Bin, and restore them from it.
 - Start > Run takes commands: program names, a post number, words from a title, a display filter, or a web address. `help` lists them.
 - The clock opens a calendar; days with posts are coloured and link to them.
-- After two minutes without input a screen saver runs (packets drifting past). Not while music plays.
+- Phones and tablets: on phones (and phones turned sideways) every window fills the screen. Tap to open, press and hold for the right-click menus, and the button next to Start shows the desktop. In Packet Capture, tap a row for details and tap it again to read. Touch screens get bigger buttons, the browser toolbar and filter bar shrink to one row, windows stay above the on-screen keyboard, and the taskbar keeps clear of the iPhone home bar. Tablets keep draggable, resizable windows.
+- After two minutes without input a screen saver runs (packets drifting past). Not on touch screens, not while a post is open, not while music plays.
 - Sounds are made with the Web Audio API, nothing is downloaded. The speaker in the tray mutes them.
 - The Packet Capture display filter is real: `tag == "sast"`, `proto == AI`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
 - Day (classic grey) is the default. Night is only used when picked from the tray.

@@ -129,6 +129,12 @@
     <path d="M2.5 6h3l3.5-3v10L5.5 10h-3z" fill="#d4d0c8" stroke="#000"/>
     <path d="M10.5 6l4 4M14.5 6l-4 4" stroke="#c00000" stroke-width="1.5"/>
   </symbol>
+  <symbol id="i-desktop" viewBox="0 0 16 16">
+    <rect x="1.5" y="2.5" width="13" height="10" fill="#3a6ea5" stroke="#000"/>
+    <rect x="3" y="4" width="2.5" height="2.5" fill="#fff"/><rect x="3" y="7.5" width="2.5" height="2.5" fill="#f2c94c"/>
+    <rect x="2" y="11" width="12" height="1.5" fill="#d4d0c8"/>
+    <path d="M6 14.5h4" stroke="#000"/>
+  </symbol>
   <symbol id="i-player" viewBox="0 0 32 32">
     <rect x="2.5" y="5.5" width="27" height="21" fill="#d4d0c8" stroke="#000"/>
     <rect x="5" y="8" width="22" height="11" fill="#000"/>

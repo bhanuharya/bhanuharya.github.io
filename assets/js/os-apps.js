@@ -55,7 +55,7 @@
     ];
     var pre = document.createElement('pre');
     pre.className = 'post-text';
-    b.innerHTML = svg('logo', 'post-logo') + '<p class="post-skip">Press any key to skip</p>';
+    b.innerHTML = svg('logo', 'post-logo') + '<p class="post-skip">' + (OS.coarse.matches ? 'Tap to skip' : 'Press any key to skip') + '</p>';
     b.insertBefore(pre, b.firstChild);
     var i = 0;
     var p = fast ? Promise.resolve() : new Promise(function (done) {
@@ -123,8 +123,9 @@
     });
     $('[data-cancel]', b).addEventListener('click', function () { pick('guest'); note.textContent = 'There is nowhere else to go. guest is fine.'; input.focus(); });
     $('[data-off]', b).addEventListener('click', function () { offScreen(); });
-    input.focus();
-    input.select();
+    // on touch screens don't pop the keyboard up for a name most people won't change
+    if (OS.coarse.matches) $('.logon-btns [type="submit"]', b).focus();
+    else { input.focus(); input.select(); }
     return new Promise(function (resolve) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -161,13 +162,13 @@
 
   /* ---------------- balloon tips ---------------- */
   var TIPS = [
-    'Right-click the desktop. There is more there.',
-    'Drag a desktop icon onto the Recycle Bin.',
-    'Click the clock to see which days have posts.',
+    ['Right-click the desktop. There is more there.', 'Press and hold the desktop or an icon. There are menus.'],
+    ['Drag a desktop icon onto the Recycle Bin.', 'The button next to Start shows the desktop.'],
+    ['Click the clock to see which days have posts.', 'Tap the clock to see which days have posts.'],
     'Start, then Run, takes commands. Try "help".',
     'Packet Capture takes filters like: tag == "ai"',
     'Media Player has a few songs. You can open your own, too.',
-    'Leave the mouse alone for a while.',
+    ['Leave the mouse alone for a while.', 'In Packet Capture, tap a row twice to read it.'],
     'Firewall is a game. Drop the bad packets.'
   ];
   var balloonTimer = null;
@@ -189,6 +190,7 @@
   }
   function welcome(name) {
     var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+    if (typeof tip !== 'string') tip = tip[OS.coarse.matches ? 1 : 0];
     balloon('Welcome, ' + name, 'The posts are in Packet Capture. ' + tip);
   }
 
@@ -478,7 +480,11 @@
   };
   function poke() {
     clearTimeout(idleTimer);
+    // not on phones (they sleep on their own), not mid-read, not while music plays
+    if (OS.coarse.matches) return;
     idleTimer = setTimeout(function () {
+      var t = OS.top();
+      if (t && (t.app === 'browser' || t.app === 'terminal' || t.app === 'untitled')) { poke(); return; }
       if (!document.getElementById('bootscreen') && !document.hidden && !$('.modal-bg') && !(OS.player && OS.player.playing())) OS.apps.screensaver();
     }, IDLE);
   }

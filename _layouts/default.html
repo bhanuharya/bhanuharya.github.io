@@ -4,7 +4,7 @@
 <html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-visits-endpoint="">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="color-scheme" content="light">
   {% assign seo_title = page.title | default: site.title %}{% if page.title %}{% assign seo_title = page.title | append: ' · ' | append: site.title %}{% endif %}
   {% assign seo_description = page.description | default: page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
@@ -27,6 +27,11 @@
       try { t = localStorage.getItem('theme'); } catch (e) {}
       if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
       document.documentElement.classList.add('js');
+      /* iOS zooms into small text fields on focus; this stops that (pinch zoom still works there) */
+      if (/iP(hone|od|ad)/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+        var v = document.querySelector('meta[name="viewport"]');
+        if (v) v.setAttribute('content', v.getAttribute('content') + ', maximum-scale=1');
+      }
     })();
   </script>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
@@ -115,6 +120,7 @@
 
 <footer class="taskbar">
   <button class="start-btn" id="start-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="start-menu" hidden><svg aria-hidden="true"><use href="#i-logo"/></svg><b>Start</b></button>
+  <button class="ql" id="show-desktop" type="button" aria-label="Show desktop" title="Show desktop" hidden><svg aria-hidden="true"><use href="#i-desktop"/></svg></button>
   <div class="tasks" id="tasks" role="group" aria-label="Open windows"></div>
   <div class="tray">
     <span id="visits" hidden><span id="visit-count">0</span></span>

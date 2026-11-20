@@ -189,9 +189,13 @@
     quick.forEach(function (b) {
       b.addEventListener('click', function () { var expr = b.getAttribute('data-expr'); input.value = expr; apply(expr); });
     });
+    // touch: first tap shows the details, a second tap on the same row opens it
+    var lastPointer = 'mouse';
+    tbody.addEventListener('pointerdown', function (e) { lastPointer = e.pointerType || 'mouse'; });
     tbody.addEventListener('click', function (e) {
       var tr = e.target.closest('tr.pk');
       if (!tr || e.target.closest('a')) return;
+      if (lastPointer !== 'mouse' && tr.classList.contains('on')) { go(tr.getAttribute('data-url')); return; }
       select(packets[rows.indexOf(tr)]);
     });
     tbody.addEventListener('dblclick', function (e) {

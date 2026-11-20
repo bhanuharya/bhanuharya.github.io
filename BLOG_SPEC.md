@@ -19,6 +19,8 @@ The site is an early-2000s desktop, "bhanuharya OS": grey 3D bevels, gradient ti
 - `terminal` — `/terminal/`, its own full-screen page, also embedded in the Terminal window.
 - `404.html` — "The page cannot be found" in the Browser.
 
+Phones (narrow, or short with a touch screen) get full-screen windows, one-row toolbars, icon-only taskbar buttons when crowded, press-and-hold menus, a show-desktop button, and tap-twice-to-read in Packet Capture. Touch screens get larger targets; safe areas and the on-screen keyboard are respected.
+
 Script-only windows: Media Player (three original synthesized songs plus files in `assets/music/`), Firewall (a game), Recycle Bin, Untitled Notepad, Run, calendar, screen saver, boot and log-on screens.
 
 ## Content

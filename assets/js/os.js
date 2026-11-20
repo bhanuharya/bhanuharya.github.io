@@ -20,7 +20,10 @@
   var apps = {};
   var z = 10;
   var opened = 0;
-  var phone = window.matchMedia ? window.matchMedia('(max-width: 760px)') : { matches: false };
+  var mq = function (q) { return window.matchMedia ? window.matchMedia(q) : { matches: false }; };
+  // same test as the phone rules in style.css: narrow, or a phone on its side
+  var phone = mq('(max-width: 760px), (max-height: 500px) and (pointer: coarse)');
+  var coarse = mq('(pointer: coarse)');
   var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
   var siteName = (document.querySelector('meta[property="og:site_name"]') || {}).content || document.title;
   var data = { posts: [], songs: [] };
@@ -128,6 +131,7 @@
       o.btn.setAttribute('aria-pressed', String(on));
     });
     document.title = w.docTitle || siteName;
+    if (w.btn.scrollIntoView && tasks.scrollWidth > tasks.clientWidth) { try { w.btn.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {} }
     if (!keepUrl && w.url && rel(new URL(w.url, location.href)) !== rel(location)) history.replaceState(null, '', w.url);
     emit('focus', w);
   }
@@ -756,6 +760,7 @@
       { label: 'Arrange Icons', act: arrange },
       { label: 'Refresh', act: function () { iconBox.classList.add('refresh'); setTimeout(function () { iconBox.classList.remove('refresh'); }, 180); } },
       { sep: true },
+      phone.matches ? { label: 'New Text Document', act: function () { if (apps.newtext) apps.newtext(at); } } :
       { label: 'New', sub: [
         { label: 'Text Document', act: function () { if (apps.newtext) apps.newtext(at); } }
       ] },
@@ -873,8 +878,79 @@
     if (e.key === 'Escape' && openMenus.length) closeMenus();
   });
 
+  /* ---------------- touch: press and hold = right-click ---------------- */
+  var lpTimer = null, synthAt = 0, swallow = false;
+  function swallowLift() { swallow = true; setTimeout(function () { swallow = false; }, 900); }
+  document.addEventListener('pointerdown', function (e) {
+    swallow = false; // a new touch is a new tap
+    if (e.pointerType !== 'touch' || e.isPrimary === false) return;
+    var t = e.target;
+    var ok = t.closest('.dicon, .titlebar, .task') || (t.closest('.desktop') && !t.closest('.window'));
+    if (!ok || t.closest('.tbtn')) return;
+    var x = e.clientX, y = e.clientY;
+    clearTimeout(lpTimer);
+    var off = function () {
+      ['pointermove', 'pointerup', 'pointercancel'].forEach(function (k) { document.removeEventListener(k, cancel, true); });
+    };
+    var cancel = function (ev) {
+      if (ev.type === 'pointermove' && Math.abs(ev.clientX - x) + Math.abs(ev.clientY - y) < 10) return;
+      clearTimeout(lpTimer); lpTimer = null; off();
+    };
+    ['pointermove', 'pointerup', 'pointercancel'].forEach(function (k) { document.addEventListener(k, cancel, true); });
+    lpTimer = setTimeout(function () {
+      lpTimer = null; off();
+      synthAt = Date.now();
+      swallowLift();
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (x2) {} }
+      t.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: x, clientY: y }));
+    }, 520);
+  }, true);
+  document.addEventListener('contextmenu', function (e) {
+    if (!e.isTrusted) return;
+    // Android also sends its own long-press menu event: keep only one
+    if (Date.now() - synthAt < 1000) { e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; swallowLift(); }
+  }, true);
+  // lifting the finger after a long press must not also "tap" what is under it
+  document.addEventListener('click', function (e) {
+    if (swallow) { swallow = false; e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+
+  /* ---------------- show desktop ---------------- */
+  var showBtn = document.getElementById('show-desktop'), stash = [];
+  function showDesktop() {
+    var up = wins.filter(function (w) { return !w.el.classList.contains('minimized'); });
+    if (up.length) {
+      stash = up.sort(function (a, b) { return +a.el.style.zIndex - +b.el.style.zIndex; });
+      up.forEach(function (w) { w.el.classList.add('minimized'); });
+      refreshFocus();
+    } else if (stash.length) {
+      stash.forEach(function (w) { if (wins.indexOf(w) !== -1) focus(w, true); });
+      stash = [];
+      var t = top(); if (t) focus(t);
+    }
+    closeMenus();
+  }
+  if (showBtn) { showBtn.hidden = false; showBtn.addEventListener('click', showDesktop); }
+
+  /* ---------------- phone keyboard (iOS keeps the layout and slides the view) ---------------- */
+  var vv = window.visualViewport;
+  if (vv) {
+    var fit = function () {
+      var kb = coarse.matches && vv.height < window.innerHeight - 120;
+      root.classList.toggle('kbd', kb);
+      if (kb) {
+        root.style.setProperty('--vvh', Math.round(vv.height) + 'px');
+        root.style.setProperty('--vvt', Math.round(vv.offsetTop) + 'px');
+      }
+    };
+    vv.addEventListener('resize', fit);
+    vv.addEventListener('scroll', fit);
+  }
+
   /* ---------------- start ---------------- */
   window.OS = {
+    top: top, coarse: coarse, showDesktop: showDesktop,
     open: open, makeWindow: makeWindow, focus: focus, restore: restore, close: close, closeAll: closeAll,
     minimize: minimize, find: find, setTitle: setTitle, wins: wins, apps: apps, data: data,
     menu: menu, closeMenus: closeMenus, msg: msg, sound: sound, audio: audio, soundOn: soundOn, on: on, emit: emit,
