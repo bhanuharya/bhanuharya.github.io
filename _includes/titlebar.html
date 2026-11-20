@@ -1,0 +1,10 @@
+{%- comment -%} A window title bar. include.icon, include.title {%- endcomment -%}
+<header class="titlebar" data-drag>
+  <svg class="ti" aria-hidden="true"><use href="#i-{{ include.icon }}"/></svg>
+  <span class="tt">{{ include.title }}</span>
+  <span class="tbtns">
+    <button type="button" class="tbtn" data-act="min" aria-label="Minimize" hidden><i class="g-min"></i></button>
+    <button type="button" class="tbtn" data-act="max" aria-label="Maximize" hidden><i class="g-max"></i></button>
+    <a class="tbtn" data-act="close" href="{{ '/' | relative_url }}" aria-label="Close"><i class="g-close"></i></a>
+  </span>
+</header>

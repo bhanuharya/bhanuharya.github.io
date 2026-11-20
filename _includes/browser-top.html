@@ -1,0 +1,14 @@
+{%- comment -%} Browser chrome: title bar, toolbar, address bar. include.title, include.url {%- endcomment -%}
+{% include titlebar.html icon="browser" title=include.title %}
+<div class="toolbar browser-bar">
+  <button class="btn tool" type="button" data-act="back" hidden>◀ Back</button>
+  <button class="btn tool" type="button" data-act="fwd" hidden>Forward ▶</button>
+  <button class="btn tool" type="button" data-act="reload" hidden>Reload</button>
+  <a class="btn tool" href="{{ '/' | relative_url }}" data-app="capture">Home</a>
+  {% if include.hex %}<button class="btn tool" type="button" data-act="hex" aria-pressed="false" hidden>Hex</button>{% endif %}
+</div>
+<form class="address" action="{{ '/' | relative_url }}" method="get" autocomplete="off">
+  <label for="addr">A<u>d</u>dress</label>
+  <input class="sunken" id="addr" name="go" type="text" accesskey="d" spellcheck="false" value="{{ include.url | absolute_url }}">
+  <button class="btn small" type="submit">Go</button>
+</form>

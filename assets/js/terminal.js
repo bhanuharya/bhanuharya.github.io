@@ -9,6 +9,20 @@
   var crt = document.getElementById('crt');
   var catcher = document.getElementById('keycatcher');
 
+  /* inside bhanuharya OS the terminal runs in a window (an iframe):
+     opening a post or logging out asks the desktop to do it */
+  var EMBED = window.parent !== window;
+  var USER = 'guest';
+  try { USER = sessionStorage.getItem('os-user') || 'guest'; } catch (e) {}
+
+  function tellOS(msg) {
+    try { window.parent.postMessage(msg, location.origin); return true; } catch (e) { return false; }
+  }
+  function go(url) {
+    if (EMBED && tellOS({ type: 'os-open', url: url })) return;
+    window.location.href = url;
+  }
+
   var state = {
     cwd: '~',
     buffer: '',
@@ -19,7 +33,7 @@
   };
 
   function promptText() {
-    return 'bhanuharya@sec:' + state.cwd + '$ ';
+    return USER + '@bhanuharya:' + state.cwd + '$ ';
   }
 
   function renderPrompt() {
@@ -152,9 +166,21 @@
   document.addEventListener('keydown', onKey);
 
   crt.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href]');
+    if (a && EMBED && e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+      var u = new URL(a.href, location.href);
+      e.preventDefault();
+      if (u.origin === location.origin) go(u.pathname + u.search + u.hash);
+      else window.open(u.href, '_blank', 'noopener');
+      return;
+    }
     if (e.target.closest('a, button')) return;
     focusCatcher();
   });
+  if (EMBED) {
+    document.documentElement.classList.add('embedded');
+    document.addEventListener('pointerdown', function () { tellOS({ type: 'os-focus' }); }, true);
+  }
 
   window.addEventListener('resize', scrollDown);
 
@@ -351,7 +377,7 @@
     'github     https://github.com/bhanuharya',
     'linkedin   https://www.linkedin.com/in/wishnumurti',
     'rss        https://bhanuharya.github.io/feed.xml',
-    'blog       https://bhanuharya.github.io/blog/',
+    'posts      https://bhanuharya.github.io/',
     'about      https://bhanuharya.github.io/about/'
   ].join('\n');
 
@@ -526,7 +552,7 @@
     var post = DATA.posts[n - 1];
     addLine('opening ' + post.title, 'dim');
     addLine(post.url, 'dim');
-    setTimeout(function () { window.location.href = post.url; }, 550);
+    setTimeout(function () { go(post.url); }, 550);
   }
 
   function cmdTags() {
@@ -538,14 +564,14 @@
     if (!names.length) { addLine('no tags yet.', 'dim'); return; }
     addLine(names.map(function (t) { return '#' + t + '(' + counts[t] + ')'; }).join('  '));
     addLine('');
-    addLine('the blog page filters by tag: ' + location.origin + '/blog/', 'dim');
+    addLine('Packet Capture filters by tag, e.g. tag == "' + names[0] + '"', 'dim');
   }
 
   function cmdLinks() {
     var items = [
       ['github.com/bhanuharya', 'https://github.com/bhanuharya'],
       ['linkedin.com/in/wishnumurti', 'https://www.linkedin.com/in/wishnumurti'],
-      ['/blog/', '/blog/'],
+      ['posts', '/'],
       ['/about/', '/about/'],
       ['rss', '/feed.xml']
     ];
@@ -555,7 +581,8 @@
   }
 
   function cmdWhoami() {
-    addLine('harya, information security. builds small tools, reads too much, keeps notes here.');
+    addLine(USER);
+    if (USER !== 'harya') addLine('this computer belongs to harya, who works in security and keeps notes here.', 'dim');
   }
 
   function cmdUname() {
@@ -601,7 +628,7 @@
   }
 
   function cmdSudo(args) {
-    addLine('harya is not in the sudoers file. this incident has been reported :-)', 'err');
+    addLine(USER + ' is not in the sudoers file. this incident has been reported :-)', 'err');
     if (args.length) addLine('(it has not, there is nowhere to report it, this is a static page)', 'dim');
   }
 
@@ -826,7 +853,8 @@
     if (!state.alive) return;
     state.alive = false;
     addLine('logout', 'dim');
-    addLine('closing session, back to the plain page...', 'dim');
+    if (EMBED) { setTimeout(function () { tellOS({ type: 'os-close' }); }, 500); return; }
+    addLine('closing session, back to the desktop...', 'dim');
     setTimeout(function () { window.location.href = '/'; }, 600);
   }
 
