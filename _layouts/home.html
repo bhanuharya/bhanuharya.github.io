@@ -1,55 +1,57 @@
 ---
 layout: default
 ---
-<h1 class="visually-hidden">Harya's notes: things set up, tested and broken</h1>
+<section class="window win-app" data-app="capture" data-title="bhanuharya.pcapng - Packet Capture" aria-labelledby="cap-title">
+  {% include titlebar.html icon="capture" title="bhanuharya.pcapng - Packet Capture" %}
+  <h1 class="visually-hidden" id="cap-title">Harya's notes: things set up, tested and broken</h1>
 
-<div class="filterbar">
-  <form class="filter-form" id="filter-form" role="search" autocomplete="off">
-    <label for="filter"><u>F</u>ilter:</label>
-    <input class="filter-input sunken" id="filter" name="filter" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" accesskey="f"
-           placeholder='tag == "sast", len > 1500, or a word'>
-    <button class="btn small" type="button" id="expr-btn" aria-controls="filter-help" aria-expanded="false">Expression…</button>
-    <button class="btn small" type="button" data-expr="">Clear</button>
-    <button class="btn small" type="submit">Apply</button>
-  </form>
-  <div class="quick" role="group" aria-label="Quick filters">
-    {% for f in site.data.filters %}<button class="btn small" type="button" data-expr="{{ f.expr | escape }}" aria-pressed="false">{{ f.label }}</button>{% endfor %}
+  <div class="filterbar">
+    <form class="filter-form" id="filter-form" role="search" autocomplete="off">
+      <label for="filter"><u>F</u>ilter:</label>
+      <input class="filter-input sunken" id="filter" name="filter" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" accesskey="f"
+             placeholder='tag == "sast", len > 1500, or a word'>
+      <button class="btn small" type="button" id="expr-btn" aria-controls="filter-help" aria-expanded="false">Expression…</button>
+      <button class="btn small" type="button" data-expr="">Clear</button>
+      <button class="btn small" type="submit">Apply</button>
+    </form>
+    <div class="quick" role="group" aria-label="Quick filters">
+      {% for f in site.data.filters %}<button class="btn small" type="button" data-expr="{{ f.expr | escape }}" aria-pressed="false">{{ f.label }}</button>{% endfor %}
+    </div>
+    <p class="filter-help sunken" id="filter-help" hidden>Fields: <code>tag</code> <code>proto</code> <code>family</code> <code>frame</code> <code>year</code> <code>len</code> · ops: <code>==</code> <code>!=</code> <code>contains</code> <code>&gt;</code> <code>&lt;</code> · join with <code>&amp;&amp;</code> <code>||</code> · negate with <code>!</code> · or type any word</p>
   </div>
-  <p class="filter-help sunken" id="filter-help" hidden>Fields: <code>tag</code> <code>proto</code> <code>family</code> <code>frame</code> <code>year</code> <code>len</code> · ops: <code>==</code> <code>!=</code> <code>contains</code> <code>&gt;</code> <code>&lt;</code> · join with <code>&amp;&amp;</code> <code>||</code> · negate with <code>!</code> · or type any word</p>
-</div>
 
-<div class="packet-list sunken">
-  <table class="packets" aria-label="Posts">
-    <thead>
-      <tr><th class="num" scope="col">No.</th><th class="col-time" scope="col">Time</th><th class="col-src" scope="col">Source</th><th class="col-dst" scope="col">Destination</th><th scope="col">Protocol</th><th class="num col-len" scope="col">Length</th><th scope="col">Info</th></tr>
-    </thead>
-    <tbody id="packets">
-      {% for post in site.posts %}
-      {% assign n = site.posts.size | minus: forloop.index0 %}
-      {% include packet-vars.html post=post %}
-      <tr class="pk {{ pk_family }}" data-n="{{ n }}" data-proto="{{ pk_proto }}" data-family="{{ pk_family }}" data-tags="{{ post.tags | join: ' ' }}" data-date="{{ post.date | date: '%Y-%m-%d' }}" data-words="{{ pk_words }}" data-mins="{{ pk_mins }}" data-url="{{ post.url | relative_url }}" data-excerpt="{{ post.excerpt | strip_html | normalize_whitespace | truncatewords: 40 | escape }}">
-        <td class="num">{{ n }}</td>
-        <td class="col-time">{{ post.date | date: '%Y-%m-%d' }}</td>
-        <td class="col-src">harya</td>
-        <td class="col-dst">you</td>
-        <td>{{ pk_proto }}</td>
-        <td class="num col-len">{{ pk_words }}</td>
-        <td class="info"><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>{% if forloop.first %}<span class="new">new</span>{% endif %}</td>
-      </tr>
-      {% endfor %}
-      <tr class="no-match" id="no-match" hidden><td colspan="7">No packets match this filter.</td></tr>
-    </tbody>
-  </table>
-</div>
+  <div class="win-body capture-body">
+    <div class="packet-list sunken">
+      <table class="packets" aria-label="Posts">
+        <thead>
+          <tr><th class="num" scope="col">No.</th><th class="col-time" scope="col">Time</th><th class="col-src" scope="col">Source</th><th class="col-dst" scope="col">Destination</th><th scope="col">Protocol</th><th class="num col-len" scope="col">Length</th><th scope="col">Info</th></tr>
+        </thead>
+        <tbody id="packets">
+          {% for post in site.posts %}
+          {% assign n = site.posts.size | minus: forloop.index0 %}
+          {% include packet-vars.html post=post %}
+          <tr class="pk {{ pk_family }}" data-n="{{ n }}" data-proto="{{ pk_proto }}" data-family="{{ pk_family }}" data-tags="{{ post.tags | join: ' ' }}" data-date="{{ post.date | date: '%Y-%m-%d' }}" data-words="{{ pk_words }}" data-mins="{{ pk_mins }}" data-url="{{ post.url | relative_url }}" data-excerpt="{{ post.excerpt | strip_html | normalize_whitespace | truncatewords: 40 | escape }}">
+            <td class="num">{{ n }}</td>
+            <td class="col-time">{{ post.date | date: '%Y-%m-%d' }}</td>
+            <td class="col-src">harya</td>
+            <td class="col-dst">you</td>
+            <td>{{ pk_proto }}</td>
+            <td class="num col-len">{{ pk_words }}</td>
+            <td class="info"><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>{% if forloop.first %}<span class="new">new</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+          <tr class="no-match" id="no-match" hidden><td colspan="7">No packets match this filter.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panes" id="panes" hidden>
+      <div class="tree sunken" id="tree" aria-live="polite"></div>
+      <div class="hex sunken" id="hex" aria-hidden="true"></div>
+    </div>
+  </div>
 
-<div id="panes" hidden>
-  <div class="splitter" aria-hidden="true"></div>
-  <div class="tree sunken" id="tree" aria-live="polite"></div>
-  <div class="splitter before-hex" aria-hidden="true"></div>
-  <div class="hex sunken" id="hex" aria-hidden="true"></div>
-</div>
-
-<div class="statusline">
-  <span class="seg grow">Click a row for details · Enter or double-click opens it</span>
-  <span class="seg" id="pk-count">P: {{ site.posts.size }} D: {{ site.posts.size }} M: 0</span>
-</div>
+  <div class="statusline">
+    <span class="seg grow"><span class="for-mouse">Click a row for details · Enter or double-click opens it</span><span class="for-touch">Tap a row, tap again to read</span></span>
+    <span class="seg" id="pk-count">P: {{ site.posts.size }} D: {{ site.posts.size }} M: 0</span>
+  </div>
+</section>

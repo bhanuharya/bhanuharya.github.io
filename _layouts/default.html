@@ -4,8 +4,8 @@
 <html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-visits-endpoint="">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="color-scheme" content="light">
   {% assign seo_title = page.title | default: site.title %}{% if page.title %}{% assign seo_title = page.title | append: ' · ' | append: site.title %}{% endif %}
   {% assign seo_description = page.description | default: page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 %}
   <title>{{ seo_title | escape }}</title>
@@ -21,11 +21,17 @@
   <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
   <script>
-    /* an explicit light/dark choice wins; otherwise follow the system */
+    /* Day unless Night was picked from the tray */
     (function () {
       var t = null;
       try { t = localStorage.getItem('theme'); } catch (e) {}
-      if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.classList.add('js');
+      /* iOS zooms into small text fields on focus; this stops that (pinch zoom still works there) */
+      if (/iP(hone|od|ad)/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+        var v = document.querySelector('meta[name="viewport"]');
+        if (v) v.setAttribute('content', v.getAttribute('content') + ', maximum-scale=1');
+      }
     })();
   </script>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
@@ -42,35 +48,98 @@
   </script>
   {% endif %}
 </head>
-<body class="layout-{{ page.layout | default: 'default' }}">
+<body class="os layout-{{ page.layout | default: 'default' }}">
+{% include icons.svg %}
+<script>
+  /* first visit in this tab: boot, then log on (os-apps.js runs it) */
+  (function () {
+    var u = 'guest';
+    try { u = sessionStorage.getItem('os-user'); } catch (e) {}
+    if (u) return;
+    var b = document.createElement('div');
+    b.className = 'bootscreen';
+    b.id = 'bootscreen';
+    document.body.appendChild(b);
+    setTimeout(function () { if (!window.OSBoot) b.remove(); }, 5000);
+  })();
+</script>
 <a class="skip" href="#main">Skip to content</a>
-<div class="window">
-  <header class="titlebar">
-    <span class="app-icon" aria-hidden="true"></span>
-    <a class="caption" href="{{ '/' | relative_url }}">bhanuharya.pcapng - Packet Capture</a>
-    <span class="caption-btns" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span>
-  </header>
-  <nav class="menubar" aria-label="Site">
-    <a href="{{ '/' | relative_url }}" accesskey="p"{% if page.url == '/' %} aria-current="page"{% endif %}><u>P</u>ackets</a>
-    <a href="{{ '/about/' | relative_url }}" accesskey="a"{% if page.url == '/about/' %} aria-current="page"{% endif %}><u>A</u>bout</a>
-    <a href="{{ '/feed.xml' | relative_url }}" accesskey="r"><u>R</u>SS</a>
-    <a href="{{ '/terminal/' | relative_url }}" accesskey="t"><u>T</u>erminal</a>
-    <button type="button" id="theme-toggle" accesskey="v"><u>V</u>iew: Night</button>
+{%- assign latest = site.posts.first -%}
+
+<div class="desktop" id="desktop">
+  <nav class="icons" aria-label="Desktop">
+    <a class="dicon" href="{{ '/' | relative_url }}" data-app="capture"><svg aria-hidden="true"><use href="#i-capture"/></svg><span>Packet Capture</span></a>
+    {% if latest %}<a class="dicon" href="{{ latest.url | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-browser"/></svg><span>Browser</span></a>{% endif %}
+    <a class="dicon" href="{{ '/terminal/' | relative_url }}" data-app="terminal"><svg aria-hidden="true"><use href="#i-terminal"/></svg><span>Terminal</span></a>
+    <a class="dicon" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-notepad"/></svg><span>readme.txt</span></a>
+    <a class="dicon" href="{{ '/about/' | relative_url }}" data-app="about"><svg aria-hidden="true"><use href="#i-computer"/></svg><span>About</span></a>
+    <button class="dicon" type="button" data-app="player" hidden><svg aria-hidden="true"><use href="#i-player"/></svg><span>Media Player</span></button>
+    <button class="dicon" type="button" data-app="firewall" hidden><svg aria-hidden="true"><use href="#i-firewall"/></svg><span>Firewall</span></button>
+    <a class="dicon" href="{{ '/feed.xml' | relative_url }}" data-ext><svg aria-hidden="true"><use href="#i-rss"/></svg><span>RSS feed</span></a>
+    <a class="dicon" href="https://github.com/bhanuharya" rel="me" data-ext><svg aria-hidden="true"><use href="#i-browser"/></svg><svg class="ov" aria-hidden="true"><use href="#i-arrow"/></svg><span>GitHub</span></a>
+    <a class="dicon" href="https://www.linkedin.com/in/wishnumurti" rel="me" data-ext><svg aria-hidden="true"><use href="#i-browser"/></svg><svg class="ov" aria-hidden="true"><use href="#i-arrow"/></svg><span>LinkedIn</span></a>
+    <button class="dicon" type="button" data-app="bin" hidden><svg aria-hidden="true"><use href="#i-bin"/></svg><span>Recycle Bin</span></button>
   </nav>
 
-  <main id="main">
+  <main class="windows" id="main">
     {{ content }}
   </main>
-
-  <footer class="statusbar">
-    <span class="seg grow">No trackers, no cookies</span>
-    <span class="seg" id="visits" hidden>Visits: <span id="visit-count">0</span></span>
-    <span class="seg">&copy; {{ site.time | date: '%Y' }} Harya</span>
-    <span class="seg"><a href="https://github.com/bhanuharya" rel="me">github</a> · <a href="https://www.linkedin.com/in/wishnumurti" rel="me">linkedin</a></span>
-    <span class="grip" aria-hidden="true"></span>
-  </footer>
 </div>
+
+<div class="start-menu" id="start-menu" hidden>
+  <div class="sm-banner" aria-hidden="true"><span>bhanuharya<b>OS</b></span></div>
+  <ul class="sm-items" role="menu" aria-label="Start">
+    <li role="none"><a role="menuitem" href="{{ '/' | relative_url }}" data-app="capture"><svg aria-hidden="true"><use href="#i-capture"/></svg>Packet Capture</a></li>
+    {% if latest %}<li role="none"><a role="menuitem" href="{{ latest.url | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-browser"/></svg>Browser</a></li>{% endif %}
+    <li role="none"><a role="menuitem" href="{{ '/terminal/' | relative_url }}" data-app="terminal"><svg aria-hidden="true"><use href="#i-terminal"/></svg>Terminal</a></li>
+    <li role="none" class="sm-sub">
+      <button role="menuitem" type="button" aria-haspopup="true" aria-expanded="false"><svg aria-hidden="true"><use href="#i-post"/></svg>Posts<span class="arrow" aria-hidden="true">▸</span></button>
+      <ul class="sm-fly" role="menu" aria-label="Posts">
+        {% for post in site.posts %}<li role="none"><a role="menuitem" href="{{ post.url | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-post"/></svg>{{ post.title | escape }}</a></li>{% endfor %}
+      </ul>
+    </li>
+    <li role="none" class="sm-sub" hidden>
+      <button role="menuitem" type="button" aria-haspopup="true" aria-expanded="false"><svg aria-hidden="true"><use href="#i-run"/></svg>Programs<span class="arrow" aria-hidden="true">▸</span></button>
+      <ul class="sm-fly" role="menu" aria-label="Programs">
+        <li role="none"><button role="menuitem" type="button" data-act="player"><svg aria-hidden="true"><use href="#i-player"/></svg>Media Player</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="firewall"><svg aria-hidden="true"><use href="#i-firewall"/></svg>Firewall (a game)</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="newtext"><svg aria-hidden="true"><use href="#i-notepad"/></svg>Notepad</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="screensaver"><svg aria-hidden="true"><use href="#i-capture"/></svg>Screen saver</button></li>
+      </ul>
+    </li>
+    <li role="none"><a role="menuitem" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-notepad"/></svg>readme.txt</a></li>
+    <li role="none"><a role="menuitem" href="{{ '/about/' | relative_url }}" data-app="about"><svg aria-hidden="true"><use href="#i-computer"/></svg>About</a></li>
+    <li role="separator" class="sep"></li>
+    <li role="none" hidden><button role="menuitem" type="button" data-act="run"><svg aria-hidden="true"><use href="#i-run"/></svg>Run…</button></li>
+    <li role="none"><a role="menuitem" href="{{ '/feed.xml' | relative_url }}" data-ext><svg aria-hidden="true"><use href="#i-rss"/></svg>RSS feed</a></li>
+    <li role="separator" class="sep"></li>
+    <li role="none" hidden><button role="menuitem" type="button" data-act="logoff"><svg aria-hidden="true"><use href="#i-logoff"/></svg><span>Log Off…</span></button></li>
+    <li role="none"><button role="menuitem" type="button" data-act="shutdown"><svg aria-hidden="true"><use href="#i-power"/></svg>Shut Down…</button></li>
+  </ul>
+</div>
+
+<footer class="taskbar">
+  <button class="start-btn" id="start-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="start-menu" hidden><svg aria-hidden="true"><use href="#i-logo"/></svg><b>Start</b></button>
+  <button class="ql" id="show-desktop" type="button" aria-label="Show desktop" title="Show desktop" hidden><svg aria-hidden="true"><use href="#i-desktop"/></svg></button>
+  <div class="tasks" id="tasks" role="group" aria-label="Open windows"></div>
+  <div class="tray">
+    <span id="visits" hidden><span id="visit-count">0</span></span>
+    <button type="button" class="tray-btn" id="sound-toggle" aria-label="Mute sounds" hidden><svg aria-hidden="true"><use href="#i-speaker"/></svg></button>
+    <button type="button" class="tray-btn" id="theme-toggle" aria-label="Switch to Night" hidden><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
+    <span class="tray-ico" title="No trackers, no cookies"><svg aria-hidden="true"><use href="#i-shield"/></svg><span class="visually-hidden">No trackers, no cookies</span></span>
+    <button type="button" class="clock" id="clock" aria-label="Calendar">&copy; {{ site.time | date: '%Y' }}</button>
+  </div>
+</footer>
+
+{%- comment -%} what os-apps.js needs: posts for the calendar and Run box, songs in assets/music for the player {%- endcomment -%}
+<script type="application/json" id="os-data">
+{"posts": [{% for post in site.posts %}{% include packet-vars.html post=post %}{"t": {{ post.title | jsonify }}, "u": {{ post.url | relative_url | jsonify }}, "d": "{{ post.date | date: '%Y-%m-%d' }}", "p": {{ pk_proto | jsonify }}, "f": {{ pk_family | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
+ "songs": [{% assign first_song = true %}{% for f in site.static_files %}{% if f.path contains '/assets/music/' %}{% assign ext = f.extname | downcase %}{% if ext == '.mp3' or ext == '.ogg' or ext == '.m4a' or ext == '.wav' or ext == '.opus' or ext == '.flac' %}{% unless first_song %},{% endunless %}{% assign first_song = false %}{"t": {{ f.basename | replace: '_', ' ' | replace: '-', ' ' | jsonify }}, "u": {{ f.path | relative_url | jsonify }}}{% endif %}{% endif %}{% endfor %}]}
+</script>
 <script defer src="{{ '/assets/js/capture.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/os.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/os-apps.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/os-player.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/visits.js' | relative_url }}"></script>
 </body>
 </html>

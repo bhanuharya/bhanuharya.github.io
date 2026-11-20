@@ -1,0 +1,12 @@
+---
+layout: default
+---
+<section class="window win-app" data-app="notepad" data-title="{{ page.file | default: page.title }} - Notepad" aria-labelledby="np-title">
+  {%- assign np_title = page.file | default: page.title | append: " - Notepad" -%}
+  {% include titlebar.html icon="notepad" title=np_title %}
+  <div class="menubar" aria-hidden="true"><span><u>F</u>ile</span><span><u>E</u>dit</span><span>F<u>o</u>rmat</span><span><u>H</u>elp</span></div>
+  <div class="win-body notepad-body sunken">
+    <h1 class="visually-hidden" id="np-title">{{ page.title | escape }}</h1>
+    <pre class="notepad-text">{{ page.text | escape }}</pre>
+  </div>
+</section>

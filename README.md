@@ -1,6 +1,8 @@
 # bhanuharya.github.io — personal site
 
-A Jekyll site on GitHub Pages with custom layouts and a separate interactive terminal view at `/terminal/`. The rendered pages use local CSS and JavaScript, with no external fonts or JavaScript libraries.
+A Jekyll site on GitHub Pages that looks like an early-2000s desktop: a boot screen, a log-on box with no password, desktop icons, windows you can drag and resize, a taskbar and a Start menu. Posts open in a Browser window; the archive is a Packet Capture window. Everything is local CSS and JavaScript, with no external fonts, libraries or requests.
+
+Every page is still a real page: without JavaScript each URL renders as the desktop with that one window open.
 
 ## Write a post
 
@@ -21,21 +23,35 @@ A Jekyll site on GitHub Pages with custom layouts and a separate interactive ter
 
 The homepage is the whole archive: every post is a row in a packet list, coloured by topic. Its protocol comes from its tags via `_data/protocols.yml`; set `proto:` (and `family:`) in front matter to override. `/terminal/` is a separate interactive view. Drafts live in `_drafts/` and are not published.
 
+## Add songs to the Media Player
+
+The player comes with three short songs written as notes in `assets/js/os-player.js`; the browser plays them with its own synthesizer, so they need no files.
+
+To add your own:
+
+1. Put audio files in `assets/music/` (`.mp3`, `.ogg`, `.m4a`, `.opus`, `.wav` or `.flac`). Only use songs you have the rights to share: your own, or ones with a licence that allows it.
+2. Name them how they should appear: `night-drive.mp3` shows up as "night drive".
+3. Commit and push. They join the playlist on the next build. Keep files small (a few MB each); GitHub refuses files over 100 MB.
+
+Visitors can also play a file from their own computer with Open… in the player. It stays in their browser and is not uploaded.
+
 ## Structure
 
 - `_posts/` — published posts
 - `_drafts/` — unpublished template (`next-article-template.md`)
-- `_layouts/` — default (the analyzer window), home (the packet list), post (a followed stream), properties (`/about/`), page, terminal
-- `_includes/packet-vars.html` — works out a post's protocol, colour family, word count and reading time
+- `_layouts/` — default (the desktop: icons, taskbar, Start menu), home (Packet Capture window), post and page (Browser window), properties (`/about/` as System Properties), notepad (`/readme/`), terminal (`/terminal/`, also shown inside a window)
+- `_includes/` — `icons.svg` (all icons, one sprite), `titlebar.html`, `browser-top.html`, `packet-vars.html` (a post's protocol, colour family, word count and reading time)
 - `_data/protocols.yml` — coloring rules: which tags make a post SAST, ACL, AI, PERF, PORT…
 - `_data/filters.yml` — the quick filter buttons above the packet list
-- `assets/css/style.css` — site styles, light and dark
-- `assets/js/capture.js` — display filter, packet details and hex dump, theme toggle, post extras
-- `index.md` — homepage (layout: home)
+- `assets/css/style.css` — every window and the desktop, Day and Night
+- `assets/js/os.js` — the window manager: opening pages as windows, drag, resize, minimize, taskbar, Start menu, right-click menus, Recycle Bin, sounds
+- `assets/js/os-apps.js` — boot, log on and off, shut down, Run, calendar, screen saver, Notepad editing, the Firewall game
+- `assets/js/os-player.js` — Media Player and its songs
+- `assets/js/capture.js` — display filter, packet details and hex dump, post extras
+- `assets/music/` — drop audio files here for the player
+- `index.md`, `about.md`, `readme.md`, `terminal.md` — the pages
 - `blog.md` — `/blog/` redirects to the homepage, which lists every post
-- `about.md` — `/about/`, laid out as capture file properties
-- `_config.yml` — site config (title, description, url, theme)
-- `404.html` — "no packets match"
+- `404.html` — "The page cannot be found" in the Browser
 - `.github/workflows/jekyll-gh-pages.yml` — Pages deployment workflow (do not modify)
 
 ## Local build
@@ -66,16 +82,22 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 
 ## Privacy
 
-- The terminal view and the display filter run entirely in the browser; no input is sent to a server. Only the light/dark choice is stored, in localStorage.
+- Everything runs in the browser; no input is sent to a server. No analytics, no cookies.
+- Saved in the visitor's browser: Day or Night, sounds on or off, the terminal's colours (localStorage), and the name typed at log on (sessionStorage, gone when the tab closes).
+- Songs opened from the visitor's own computer are played from memory and not uploaded.
 - Hosting/CDN access logs may still exist outside this page's control.
 - This repository is sanitized: no secrets, credentials, IP addresses, hostnames, or network identifiers.
 
 ## Design notes
 
-- The site looks like an old desktop packet analyzer: grey 3D bevels, a gradient title bar, a menu bar with underlined access keys, sunken panes. Posts are packets; clicking a row opens its layers and a hex dump; a post opens in a "Follow TCP Stream" dialog that can also show the post as a hex dump.
-- The display filter is real: `tag == "sast"`, `proto == AI`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
-- About is kept short on purpose; background sits in a collapsed section.
+- First visit in a tab: a short BIOS-style screen (any key skips), a splash, then Log On. There is no password. `root` and `admin` get a joke and become guest. Later page loads in the same tab go straight to the desktop.
+- Double-click icons to open them (tap on a phone). Drag windows by the title bar, resize from the edges, double-click a title bar to maximize. Right-click the desktop, icons, title bars and taskbar buttons for menus. Drag icons onto the Recycle Bin, and restore them from it.
+- Start > Run takes commands: program names, a post number, words from a title, a display filter, or a web address. `help` lists them.
+- The clock opens a calendar; days with posts are coloured and link to them.
+- Phones and tablets: on phones (and phones turned sideways) every window fills the screen. Tap to open, press and hold for the right-click menus, and the button next to Start shows the desktop. In Packet Capture, tap a row for details and tap it again to read. Touch screens get bigger buttons, the browser toolbar and filter bar shrink to one row, windows stay above the on-screen keyboard, and the taskbar keeps clear of the iPhone home bar. Tablets keep draggable, resizable windows.
+- After two minutes without input a screen saver runs (packets drifting past). Not on touch screens, not while a post is open, not while music plays.
+- Sounds are made with the Web Audio API, nothing is downloaded. The speaker in the tray mutes them.
+- The Packet Capture display filter is real: `tag == "sast"`, `proto == AI`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
+- Day (classic grey) is the default. Night is only used when picked from the tray.
 - No web fonts: period system fonts (Tahoma for the interface, Verdana for reading, Lucida Console for packets) with DejaVu fallbacks.
-- Day (classic grey) and Night follow the system; View in the menu bar saves an explicit choice in this browser.
-- Code blocks scroll sideways; tables scroll inside their own box on narrow screens.
-- No analytics, no cookies. Theme choice is the only thing stored, in localStorage.
+- `prefers-reduced-motion` turns off the opening animations and the screen saver.

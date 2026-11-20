@@ -1,15 +1,17 @@
 ---
 layout: default
 ---
-<article class="dialog raised">
-  <div class="dialog-title"><span>{{ page.title | escape }}</span><span class="caption-btns" aria-hidden="true"><i>×</i></span></div>
-  <div class="dialog-body">
-    <div class="text-area sunken">
-      <h1 class="page-title">{{ page.title | escape }}</h1>
-      <div class="page-content">
+{%- comment -%} a plain page opens in the Browser, like a post {%- endcomment -%}
+{%- assign btitle = page.title | append: ' - Browser' -%}
+<section class="window win-app" data-app="browser" data-title="{{ btitle | escape }}" aria-labelledby="pg-title">
+  {% include browser-top.html title=btitle url=page.url %}
+  <div class="win-body page-view sunken" tabindex="-1">
+    <article class="page-doc">
+      <h1 id="pg-title">{{ page.title | escape }}</h1>
+      <div class="post-content">
         {{ content }}
       </div>
-    </div>
-    <div class="dialog-buttons"><a class="btn" href="{{ '/' | relative_url }}">Close</a></div>
+    </article>
   </div>
-</article>
+  <div class="statusline"><span class="seg grow" data-status>Done</span><span class="seg">Internet</span></div>
+</section>
