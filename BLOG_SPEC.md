@@ -21,6 +21,8 @@ The site is an early-2000s desktop, "bhanuharya OS": grey 3D bevels, gradient ti
 
 Phones (narrow, or short with a touch screen) get full-screen windows, one-row toolbars, icon-only taskbar buttons when crowded, press-and-hold menus, a show-desktop button, and tap-twice-to-read in Packet Capture. Touch screens get larger targets; safe areas and the on-screen keyboard are respected.
 
+Version 2 adds BIOS Setup (settings), Security Center (live request list, the enforced CSP and a blocked test request, stored data with Forget everything), Find (full-text search over `search.json`, highlights in the post), Event Viewer (session log and twelve discoveries), a Contents panel and text size in the Browser, window snapping, not-found suggestions, and an easter egg. All inline scripts moved to files (`assets/js/boot.js` runs first in `<head>`) so the Content Security Policy can forbid inline scripts.
+
 Script-only windows: Media Player (three original synthesized songs plus files in `assets/music/`), Firewall (a game), Recycle Bin, Untitled Notepad, Run, calendar, screen saver, boot and log-on screens.
 
 ## Content
@@ -48,7 +50,7 @@ Script-only windows: Media Player (three original synthesized songs plus files i
 ## Constraints honored
 
 - `.github/workflows/jekyll-gh-pages.yml` untouched.
-- No external fonts, CDNs or third-party requests; no analytics, no cookies.
+- No external fonts, CDNs or third-party requests; no analytics, no cookies. A Content Security Policy makes the browser enforce this: `script-src 'self'` with no inline scripts, `connect-src 'self'`, `img-src 'self' data: blob:`, `object-src 'none'`.
 - Sanitized: no secrets/IPs/hostnames in content. The Firewall game only uses documentation (RFC 5737) and private addresses.
 - The `/terminal/` view keeps its own layout and styles.
 

@@ -83,12 +83,22 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 ## Privacy
 
 - Everything runs in the browser; no input is sent to a server. No analytics, no cookies.
-- Saved in the visitor's browser: Day or Night, sounds on or off, the terminal's colours (localStorage), and the name typed at log on (sessionStorage, gone when the tab closes).
+- Every page carries a strict Content Security Policy (a `<meta>` tag in `_layouts/default.html` and `_layouts/terminal.html`): scripts, styles, images, audio and requests only from this site, no inline scripts, no plugins. The browser refuses anything else before it is sent. The Security Center (the shield in the tray) shows the policy, every request the page made, and a button that tries to load example.com so you can watch it get blocked.
+- Because of that policy, keep JavaScript in files under `assets/js/` (no `<script>` blocks with code, no `onclick=`), and keep images and other media in this repository. JSON data blocks (`<script type="application/json">`) are fine. If a post ever needs something from another site, the policy has to be loosened for it on purpose.
+- Saved in the visitor's browser: Day or Night, sounds on or off, Setup choices, the terminal's colours (localStorage), and the name typed at log on, the event log and discoveries (sessionStorage, gone when the tab closes). Security Center lists all of it and has a Forget everything button.
 - Songs opened from the visitor's own computer are played from memory and not uploaded.
 - Hosting/CDN access logs may still exist outside this page's control.
 - This repository is sanitized: no secrets, credentials, IP addresses, hostnames, or network identifiers.
 
 ## Design notes
+
+- Start > Settings (or DEL / F2 while booting, or the Setup button on touch screens) opens a text-mode BIOS Setup that changes real settings: Day/Night, wallpaper (blue, teal, packets, graph paper, hex dump, black), color depth (true color, 256, 16, green screen), CRT effect, interface font, reading text size, sounds, quick boot, screen saver delay, mouse trails. Arrow keys, Enter, F9, F10, Esc, or click/tap.
+- Find (Start > Find, Run `find word`, or press `/`) searches the full text of every post from `search.json`, which is built with the site and fetched only when someone searches. Opening a result highlights the matches in the post.
+- Posts with three or more headings get a Contents panel in the Browser (open by default for long posts on wide screens); the Aa button changes the reading text size.
+- Drag a window to the top edge to maximize it, or to the left or right edge to fill that half; drag it away to restore.
+- Event Viewer (Start > Programs) is a log of this visit: log on, windows opened, Run commands, Firewall breaches, blocked requests. It also counts discoveries: twelve things to find around the desktop.
+- The not-found page suggests the closest post and offers to search for the words in the address.
+- Search engines and link previews skip the boot screen.
 
 - First visit in a tab: a short BIOS-style screen (any key skips), a splash, then Log On. There is no password. `root` and `admin` get a joke and become guest. Later page loads in the same tab go straight to the desktop.
 - Double-click icons to open them (tap on a phone). Drag windows by the title bar, resize from the edges, double-click a title bar to maximize. Right-click the desktop, icons, title bars and taskbar buttons for menus. Drag icons onto the Recycle Bin, and restore them from it.

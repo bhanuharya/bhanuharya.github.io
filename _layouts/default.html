@@ -4,6 +4,9 @@
 <html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-visits-endpoint="">
 <head>
   <meta charset="utf-8">
+  {%- comment -%} The browser enforces this: scripts and everything else only from this site, nothing inline but styles. {%- endcomment -%}
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="color-scheme" content="light">
   {% assign seo_title = page.title | default: site.title %}{% if page.title %}{% assign seo_title = page.title | append: ' · ' | append: site.title %}{% endif %}
@@ -20,20 +23,7 @@
   <meta property="og:url" content="{{ page.url | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
-  <script>
-    /* Day unless Night was picked from the tray */
-    (function () {
-      var t = null;
-      try { t = localStorage.getItem('theme'); } catch (e) {}
-      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-      document.documentElement.classList.add('js');
-      /* iOS zooms into small text fields on focus; this stops that (pinch zoom still works there) */
-      if (/iP(hone|od|ad)/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
-        var v = document.querySelector('meta[name="viewport"]');
-        if (v) v.setAttribute('content', v.getAttribute('content') + ', maximum-scale=1');
-      }
-    })();
-  </script>
+  <script src="{{ '/assets/js/boot.js' | relative_url }}"></script>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
@@ -50,19 +40,6 @@
 </head>
 <body class="os layout-{{ page.layout | default: 'default' }}">
 {% include icons.svg %}
-<script>
-  /* first visit in this tab: boot, then log on (os-apps.js runs it) */
-  (function () {
-    var u = 'guest';
-    try { u = sessionStorage.getItem('os-user'); } catch (e) {}
-    if (u) return;
-    var b = document.createElement('div');
-    b.className = 'bootscreen';
-    b.id = 'bootscreen';
-    document.body.appendChild(b);
-    setTimeout(function () { if (!window.OSBoot) b.remove(); }, 5000);
-  })();
-</script>
 <a class="skip" href="#main">Skip to content</a>
 {%- assign latest = site.posts.first -%}
 
@@ -104,9 +81,13 @@
         <li role="none"><button role="menuitem" type="button" data-act="player"><svg aria-hidden="true"><use href="#i-player"/></svg>Media Player</button></li>
         <li role="none"><button role="menuitem" type="button" data-act="firewall"><svg aria-hidden="true"><use href="#i-firewall"/></svg>Firewall (a game)</button></li>
         <li role="none"><button role="menuitem" type="button" data-act="newtext"><svg aria-hidden="true"><use href="#i-notepad"/></svg>Notepad</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="security"><svg aria-hidden="true"><use href="#i-shield"/></svg>Security Center</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="events"><svg aria-hidden="true"><use href="#i-log"/></svg>Event Viewer</button></li>
         <li role="none"><button role="menuitem" type="button" data-act="screensaver"><svg aria-hidden="true"><use href="#i-capture"/></svg>Screen saver</button></li>
       </ul>
     </li>
+    <li role="none" hidden><button role="menuitem" type="button" data-act="find"><svg aria-hidden="true"><use href="#i-find"/></svg>Find…<span class="key" aria-hidden="true">/</span></button></li>
+    <li role="none" hidden><button role="menuitem" type="button" data-act="setup"><svg aria-hidden="true"><use href="#i-setup"/></svg>Settings…</button></li>
     <li role="none"><a role="menuitem" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-notepad"/></svg>readme.txt</a></li>
     <li role="none"><a role="menuitem" href="{{ '/about/' | relative_url }}" data-app="about"><svg aria-hidden="true"><use href="#i-computer"/></svg>About</a></li>
     <li role="separator" class="sep"></li>
@@ -126,7 +107,7 @@
     <span id="visits" hidden><span id="visit-count">0</span></span>
     <button type="button" class="tray-btn" id="sound-toggle" aria-label="Mute sounds" hidden><svg aria-hidden="true"><use href="#i-speaker"/></svg></button>
     <button type="button" class="tray-btn" id="theme-toggle" aria-label="Switch to Night" hidden><svg aria-hidden="true"><use href="#i-moon"/></svg></button>
-    <span class="tray-ico" title="No trackers, no cookies"><svg aria-hidden="true"><use href="#i-shield"/></svg><span class="visually-hidden">No trackers, no cookies</span></span>
+    <button type="button" class="tray-btn" id="security-btn" title="Security Center: no trackers, no cookies"><svg aria-hidden="true"><use href="#i-shield"/></svg><span class="visually-hidden">Security Center: no trackers, no cookies</span></button>
     <button type="button" class="clock" id="clock" aria-label="Calendar">&copy; {{ site.time | date: '%Y' }}</button>
   </div>
 </footer>
@@ -140,6 +121,7 @@
 <script defer src="{{ '/assets/js/os.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/os-apps.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/os-player.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/os-extras.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/visits.js' | relative_url }}"></script>
 </body>
 </html>

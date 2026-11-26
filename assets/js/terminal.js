@@ -2,7 +2,8 @@
 (function () {
   'use strict';
 
-  var DATA = window.TERM_DATA || { posts: [], site: {} };
+  var DATA = { posts: [], site: {} };
+  try { DATA = JSON.parse(document.getElementById('term-data').textContent); } catch (e) {}
   var screen = document.getElementById('screen');
   var typedEl = document.getElementById('typed');
   var promptEl = document.getElementById('prompt');

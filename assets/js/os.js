@@ -15,7 +15,7 @@
   var startMenu = document.getElementById('start-menu');
   if (!desktop || !layer || !tasks) return;
 
-  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall' };
+  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall', find: 'find', events: 'log', security: 'shield' };
   var wins = [];
   var apps = {};
   var z = 10;
@@ -191,7 +191,7 @@
   function register(el, url, docTitle) {
     var app = el.getAttribute('data-app');
     var w = { el: el, app: app, url: url, docTitle: docTitle || document.title };
-    $$('.tbtn[hidden], .browser-bar [hidden]', el).forEach(function (b) { if (b.getAttribute('data-act') !== 'hex') b.hidden = false; });
+    $$('.tbtn[hidden], .browser-bar [hidden]', el).forEach(function (b) { var a = b.getAttribute('data-act'); if (a !== 'hex' && a !== 'toc') b.hidden = false; });
     var tt = $('.titlebar .tt', el);
     if (tt && !tt.textContent) tt.textContent = el.getAttribute('data-title') || app;
     ['e', 's', 'se'].forEach(function (d) { var g = document.createElement('i'); g.className = 'grip g-' + d; g.setAttribute('data-grip', d); el.appendChild(g); });
@@ -236,14 +236,42 @@
       bar.addEventListener('dblclick', function (e) { if (!e.target.closest('.tbtn') && !phone.matches) toggleMax(w); });
       bar.addEventListener('contextmenu', function (e) { e.preventDefault(); windowMenu(w, e.clientX, e.clientY); });
       bar.addEventListener('pointerdown', function (e) {
-        if (e.button !== 0 || e.target.closest('.tbtn') || phone.matches || el.classList.contains('maximized')) return;
+        if (e.button !== 0 || e.target.closest('.tbtn') || phone.matches) return;
         e.preventDefault();
-        pin(el);
-        var sx = e.clientX, sy = e.clientY, sl = el.offsetLeft, st = el.offsetTop;
-        var W = desktop.clientWidth, H = desktop.clientHeight, ew = el.offsetWidth;
+        var dr = desktop.getBoundingClientRect(), W = desktop.clientWidth, H = desktop.clientHeight;
+        var sx = e.clientX, sy = e.clientY, sl, st, ew, started = false, zone = null;
+        var begin = function () {
+          // pulling a maximized or snapped window away restores its size under the pointer
+          var r = el.getBoundingClientRect(), ratio = (sx - r.left) / r.width;
+          if (el.classList.contains('maximized') || el._pre) {
+            el.classList.remove('maximized');
+            var mb = $('[data-act="max"]', el);
+            if (mb) mb.setAttribute('aria-label', 'Maximize');
+            if (el._pre) { el.style.width = el._pre.w + 'px'; el.style.height = el._pre.h + 'px'; el._pre = null; }
+            pin(el);
+            el.style.left = Math.round(sx - dr.left - ratio * el.offsetWidth) + 'px';
+            el.style.top = Math.max(0, Math.round(sy - dr.top - 12)) + 'px';
+          } else pin(el);
+          sl = el.offsetLeft; st = el.offsetTop; ew = el.offsetWidth;
+        };
         drag(bar, e, function (ev) {
+          if (!started) { if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) < 4) return; started = true; begin(); }
           el.style.left = Math.min(W - 60, Math.max(60 - ew, sl + ev.clientX - sx)) + 'px';
           el.style.top = Math.min(H - 26, Math.max(0, st + ev.clientY - sy)) + 'px';
+          var x = ev.clientX - dr.left, y = ev.clientY - dr.top;
+          var z2 = y <= 2 ? 'max' : x <= 3 ? 'left' : x >= W - 4 ? 'right' : null;
+          if (z2 !== zone) { zone = z2; snapPreview(zone, W, H); }
+        }, function () {
+          snapPreview(null);
+          if (!started || !zone) return;
+          if (zone === 'max') { toggleMax(w, true); return; }
+          var half = Math.floor(W / 2);
+          el._pre = { w: el.offsetWidth, h: el.offsetHeight };
+          el.style.maxHeight = 'none';
+          el.style.top = '0px';
+          el.style.height = H + 'px';
+          el.style.width = half + 'px';
+          el.style.left = (zone === 'left' ? 0 : W - half) + 'px';
         });
       });
     }
@@ -263,10 +291,22 @@
       });
     });
   }
-  function drag(handle, e, move) {
+  // drag a window to the top edge to maximize it, or to a side to fill that half
+  var snapEl = null;
+  function snapPreview(zone, W, H) {
+    if (!zone) { if (snapEl) { snapEl.parentNode.removeChild(snapEl); snapEl = null; } return; }
+    if (!snapEl) { snapEl = document.createElement('div'); snapEl.className = 'snap-preview'; desktop.appendChild(snapEl); }
+    var half = Math.floor(W / 2);
+    snapEl.style.left = (zone === 'right' ? W - half : 0) + 'px';
+    snapEl.style.top = '0px';
+    snapEl.style.width = (zone === 'max' ? W : half) + 'px';
+    snapEl.style.height = H + 'px';
+  }
+  function drag(handle, e, move, end) {
     root.classList.add('dragging');
     try { handle.setPointerCapture(e.pointerId); } catch (x) {}
     var up = function () {
+      if (end) end();
       root.classList.remove('dragging');
       handle.removeEventListener('pointermove', move);
       handle.removeEventListener('pointerup', up);
@@ -443,10 +483,12 @@
     list = list.filter(function (ic) { return ic !== binIcon && !ic.hidden; });
     if (!list.length) return;
     list.forEach(function (ic) { ic.hidden = true; ic.classList.remove('sel'); binned.push(ic); });
+    emit('bin', 'trash', list.map(function (ic) { return ic.textContent.trim(); }));
     sound('trash');
     binChanged();
   }
   function emptyBin() {
+    if (binned.length) emit('bin', 'empty', binned.map(function (ic) { return ic.textContent.trim(); }));
     binned.forEach(function (ic) { ic.setAttribute('data-gone', '1'); });
     binned = [];
     sound('trash');
@@ -856,6 +898,7 @@
     if (dark) root.setAttribute('data-theme', 'dark'); else root.removeAttribute('data-theme');
     try { if (dark) localStorage.setItem('theme', 'dark'); else localStorage.removeItem('theme'); } catch (e) {}
     themeLabel();
+    emit('theme', dark);
   }
   if (themeBtn) { themeBtn.hidden = false; themeLabel(); themeBtn.addEventListener('click', toggleTheme); }
   var soundBtn = document.getElementById('sound-toggle');
@@ -866,10 +909,13 @@
     soundBtn.title = s ? 'Sounds on' : 'Sounds off';
     $('use', soundBtn).setAttribute('href', s ? '#i-speaker' : '#i-mute');
   }
-  function toggleSound() {
-    var s = !soundOn();
+  function setSound(s) {
     try { if (s) localStorage.removeItem('sound'); else localStorage.setItem('sound', 'off'); } catch (e) {}
     soundLabel();
+  }
+  function toggleSound() {
+    var s = !soundOn();
+    setSound(s);
     if (s) sound('pop');
   }
   if (soundBtn) { soundBtn.hidden = false; soundLabel(); soundBtn.addEventListener('click', toggleSound); }
@@ -948,9 +994,30 @@
     vv.addEventListener('scroll', fit);
   }
 
+  /* ---------------- event log (this tab only) ---------------- */
+  var events = [];
+  try { events = JSON.parse(sessionStorage.getItem('os-events') || '[]') || []; } catch (e) {}
+  function log(level, source, id, text) {
+    var ev = { l: level, s: source, i: id, x: text, t: Date.now() };
+    events.push(ev);
+    if (events.length > 300) events.splice(0, events.length - 300);
+    try { sessionStorage.setItem('os-events', JSON.stringify(events)); } catch (e) {}
+    emit('log', ev);
+  }
+  function clearLog() {
+    events.length = 0;
+    try { sessionStorage.removeItem('os-events'); } catch (e) {}
+    emit('log', null);
+  }
+  var shieldBtn = document.getElementById('security-btn');
+  if (shieldBtn) {
+    shieldBtn.hidden = false;
+    shieldBtn.addEventListener('click', function () { if (apps.security) apps.security(rectOf(shieldBtn)); });
+  }
+
   /* ---------------- start ---------------- */
   window.OS = {
-    top: top, coarse: coarse, showDesktop: showDesktop,
+    top: top, coarse: coarse, showDesktop: showDesktop, log: log, events: events, clearLog: clearLog, setSound: setSound,
     open: open, makeWindow: makeWindow, focus: focus, restore: restore, close: close, closeAll: closeAll,
     minimize: minimize, find: find, setTitle: setTitle, wins: wins, apps: apps, data: data,
     menu: menu, closeMenus: closeMenus, msg: msg, sound: sound, audio: audio, soundOn: soundOn, on: on, emit: emit,

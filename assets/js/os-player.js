@@ -229,6 +229,8 @@
     }
     setStatus('Playing');
     draw();
+    OS.log('info', 'Media Player', 1, 'Playing ' + s.t + '.');
+    OS.emit('discover', 'music');
   }
   function stopAll() {
     clearInterval(timer); timer = null;
