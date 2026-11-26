@@ -1,4 +1,4 @@
-/* bhanuharya OS: Media Player.
+/* obscuraOS: Media Player.
    Three short songs are written below as notes and played by the browser's
    own synthesizer, so they need no files. Audio files placed in
    assets/music/ join the playlist on the next build, and "Open..." plays a
@@ -176,7 +176,7 @@
   }
 
   /* ---------------- player state ---------------- */
-  var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'bhanuharya OS', synth: s, ev: c.ev, dur: c.dur }; });
+  var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'obscuraOS', synth: s, ev: c.ev, dur: c.dur }; });
   (OS.data.songs || []).forEach(function (s) { list.push({ t: s.t, by: 'assets/music', url: s.u, dur: 0 }); });
   var cur = 0, playing = false, pos = 0, t0 = 0, idx = 0, timer = null, vol = 0.8, shuffle = false, repeat = true, mode = 0;
   var win = null, ui = {};

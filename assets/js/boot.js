@@ -1,4 +1,4 @@
-/* bhanuharya OS: runs in <head>, before the page paints.
+/* obscuraOS: runs in <head>, before the page paints.
    Applies saved display settings, counts anything the Content Security
    Policy blocks (Security Center shows it), and decides whether this tab
    boots. Kept in a file, not inline, so the CSP can forbid inline scripts. */

@@ -1,4 +1,4 @@
-/* bhanuharya OS: BIOS Setup, Security Center, Find, Event Viewer,
+/* obscuraOS: BIOS Setup, Security Center, Find, Event Viewer,
    reading aids (contents, text size), and a few things to discover.
    Settings live in localStorage ('os-settings'). The event log and the
    discoveries live in sessionStorage and go when the tab closes. */
@@ -190,7 +190,7 @@
     var draw = function () {
       var m = MENUS[tab], it = m.items[row];
       el.innerHTML =
-        '<div class="bios-top">bhanuharya BIOS Setup Utility</div>' +
+        '<div class="bios-top">obscura BIOS Setup Utility</div>' +
         '<div class="bios-tabs" role="tablist">' + MENUS.map(function (x, i) {
           return '<button type="button" role="tab" data-tab="' + i + '" aria-selected="' + (i === tab) + '">' + x.name + '</button>';
         }).join('') + '</div>' +

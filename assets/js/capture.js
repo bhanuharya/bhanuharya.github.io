@@ -1,4 +1,4 @@
-/* bhanuharya OS: app code for the Packet Capture and Browser windows.
+/* obscuraOS: app code for the Packet Capture and Browser windows.
    Exposes window.Capture.init(windowEl, url) so os.js can start a window it
    just opened; windows already on the page are started here.
    Nothing leaves the browser. */

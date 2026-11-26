@@ -9,7 +9,7 @@ This document describes the current Jekyll site after the rebuild and refinement
 
 ## Layouts
 
-The site is an early-2000s desktop, "bhanuharya OS": grey 3D bevels, gradient title bars, sunken panes, a taskbar and Start menu. Apps are windows. Each URL renders the desktop with its own window open, so pages work without JavaScript; with it, links open as windows in place (fetched, then added to the desktop) and the URL follows the focused window.
+The site is an early-2000s desktop, "obscuraOS": grey 3D bevels, gradient title bars, sunken panes, a taskbar and Start menu. Apps are windows. Each URL renders the desktop with its own window open, so pages work without JavaScript; with it, links open as windows in place (fetched, then added to the desktop) and the URL follows the focused window.
 
 - `default` — the desktop: icons (Packet Capture, Browser, Terminal, readme.txt, About, Media Player, Firewall, RSS, GitHub, LinkedIn, Recycle Bin), the window layer, Start menu (programs, Posts and Programs flyouts, Run, Log Off, Shut Down), taskbar with tray (sound, Day/Night, no-trackers shield, clock). Canonical URL, Open Graph / Twitter meta, BlogPosting JSON-LD on posts, RSS link, skip link, and a JSON block with posts and songs for the scripts.
 - `home` — Packet Capture window: filter toolbar with quick filters, the packet list, a detail tree and hex dump of the selected post, status line.

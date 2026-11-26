@@ -1,4 +1,4 @@
-/* bhanuharya OS: boot, log on, and the small programs.
+/* obscuraOS: boot, log on, and the small programs.
    Boot + log on run once per tab. The name you log on with stays in this
    tab (sessionStorage) and is forgotten when you close it. */
 (function () {
@@ -52,7 +52,7 @@
     document.addEventListener('keydown', onKey);
     var d = new Date();
     var lines = [
-      'bhanuharya BIOS v' + d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '   (c) Harya',
+      'obscura BIOS v' + d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '   (c) Harya',
       '',
       'CPU: one person, part time',
       'Memory test: 640K OK',
@@ -84,7 +84,7 @@
     return p.then(function () { return skipped || quick ? null : wait(650); }).then(function () {
       if (setup) return enterSetup();
       if (skipped || quick) return;
-      b.innerHTML = '<div class="splash"><div class="mark">' + svg('logo') + '<span>bhanuharya<b>OS</b></span></div>' +
+      b.innerHTML = '<div class="splash"><div class="mark">' + svg('logo') + '<span>obscura<b>OS</b></span></div>' +
         '<div class="bar"><i></i></div><small>Starting up...</small></div>';
       return wait(1500).then(function () { if (setup) return enterSetup(); });
     }).then(function () {
@@ -107,8 +107,8 @@
     b.className = 'bootscreen logon';
     b.innerHTML =
       '<div class="logon-win raised" role="dialog" aria-modal="true" aria-labelledby="lo-t">' +
-        '<header class="titlebar"><span class="tt" id="lo-t">Log On to bhanuharya OS</span></header>' +
-        '<div class="logon-banner">' + svg('logo') + '<span>bhanuharya<b>OS</b><small>Notes on things set up, tested and broken</small></span></div>' +
+        '<header class="titlebar"><span class="tt" id="lo-t">Log On to obscuraOS</span></header>' +
+        '<div class="logon-banner">' + svg('logo') + '<span>obscura<b>OS</b><small>Notes on things set up, tested and broken</small></span></div>' +
         '<div class="logon-strip" aria-hidden="true"></div>' +
         '<form class="logon-body" autocomplete="off">' +
           '<div class="logon-users" role="radiogroup" aria-label="Users on this computer">' +
@@ -158,7 +158,7 @@
   function loggingOn(name) {
     var b = bootScreen();
     b.innerHTML = '<div class="logon-win busybox raised" role="status"><header class="titlebar"><span class="tt">Logging On</span></header>' +
-      '<div class="logon-banner">' + svg('logo') + '<span>bhanuharya<b>OS</b></span></div><div class="logon-strip"></div>' +
+      '<div class="logon-banner">' + svg('logo') + '<span>obscura<b>OS</b></span></div><div class="logon-strip"></div>' +
       '<div class="logon-body"><p class="ld">Loading your personal settings...</p><div class="bar sunken"><i></i></div></div></div>';
     return wait(650).then(function () {
       $('.ld', b).textContent = 'Applying your personal settings...';
@@ -241,7 +241,7 @@
   }
   function shutdownDialog() {
     OS.msg({
-      title: 'Shut Down bhanuharya OS', icon: 'power', text: 'What do you want the computer to do?',
+      title: 'Shut Down obscuraOS', icon: 'power', text: 'What do you want the computer to do?',
       html: '<div class="choices"><label><input type="radio" name="sd" value="off" checked> Shut down</label>' +
         '<label><input type="radio" name="sd" value="restart"> Restart</label>' +
         '<label><input type="radio" name="sd" value="logoff"> Log off ' + esc(user()) + '</label></div>',
@@ -266,7 +266,7 @@
       logon().then(reopenHome);
     };
     if (sure) { go(); return; }
-    OS.msg({ title: 'Log Off bhanuharya OS', icon: 'logoff', text: 'Are you sure you want to log off?', buttons: ['Log Off', 'Cancel'] })
+    OS.msg({ title: 'Log Off obscuraOS', icon: 'logoff', text: 'Are you sure you want to log off?', buttons: ['Log Off', 'Cancel'] })
       .then(function (i) { if (i === 0) go(); });
   }
   OS.on('action', function (a) {
@@ -306,7 +306,7 @@
     var again = function (start) {
       OS.msg({
         title: 'Run', icon: 'run',
-        text: 'Type the name of a program, a post, or a filter, and bhanuharya OS will open it for you.',
+        text: 'Type the name of a program, a post, or a filter, and obscuraOS will open it for you.',
         html: '<label class="run-row"><span><u>O</u>pen:</span><input class="field sunken" id="run-in" list="run-list" spellcheck="false" autocapitalize="off" value="' + esc(start || '') + '"></label>' +
           '<datalist id="run-list">' + list.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>',
         buttons: ['OK', 'Cancel'],
@@ -395,7 +395,7 @@
     var save = function () {
       OS.msg({ title: 'Notepad', icon: 'warn', text: 'Saving is turned off on this computer.\n\nNothing you type here leaves this tab. Copy it somewhere if you want to keep it.' });
     };
-    var aboutNp = function () { OS.msg({ title: 'About Notepad', icon: 'notepad', text: 'Notepad for bhanuharya OS.\nIt edits text. It does not save it.' }); };
+    var aboutNp = function () { OS.msg({ title: 'About Notepad', icon: 'notepad', text: 'Notepad for obscuraOS.\nIt edits text. It does not save it.' }); };
     var MENUS = {
       File: [
         { label: 'New', act: function () { OS.apps.newtext(); } },
@@ -490,7 +490,7 @@
       });
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#555'; ctx.font = (12 * dpr) + 'px "Lucida Console", monospace'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText('bhanuharya OS · captured ' + Math.floor((t - start) / 1000 * 7) + ' packets while you were away', 20 * dpr, H - 20 * dpr);
+      ctx.fillText('obscuraOS · captured ' + Math.floor((t - start) / 1000 * 7) + ' packets while you were away', 20 * dpr, H - 20 * dpr);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);

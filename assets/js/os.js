@@ -1,4 +1,4 @@
-/* bhanuharya OS: the window manager.
+/* obscuraOS: the window manager.
    Every page is served as a desktop with one window open, so the site works
    without this script. With it, links open as windows in place: the page is
    fetched, its window is lifted out and added to the desktop.
