@@ -4,8 +4,8 @@
 <html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-visits-endpoint="">
 <head>
   <meta charset="utf-8">
-  {%- comment -%} The browser enforces this: scripts and everything else only from this site, nothing inline but styles. The one exception is YouTube's no-cookie player, which Media Player loads only after a visitor presses Play on a YouTube track and agrees. {%- endcomment -%}
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  {%- comment -%} The browser enforces this: scripts and everything else only from this site, nothing inline but styles. Two exceptions, both only on request: YouTube's no-cookie player (Media Player, after Play and a yes) and the Internet Archive's Wayback Machine (The Web, after a yes). {%- endcomment -%}
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com https://web.archive.org; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="color-scheme" content="light">
@@ -51,6 +51,7 @@
     <a class="dicon" href="{{ '/terminal/' | relative_url }}" data-app="terminal"><svg aria-hidden="true"><use href="#i-terminal"/></svg><span>Terminal</span></a>
     <button class="dicon" type="button" data-app="player" hidden><svg aria-hidden="true"><use href="#i-player"/></svg><span>Media Player</span></button>
     <a class="dicon" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-notepad"/></svg><span>readme.txt</span></a>
+    <a class="dicon" href="{{ '/web/' | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-oldweb"/></svg><span>The Web (2001)</span></a>
     <button class="dicon" type="button" data-app="virus" hidden><svg aria-hidden="true"><use href="#i-bug"/></svg><span>notavirus.exe</span></button>
     <button class="dicon" type="button" data-app="bin" hidden><svg aria-hidden="true"><use href="#i-bin"/></svg><span>Recycle Bin</span></button>
   </nav>

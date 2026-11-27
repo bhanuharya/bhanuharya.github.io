@@ -1,0 +1,58 @@
+# Sites in "The Web" (/web/): opened as the Internet Archive saved them
+# around the middle of the given year. Add or remove freely.
+- name: Google
+  url: http://www.google.com/
+  year: 1999
+  note: Search
+- name: Yahoo!
+  url: http://www.yahoo.com/
+  year: 1998
+  note: Directory and portal
+- name: Amazon.com
+  url: http://www.amazon.com/
+  year: 1999
+  note: Shopping
+- name: eBay
+  url: http://www.ebay.com/
+  year: 2000
+  note: Auctions
+- name: Ask Jeeves
+  url: http://www.ask.com/
+  year: 2000
+  note: Search, by asking a butler
+- name: Hotmail
+  url: http://www.hotmail.com/
+  year: 1999
+  note: Email
+- name: Slashdot
+  url: http://slashdot.org/
+  year: 2000
+  note: News for nerds
+- name: GeoCities
+  url: http://www.geocities.com/
+  year: 1999
+  note: Free homepages
+- name: Napster
+  url: http://www.napster.com/
+  year: 2000
+  note: Music
+- name: Neopets
+  url: http://www.neopets.com/
+  year: 2001
+  note: Virtual pets
+- name: Space Jam
+  url: http://www.spacejam.com/
+  year: 1997
+  note: A movie website
+- name: Wikipedia
+  url: http://www.wikipedia.org/
+  year: 2003
+  note: Encyclopedia
+- name: MySpace
+  url: http://www.myspace.com/
+  year: 2005
+  note: Social network
+- name: YouTube
+  url: http://www.youtube.com/
+  year: 2005
+  note: Video (the videos needed Flash, so they won't play)

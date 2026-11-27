@@ -443,7 +443,16 @@
         e.preventDefault();
         var v = input.value.trim();
         if (!v) return;
-        if (!/^[a-z]+:\/\//i.test(v) && v.charAt(0) !== '/') v = (/\./.test(v.split('/')[0]) ? 'https://' : '/') + v;
+        if (!/^[a-z]+:\/\//i.test(v) && v.charAt(0) !== '/') v = (/\./.test(v.split('/')[0]) ? 'http://' : '/') + v;
+        var dest;
+        try { dest = new URL(v, location.href); } catch (x) { return; }
+        if (dest.origin !== location.origin && /^https?:$/.test(dest.protocol)) {
+          // another website: show it as the Internet Archive saved it (see /web/)
+          var y = 2001;
+          try { y = +sessionStorage.getItem('wb-year') || 2001; } catch (x) {}
+          open('/web/?u=' + encodeURIComponent(dest.href) + '&y=' + y);
+          return;
+        }
         open(v);
       });
     }

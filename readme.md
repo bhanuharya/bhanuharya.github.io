@@ -19,6 +19,9 @@ text: |
     Browser          the web, starting at the home page.
                      Favorites lists the pages on this site.
                      Source shows a page's HTML.
+    The Web (2001)   popular sites from around 2000, as the
+                     Internet Archive saved them. Any address
+                     typed into the Browser goes there too.
     Packet Capture   every HTTP request this computer makes,
                      live: timing, headers, bytes. Save writes
                      a .har file.
@@ -40,6 +43,7 @@ text: |
   Privacy
     Nothing is tracked. Your browser is told to refuse files
     from other sites; YouTube loads only after you press Play
-    on a video and agree. Settings stay in this browser. The
+    on a video and agree, and the Internet Archive only after
+    you open an old page and agree. Settings stay in this browser. The
     log-on name and the event log go when you close the tab.
 ---
