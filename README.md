@@ -53,7 +53,7 @@ Nothing loads from YouTube until a visitor presses Play on a YouTube track and a
 - `_layouts/default.html` — the OS: desktop icons, taskbar, Start menu, security policy, the JSON the scripts read
 - `_layouts/home.html`, `post.html`, `profile.html`, `page.html` — the website, each inside a Browser window; `_includes/site-header.html` is its header (name, Posts, About, RSS)
 - `web.html` + `_data/oldweb.yml` — The Web portal and Internet Archive Wayback Machine viewer (`/web/`)
-- `about.md` — your profile (`person`, the intro text, `experience`, `education`); links are in `_layouts/profile.html`
+- `about.md` — your profile (`person`, the intro text, `experience` as role / org / years / focus, `education`); links are in `_layouts/profile.html`
 - `_data/projects.yml` — the Projects page (`/projects/`): name, GitHub repo, a line or two, tags, and posts about it
 - `_layouts/notepad.html` + `readme.md` — the OS help file; `_layouts/terminal.html` — the terminal
 - `_includes/` — `icons.svg`, `titlebar.html`, `browser-top.html`, `packet-vars.html` (topic and reading time of a post)

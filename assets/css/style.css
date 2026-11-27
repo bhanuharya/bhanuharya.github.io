@@ -849,6 +849,11 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .plain { list-style: none; margin: 0; padding: 0; font: 15px/1.6 var(--read); }
 .plain li { padding: 4px 0; }
 .plain .dim { font-size: 13px; }
+.exp li { padding: 6px 0; }
+.exp-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 12px; }
+.exp-years { font-size: 13px; color: var(--dim); white-space: nowrap; }
+.exp-focus { display: block; font-size: 14px; line-height: 1.5; color: var(--dim); }
+@media (max-width: 760px) { .exp-head { display: block; } .exp-years { display: block; } }
 .proj-list { list-style: none; margin: 0; padding: 0; }
 .proj { padding: 14px 0; border-bottom: 1px solid var(--light); }
 .proj-repo { display: block; margin-top: 2px; font: 12px var(--mono); color: var(--dim); overflow-wrap: anywhere; }
