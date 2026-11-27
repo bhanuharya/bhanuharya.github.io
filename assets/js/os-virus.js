@@ -209,7 +209,7 @@
   }
 
   /* ---------------- the run ---------------- */
-  var on = false, timers = [], raf = 0, errs = 0, startLabel = '', clockTimer = 0, cast = [], installWin = null;
+  var on = false, timers = [], raf = 0, errs = 0, startLabel = '', clockTimer = 0, cast = [], installWin = null, toastyEl = null;
   function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
 
   OS.apps.virus = function () {
@@ -221,6 +221,23 @@
     }).then(function (i) { if (i === 0) install(); });
   };
 
+  function startDanceFloor() {
+    if (toastyEl) return;
+    toastyEl = character('toasty', 'vx-toasty');
+    cast.push(toastyEl);
+    say(toastyEl, 'Warming up the dance floor!', 2400);
+    conga();
+    if (!calm()) {
+      bug();
+    } else {
+      var staticBug = character('bug', 'vx-bug');
+      staticBug.style.left = '28px';
+      staticBug.style.bottom = 'calc(var(--tb-h) + 18px)';
+      staticBug.style.top = 'auto';
+      cast.push(staticBug);
+    }
+  }
+
   function install() {
     on = true;
     voice = pickVoice();
@@ -228,6 +245,10 @@
     try { who = sessionStorage.getItem('os-user') || 'guest'; } catch (e) {}
     OS.log('warn', 'Antivirus', 1337, 'notavirus.exe was run by ' + who + '.');
     if (OS.player && OS.player.pause) OS.player.pause();
+    if (!calm()) root.classList.add('vx-rumble');
+    else root.classList.add('infected-calm');
+    startMusic();
+    startDanceFloor();
     var w = installWin = OS.makeWindow('virus', 'notavirus.exe', '<div class="win-body vx-install">' +
       '<p><b>Installing notavirus.exe</b><br>Please do not turn off your computer.</p>' +
       '<div class="vx-bar sunken"><i></i></div><p class="vx-file dim"></p></div>', { noMax: true });
@@ -244,17 +265,19 @@
       n++;
       bar.style.width = Math.min(100, n / steps * 100) + '%';
       file.textContent = n <= FILES.length ? FILES[n - 1] : 'Done. Enjoy your new computer.';
-      if (n < steps) later(step, calm() ? 260 : 360 + Math.random() * 220);
-      else later(function () { installWin = null; OS.off('close', onCloseInstall); OS.close(w, true); chaos(); }, 800);
+      if (n < steps) later(step, calm() ? 200 : 230 + Math.random() * 140);
+      else later(function () { installWin = null; OS.off('close', onCloseInstall); OS.close(w, true); chaos(); }, 500);
     };
-    later(step, 400);
+    later(step, 260);
   }
 
   function chaos() {
     if (!on) return;
+    root.classList.remove('vx-rumble');
     root.classList.add('infected', 'vx-comic');
     if (calm()) root.classList.add('infected-calm');
-    startMusic();
+    if (!music) startMusic();
+    startDanceFloor();
     var start = $('#start-btn b');
     if (start) { startLabel = start.textContent; start.textContent = 'Panic'; }
     var hint = document.createElement('div');
@@ -274,27 +297,17 @@
       later(cascade, 130);
     };
     cascade();
-    // Toasty, the helpful toaster + a dancing Bug mascot right away
-    var toasty = character('toasty', 'vx-toasty');
-    cast.push(toasty);
-    later(function () { say(toasty, TOASTY[0]); speak(TOASTY[0]); askToasty(toasty); }, 900);
-    later(marquee, 1500);
-    later(conga, 2400);
-    later(function () { ad(); later(ad, 1400); }, 5200);
+    var toasty = toastyEl;
+    later(function () { say(toasty, TOASTY[0]); speak(TOASTY[0]); askToasty(toasty); }, 600);
+    marquee();
+    later(function () { ad(); later(ad, 1400); }, 3600);
     if (!calm()) {
-      later(bug, 1200);
-      later(function () { document.addEventListener('pointermove', glitter, true); document.addEventListener('pointermove', flee, true); }, 4000);
-      later(melt, 9000);
-    } else {
-      var staticBug = character('bug', 'vx-bug');
-      staticBug.style.left = '28px';
-      staticBug.style.bottom = 'calc(var(--tb-h) + 18px)';
-      staticBug.style.top = 'auto';
-      cast.push(staticBug);
+      later(function () { document.addEventListener('pointermove', glitter, true); document.addEventListener('pointermove', flee, true); }, 2500);
+      later(melt, 8000);
     }
     var line = 1;
-    var chatter = function () { if (!on || line >= TOASTY.length - 1) return; say(toasty, TOASTY[line]); speak(TOASTY[line]); line++; later(chatter, 3600); };
-    later(chatter, 7000);
+    var chatter = function () { if (!on || line >= TOASTY.length - 1) return; say(toasty, TOASTY[line]); speak(TOASTY[line]); line++; later(chatter, 3400); };
+    later(chatter, 5500);
     later(finale, 24000);
   }
   function askToasty(t) {
@@ -355,7 +368,8 @@
     if (!on) return;
     ['floppy', 'cd', 'bug', 'floppy', 'cd'].forEach(function (k, i) {
       var c = character(k, 'vx-conga');
-      c.style.setProperty('--d', (i * 1.1) + 's');
+      // negative delays place the entire conga crew visibly across the screen immediately
+      c.style.setProperty('--d', (-1.0 - i * 1.8) + 's');
       if (calm()) c.style.left = (110 + i * 110) + 'px'; // standing still, in a row
       cast.push(c);
     });
@@ -392,16 +406,16 @@
     if (!on) return;
     var b = character('bug', 'vx-bug');
     cast.push(b);
-    var px = Math.random() * (innerWidth - 80), py = Math.random() * (innerHeight - 120), vx = 3.2, vy = 2.6, t = 0;
-    var lines = ['hehe', 'hi!', 'oops', 'lol', ':)', 'whee'];
-    say(b, 'hehe');
+    var px = Math.max(80, innerWidth * 0.28), py = Math.max(120, innerHeight * 0.55), vx = 3.4, vy = 2.7, t = 0;
+    var lines = ['hehe', 'party!', 'boogie!', 'lol', '♪♫', 'whee'];
+    say(b, 'party!');
     var frame = function () {
       if (!on) return;
       px += vx; py += vy;
-      if (px < 0 || px > innerWidth - 64) { vx = -vx; px = Math.max(0, Math.min(innerWidth - 64, px)); }
-      if (py < 0 || py > innerHeight - 100) { vy = -vy; py = Math.max(0, Math.min(innerHeight - 100, py)); }
+      if (px < 0 || px > innerWidth - 88) { vx = -vx; px = Math.max(0, Math.min(innerWidth - 88, px)); }
+      if (py < 0 || py > innerHeight - 120) { vy = -vy; py = Math.max(0, Math.min(innerHeight - 120, py)); }
       b.style.transform = 'translate(' + px + 'px,' + py + 'px)';
-      if (++t % 90 === 0) say(b, lines[Math.floor(Math.random() * lines.length)]);
+      if (++t % 85 === 0) say(b, lines[Math.floor(Math.random() * lines.length)]);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -412,7 +426,7 @@
     root.classList.remove('vx-melt');
     $$('.vx-err, .vx-ad').forEach(function (n) { n.parentNode.removeChild(n); });
     cast.forEach(function (c) { c.classList.add('vx-bow'); });
-    var t = cast[0];
+    var t = toastyEl || cast[0];
     if (t) { say(t, TOASTY[TOASTY.length - 1]); speak(TOASTY[TOASTY.length - 1]); }
     later(function () { finish(true); }, 2600);
   }
@@ -428,11 +442,12 @@
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
     document.removeEventListener('pointermove', flee, true);
     document.removeEventListener('pointermove', glitter, true);
-    root.classList.remove('infected', 'infected-calm', 'vx-comic', 'vx-melt');
+    root.classList.remove('infected', 'infected-calm', 'vx-rumble', 'vx-comic', 'vx-melt');
     $$('.vx-err, .vx-ad, .vx-char, .vx-hint, .vx-marquee, .vx-spark').forEach(function (n) { n.parentNode.removeChild(n); });
     $$('.dicon').forEach(function (ic) { ic.style.transform = ''; ic._vx = null; });
     $$('.windows .window').forEach(function (w) { w.style.removeProperty('--r'); });
     cast = [];
+    toastyEl = null;
     var start = $('#start-btn b');
     if (start && startLabel) start.textContent = startLabel;
     var clock = $('#clock'), d = new Date();
