@@ -180,6 +180,7 @@
   /* ---------------- player state ---------------- */
   var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'obscuraOS', synth: s, ev: c.ev, dur: c.dur }; });
   (OS.data.songs || []).forEach(function (s) { list.push({ t: s.t, by: 'assets/music', url: s.u, dur: 0 }); });
+  (OS.data.videos || []).forEach(function (v) { list.push({ t: v.t, by: 'assets/video', vid: v.u, dur: 0 }); });
   var first = 0;
   (OS.data.yt || []).forEach(function (v) {
     if (!/^[\w-]{11}$/.test(v.id || '')) return;
@@ -284,9 +285,34 @@
     setStatus('Waiting for you');
     draw();
   }
+  /* videos from assets/video play in the screen, straight from this site */
+  var vid = null;
+  function vidFor(s) {
+    if (!ui.video) return null;
+    if (!vid || vid._u !== s.vid || !ui.video.contains(vid)) {
+      ui.video.innerHTML = '';
+      vid = document.createElement('video');
+      vid.className = 'yt-frame';
+      vid.preload = 'metadata';
+      vid.playsInline = true;
+      vid.setAttribute('playsinline', '');
+      vid.src = s.vid;
+      vid._u = s.vid;
+      vid.volume = vol;
+      vid.title = s.t;
+      vid.addEventListener('loadedmetadata', function () { var it = list[cur]; if (it.vid === this._u && isFinite(this.duration)) { it.dur = this.duration; draw(); } });
+      vid.addEventListener('ended', function () { if (list[cur].vid === this._u) { playing = false; ended(); } });
+      vid.addEventListener('error', function () { if (list[cur].vid === this._u) { playing = false; setStatus('Could not play ' + list[cur].t + '. Is it an H.264 .mp4?'); draw(); } });
+      vid.addEventListener('click', function () { if (playing) pause(); else play(pos); });
+      vid.addEventListener('dblclick', function () { if (this.requestFullscreen) this.requestFullscreen().catch(function () {}); });
+      ui.video.appendChild(vid);
+    }
+    return vid;
+  }
   function screenFor(s) {
     if (!ui.video) return;
-    ui.screen.classList.toggle('video', !!s.yt);
+    ui.screen.classList.toggle('video', !!(s.yt || s.vid));
+    if (s.vid) { vidFor(s); return; }
     if (!s.yt) return;
     if (yt.frame && yt.id === s.yt) return;
     if (yt.asking === s.yt) return;
@@ -295,6 +321,7 @@
 
   function now() {
     var s = list[cur];
+    if (s.vid) return vid && vid._u === s.vid ? vid.currentTime : pos;
     if (s.yt) return yt.id === s.yt ? yt.time : pos;
     if (!playing) return pos;
     if (s.url) return mediaEl ? mediaEl.currentTime : 0;
@@ -315,6 +342,23 @@
   }
   function play(at) {
     var s = list[cur];
+    if (s.vid) {
+      clearInterval(timer); timer = null; hush();
+      if (mediaEl) mediaEl.pause();
+      if (yt.frame || yt.asking) ytUnload();
+      var v = vidFor(s);
+      if (!v) return;
+      pos = Math.max(0, at || 0);
+      if (Math.abs(v.currentTime - pos) > 0.5) { try { v.currentTime = pos; } catch (e) {} }
+      v.volume = vol;
+      playing = true;
+      var pr = v.play();
+      if (pr && pr.catch) pr.catch(function () { playing = false; setStatus('Could not play ' + s.t + '.'); draw(); });
+      setStatus('Playing');
+      draw();
+      OS.log('info', 'Media Player', 1, 'Playing ' + s.t + '.');
+      return;
+    }
     if (s.yt) {
       clearInterval(timer); timer = null; hush();
       if (mediaEl) mediaEl.pause();
@@ -362,6 +406,7 @@
     clearInterval(timer); timer = null;
     hush();
     if (mediaEl) mediaEl.pause();
+    if (vid) vid.pause();
     if (yt.frame || yt.asking) ytUnload();
   }
   function pause() {
@@ -369,7 +414,7 @@
     if (s.yt && yt.frame) { ytCmd('pauseVideo'); pos = yt.time; playing = false; setStatus('Paused'); draw(); return; }
     pos = now(); playing = false; stopAll(); setStatus('Paused'); draw();
   }
-  function stop() { playing = false; pos = 0; stopAll(); setStatus('Stopped'); if (win) screenFor(list[cur]); draw(); }
+  function stop() { playing = false; pos = 0; stopAll(); if (vid) { try { vid.currentTime = 0; } catch (e) {} } setStatus('Stopped'); if (win) screenFor(list[cur]); draw(); }
   function go(i, autoplay) {
     cur = (i + list.length) % list.length;
     pos = 0;
@@ -411,7 +456,7 @@
     if (!win) return;
     var s = list[cur], n = now(), d = s.dur || (s.url && mediaEl && mediaEl._u === s.url ? mediaEl.duration : 0);
     ui.time.textContent = fmt(n) + ' / ' + (d ? fmt(d) : '--:--');
-    if (ui.ytime) ui.ytime.textContent = s.yt ? fmt(n) + ' / ' + (d ? fmt(d) : '--:--') : '';
+    if (ui.ytime) ui.ytime.textContent = s.yt || s.vid ? fmt(n) + ' / ' + (d ? fmt(d) : '--:--') : '';
     if (!ui.seeking) ui.seek.value = d ? Math.min(1000, Math.round(n / d * 1000)) : 0;
   }
   var raf = 0;
@@ -419,7 +464,7 @@
     raf = requestAnimationFrame(paint);
     if (!win || win.el.classList.contains('minimized')) return;
     tickUI();
-    if (list[cur].yt) return;
+    if (list[cur].yt || list[cur].vid) return;
     var c = ui.canvas, g = c.getContext('2d');
     var W = c.width = c.clientWidth * (window.devicePixelRatio || 1), H = c.height = c.clientHeight * (window.devicePixelRatio || 1);
     g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
@@ -520,12 +565,14 @@
       var s = list[cur], d = s.dur || (mediaEl && mediaEl.duration) || 0;
       var at = +ui.seek.value / 1000 * d;
       if (s.yt) { if (yt.frame) { ytCmd('seekTo', [at, true]); yt.time = at; } else pos = at; tickUI(); return; }
+      if (s.vid) { var v = vidFor(s); if (v) { try { v.currentTime = at; } catch (x) {} } pos = at; tickUI(); return; }
       if (playing) play(at); else { pos = at; tickUI(); }
     });
     $('[data-vol]', el).addEventListener('input', function (e) {
       vol = +e.target.value / 100;
       if (master) master.gain.value = vol;
       if (yt.frame) ytCmd('setVolume', [Math.round(vol * 100)]);
+      if (vid) vid.volume = vol;
     });
     ui.file.addEventListener('change', function () {
       var first = list.length;
@@ -546,5 +593,6 @@
     cancelAnimationFrame(raf);
     win = null;
     ui = {};
+    vid = null;
   });
 })();

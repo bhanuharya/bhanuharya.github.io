@@ -14,6 +14,7 @@ include:
   - .well-known
 exclude:
   - pi-session-*.html
+  - assets/video/README.md
 
 plugins:
   - jekyll-feed

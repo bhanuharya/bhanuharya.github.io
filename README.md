@@ -35,6 +35,10 @@ To add your own:
 
 Visitors can also play a file from their own computer with Open… in the player. It stays in their browser and is not uploaded.
 
+### Your own videos
+
+Upload `.mp4` files to `assets/video/` (on github.com: open the folder, **Add file → Upload files**). They appear in Media Player and play in its screen, served from this site. Use H.264 video with AAC audio, keep files small (web upload limit 25 MB, git push limit 100 MB, and every version stays in the history); `assets/video/README.md` has an ffmpeg line for shrinking one.
+
 ### YouTube
 
 YouTube videos play inside the player's screen. List them in `_data/youtube.yml` (a title and the 11-character video id), or paste any YouTube link with **Open URL…** in the player (that one lasts until the tab closes).
@@ -50,7 +54,7 @@ Nothing loads from YouTube until a visitor presses Play on a YouTube track and a
 - `_layouts/notepad.html` + `readme.md` — the OS help file; `_layouts/terminal.html` — the terminal
 - `_includes/` — `icons.svg`, `titlebar.html`, `browser-top.html`, `packet-vars.html` (topic and reading time of a post)
 - `_data/protocols.yml` — which tags put a post under Security, AI or Games on the home page
-- `_data/youtube.yml` — YouTube tracks for Media Player
+- `_data/youtube.yml` — YouTube tracks for Media Player; `assets/music/` and `assets/video/` — your own audio and video files for it
 - `search.json` — full text of the posts, for Find
 - `assets/js/boot.js` (first, in `<head>`), `os.js` (window manager), `os-apps.js` (boot, log on, Run, calendar, screen saver, Notepad, Firewall), `os-extras.js` (Setup, System Properties, Security Center, Find, Event Viewer, Browser extras), `os-capture.js` (Packet Capture), `os-player.js` (Media Player), `pages.js` (the website's own behaviour)
 - `assets/css/style.css` — the OS and the website, Day and Night
