@@ -1,0 +1,55 @@
+# Projects on /projects/, in this order.
+#   name:  shown as the link
+#   repo:  owner/name on GitHub
+#   what:  one or two plain sentences
+#   tags:  a few words, shown under it
+#   posts: optional, post URLs on this site that write about it
+
+- name: sdt (secure-development-tools)
+  repo: bhanuharya/secure-development-tools
+  what: >-
+    A secure-SDLC gate. It runs OpenGrep, Gitleaks and Trivy over a repository
+    or a pull request's changes and gives one verdict, with the evidence in files.
+    No server, no telemetry.
+  tags: [appsec, sast, secrets, dependencies]
+  posts: [/blog/building-a-sast-setup-on-top-of-sonarqube/]
+
+- name: sonar-opengrep-dart
+  repo: bhanuharya/sonar-opengrep-dart
+  what: >-
+    Dart and Flutter security rules for SonarQube Community. OpenGrep findings
+    show up as real Sonar vulnerabilities and security hotspots, mapped to CWE and OWASP.
+  tags: [appsec, sonarqube, dart, flutter]
+  posts: [/blog/dart-security-sonarqube-community/]
+
+- name: parallax
+  repo: bhanuharya/parallax
+  what: >-
+    A self-hosted threat-intelligence dashboard. It ties an attack surface
+    together as a graph, looks up known vulnerabilities passively and writes
+    PDF reports linked to NVD.
+  tags: [threat intelligence, self-hosting]
+
+- name: vipyr
+  repo: bhanuharya/vipyr
+  what: >-
+    An experimental compiler for a statically checked subset of Python. Type
+    checking, LLVM IR and 32-bit RISC-V code, run under QEMU.
+  tags: [compilers, risc-v, python]
+
+- name: sts-2-launcher-mobile
+  repo: bhanuharya/sts-2-launcher-mobile
+  what: >-
+    Slay the Spire 2 on Android tablets and iOS. A fork of iunius612's launcher
+    with an Android performance build and an iOS port.
+  tags: [android, ios, godot, games]
+  posts:
+    - /blog/slay-the-spire-2-on-android-and-ios/
+    - /blog/slay-the-spire-2-android-performance/
+
+- name: keyboard-nav-config
+  repo: bhanuharya/keyboard-nav-config
+  what: >-
+    Clicking without a mouse. NeverClick settings for Windows and a matching
+    hints setup for Linux.
+  tags: [windows, linux, keyboard]

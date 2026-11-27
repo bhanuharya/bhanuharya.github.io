@@ -1,0 +1,32 @@
+---
+layout: default
+---
+{%- comment -%} /projects/: things Harya built, from _data/projects.yml, shown in the Browser. {%- endcomment -%}
+{%- assign btitle = page.title | append: ' - ' | append: site.title | append: ' - Browser' -%}
+<section class="window win-app" data-app="browser" data-title="{{ btitle | escape }}" aria-label="Browser">
+  {% include browser-top.html title=btitle url=page.url %}
+  <div class="win-body page-view sunken" tabindex="-1">
+    <div class="page-doc site">
+      {% include site-header.html here='projects' %}
+      <h1 class="visually-hidden">Projects</h1>
+      <div class="site-intro">{{ content }}</div>
+      <ul class="proj-list">
+        {% for p in site.data.projects %}
+        <li class="proj">
+          <a class="pi-title" href="https://github.com/{{ p.repo }}">{{ p.name | escape }}</a>
+          <span class="proj-repo">github.com/{{ p.repo }}</span>
+          <p class="excerpt">{{ p.what | escape }}</p>
+          <p class="pi-meta">
+            {%- for t in p.tags %}<span class="proj-tag">{{ t | escape }}</span>{% endfor -%}
+            {%- for u in p.posts %}{% assign post = site.posts | where: 'url', u | first %}{% if post %}<a href="{{ post.url | relative_url }}">Post: {{ post.title | escape }}</a>{% endif %}{% endfor -%}
+          </p>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="statusline">
+    <span class="seg grow" data-status>Done</span>
+    <span class="seg">Internet</span>
+  </div>
+</section>
