@@ -150,7 +150,7 @@
     { name: 'Security', items: [
       { label: 'Trackers', fixed: 'Disabled', help: 'Not a setting. There is no tracking code here to turn on.' },
       { label: 'Cookies', fixed: 'Disabled', help: 'This site sets no cookies at all.' },
-      { label: 'Third-Party Requests', fixed: 'Blocked', help: 'Your browser enforces a Content Security Policy: this page can only load files from bhanuharya.github.io. The Security Center shows it working.' },
+      { label: 'Third-Party Requests', fixed: 'Blocked', help: 'Your browser enforces a Content Security Policy: this page can only load files from bhanuharya.github.io. One exception, and only when you ask: a YouTube track in Media Player loads YouTube\'s player after you press Play and agree. The Security Center shows all of it.' },
       { label: 'Supervisor Password', fixed: 'Not Installed', help: 'There is no password. There never was.' },
       { label: 'Boot Sector Write', fixed: 'Protected', help: 'Nothing here can write to your disk. It is a web page.' }
     ] },
@@ -304,7 +304,7 @@
     if (w) { OS.restore(w); w.refresh(); return; }
     w = OS.makeWindow('security', 'Security Center',
       '<div class="win-body sc-body">' +
-        '<div class="sc-banner" data-sc-banner>' + svg('shield') + '<div><b data-sc-head></b><span>Counted live from your browser\'s own record of everything this page loaded.</span></div></div>' +
+        '<div class="sc-banner" data-sc-banner>' + svg('shield') + '<div><b data-sc-head></b><span data-sc-sub></span></div></div>' +
         '<fieldset class="group"><legend>Requests from this page</legend>' +
           '<table class="sc-table"><thead><tr><th>Site</th><th class="num">Requests</th><th class="num">Downloaded</th></tr></thead><tbody data-sc-req></tbody></table>' +
           '<details class="sc-all"><summary>Every request</summary><ol data-sc-all></ol></details></fieldset>' +
@@ -339,8 +339,13 @@
       });
       var others = Object.keys(by).filter(function (o) { return o !== location.origin; });
       var head = $('[data-sc-head]', el), banner = $('[data-sc-banner]', el);
+      var onlyYt = others.length && others.every(function (o) { return o === 'https://www.youtube-nocookie.com'; });
       head.textContent = others.length ? 'This page contacted ' + others.length + ' other site' + (others.length > 1 ? 's' : '') + '.' : 'This page has contacted 0 other sites.';
-      banner.classList.toggle('bad', others.length > 0);
+      $('[data-sc-sub]', el).textContent = onlyYt ?
+        'That is YouTube, because you pressed Play on a YouTube video and agreed. Its player then makes its own requests, which this page cannot see. Stop the video, or close Media Player, to unload it.' :
+        'Counted live from your browser\'s own record of everything this page loaded.';
+      banner.classList.toggle('bad', others.length > 0 && !onlyYt);
+      banner.classList.toggle('note', !!onlyYt);
       $('[data-sc-req]', el).innerHTML = Object.keys(by).sort(function (a, b) { return a === location.origin ? -1 : b === location.origin ? 1 : 0; }).map(function (o) {
         var r = by[o];
         return '<tr' + (o !== location.origin ? ' class="bad"' : '') + '><td>' + esc(o.replace(/^https?:\/\//, '')) + (o === location.origin ? ' <span class="dim">(this site)</span>' : '') + '</td><td class="num">' + r.n + '</td><td class="num">' + kb(r.b) + (r.cached ? ' <span class="dim">+' + r.cached + ' cached</span>' : '') + '</td></tr>';

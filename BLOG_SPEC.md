@@ -50,7 +50,7 @@ Script-only windows: Media Player (three original synthesized songs plus files i
 ## Constraints honored
 
 - `.github/workflows/jekyll-gh-pages.yml` untouched.
-- No external fonts, CDNs or third-party requests; no analytics, no cookies. A Content Security Policy makes the browser enforce this: `script-src 'self'` with no inline scripts, `connect-src 'self'`, `img-src 'self' data: blob:`, `object-src 'none'`.
+- No external fonts, CDNs or third-party requests; no analytics, no cookies. A Content Security Policy makes the browser enforce this: `script-src 'self'` with no inline scripts, `connect-src 'self'`, `img-src 'self' data: blob:`, `object-src 'none'`, and `frame-src 'self' https://www.youtube-nocookie.com` for Media Player's YouTube tracks, which load only after the visitor presses Play and agrees.
 - Sanitized: no secrets/IPs/hostnames in content. The Firewall game only uses documentation (RFC 5737) and private addresses.
 - The `/terminal/` view keeps its own layout and styles.
 

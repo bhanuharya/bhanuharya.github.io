@@ -1,0 +1,12 @@
+# YouTube videos in the Media Player playlist.
+#
+# Each entry needs a title and the video's 11-character id: the part after
+# "watch?v=" in youtube.com/watch?v=XXXXXXXXXXX, or after youtu.be/.
+#
+# Nothing loads from YouTube until a visitor presses Play on one of these
+# and agrees. Visitors can also paste their own links with "Open URL...".
+#
+# Example (remove the # to use it):
+#
+# - title: "Big Buck Bunny"
+#   id: "aqz-KE-bpKQ"

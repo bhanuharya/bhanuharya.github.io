@@ -4,8 +4,8 @@
 <html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-visits-endpoint="">
 <head>
   <meta charset="utf-8">
-  {%- comment -%} The browser enforces this: scripts and everything else only from this site, nothing inline but styles. {%- endcomment -%}
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  {%- comment -%} The browser enforces this: scripts and everything else only from this site, nothing inline but styles. The one exception is YouTube's no-cookie player, which Media Player loads only after a visitor presses Play on a YouTube track and agrees. {%- endcomment -%}
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self'; frame-src 'self' https://www.youtube-nocookie.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="color-scheme" content="light">
@@ -115,6 +115,7 @@
 {%- comment -%} what os-apps.js needs: posts for the calendar and Run box, songs in assets/music for the player {%- endcomment -%}
 <script type="application/json" id="os-data">
 {"posts": [{% for post in site.posts %}{% include packet-vars.html post=post %}{"t": {{ post.title | jsonify }}, "u": {{ post.url | relative_url | jsonify }}, "d": "{{ post.date | date: '%Y-%m-%d' }}", "p": {{ pk_proto | jsonify }}, "f": {{ pk_family | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
+ "yt": [{% if site.data.youtube %}{% for v in site.data.youtube %}{"t": {{ v.title | jsonify }}, "id": {{ v.id | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}],
  "songs": [{% assign first_song = true %}{% for f in site.static_files %}{% if f.path contains '/assets/music/' %}{% assign ext = f.extname | downcase %}{% if ext == '.mp3' or ext == '.ogg' or ext == '.m4a' or ext == '.wav' or ext == '.opus' or ext == '.flac' %}{% unless first_song %},{% endunless %}{% assign first_song = false %}{"t": {{ f.basename | replace: '_', ' ' | replace: '-', ' ' | jsonify }}, "u": {{ f.path | relative_url | jsonify }}}{% endif %}{% endif %}{% endfor %}]}
 </script>
 <script defer src="{{ '/assets/js/capture.js' | relative_url }}"></script>

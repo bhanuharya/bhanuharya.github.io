@@ -24,6 +24,8 @@ text: |
   Browser         where posts open.
   Terminal        the same notes, if you prefer typing.
   Media Player    a few short songs, made of notes, not files.
+                  It also plays YouTube links, but only loads
+                  YouTube after you press Play and say yes.
   Firewall        a game. Drop the packets the rules name.
   About           who writes this.
 
@@ -36,7 +38,8 @@ text: |
   what you have found. There are twelve things.
 
   Nothing here tracks you, and your browser is told to
-  refuse anything from another site. It keeps a few
+  refuse anything from another site (YouTube only when you
+  ask for a video). It keeps a few
   settings (Day or Night, sounds, Setup, terminal colours)
   and, until you close the tab, the name you logged on
   with and the event log. None of it is sent anywhere.

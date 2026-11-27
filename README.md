@@ -35,6 +35,12 @@ To add your own:
 
 Visitors can also play a file from their own computer with Open… in the player. It stays in their browser and is not uploaded.
 
+### YouTube
+
+YouTube videos play inside the player's screen. List them in `_data/youtube.yml` (a title and the 11-character video id), or paste any YouTube link with **Open URL…** in the player (that one lasts until the tab closes).
+
+Nothing loads from YouTube until a visitor presses Play on a YouTube track and agrees (they can tick "don't ask again until I close this tab"). It loads from `youtube-nocookie.com`, the only site the Content Security Policy lets the page frame. Stop, or moving to another track, removes YouTube's player again. The player's own buttons drive it through YouTube's postMessage interface, so no YouTube script runs in the page itself. Once loaded, YouTube (Google) can see the visitor's IP address and may store data in their browser; the Security Center and Event Viewer say so when it happens.
+
 ## Structure
 
 - `_posts/` — published posts
@@ -83,7 +89,7 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 ## Privacy
 
 - Everything runs in the browser; no input is sent to a server. No analytics, no cookies.
-- Every page carries a strict Content Security Policy (a `<meta>` tag in `_layouts/default.html` and `_layouts/terminal.html`): scripts, styles, images, audio and requests only from this site, no inline scripts, no plugins. The browser refuses anything else before it is sent. The Security Center (the shield in the tray) shows the policy, every request the page made, and a button that tries to load example.com so you can watch it get blocked.
+- Every page carries a strict Content Security Policy (with one opt-in exception, YouTube's no-cookie player, see above) (a `<meta>` tag in `_layouts/default.html` and `_layouts/terminal.html`): scripts, styles, images, audio and requests only from this site, no inline scripts, no plugins. The browser refuses anything else before it is sent. The Security Center (the shield in the tray) shows the policy, every request the page made, and a button that tries to load example.com so you can watch it get blocked.
 - Because of that policy, keep JavaScript in files under `assets/js/` (no `<script>` blocks with code, no `onclick=`), and keep images and other media in this repository. JSON data blocks (`<script type="application/json">`) are fine. If a post ever needs something from another site, the policy has to be loosened for it on purpose.
 - Saved in the visitor's browser: Day or Night, sounds on or off, Setup choices, the terminal's colours (localStorage), and the name typed at log on, the event log and discoveries (sessionStorage, gone when the tab closes). Security Center lists all of it and has a Forget everything button.
 - Songs opened from the visitor's own computer are played from memory and not uploaded.
