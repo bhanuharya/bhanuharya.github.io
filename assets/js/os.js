@@ -842,7 +842,8 @@
         s.classList.toggle('open', on);
         b.setAttribute('aria-expanded', String(on));
       };
-      b.addEventListener('click', function () { set(!s.classList.contains('open')); });
+      // hovering already opens it, so a click must open, not toggle it shut again
+      b.addEventListener('click', function () { set(true); });
       s.addEventListener('mouseenter', function () { if (!phone.matches) set(true); });
       s.addEventListener('mouseleave', function () { if (!phone.matches) set(false); });
       s.addEventListener('keydown', function (e) {
