@@ -1,32 +1,31 @@
 ---
 layout: default
 ---
-{%- assign qn = 0 -%}
-{%- for p in site.posts -%}{%- if p.url == page.url -%}{%- assign qn = site.posts.size | minus: forloop.index0 -%}{%- endif -%}{%- endfor -%}
 {%- include packet-vars.html post=page -%}
 {%- assign btitle = page.title | escape | append: ' - Browser' -%}
 <section class="window win-app" data-app="browser" data-title="{{ btitle }}" aria-label="Browser">
-  {% include browser-top.html title=btitle url=page.url hex=true %}
+  {% include browser-top.html title=btitle url=page.url article=true %}
   <div class="win-body page-view sunken" tabindex="-1">
-    <article class="page-doc">
-      <header class="post-head">
-        <div class="kicker">Frame {{ qn }} · {{ pk_proto }} · harya:443 → you</div>
-        <h1 class="post-title">{{ page.title | escape }}</h1>
-        <div class="post-meta">
-          <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%Y-%m-%d' }}</time>
-          <span>{{ pk_words }} words, about {{ pk_mins }} min</span>
-          {% if page.tags.size > 0 %}<span class="tags" aria-label="Tags">{% for tag in page.tags %}<a href="{{ '/' | relative_url }}?filter={{ 'tag == "' | append: tag | append: '"' | uri_escape }}" data-app="capture">{{ tag }}</a>{% endfor %}</span>{% endif %}
+    <div class="page-doc site">
+      {% include site-header.html here='post' %}
+      <article>
+        <header class="post-head">
+          <h1 class="post-title">{{ page.title | escape }}</h1>
+          <p class="post-meta">
+            <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%B %-d, %Y' }}</time>
+            <span>{{ pk_mins }} min read</span>
+            {% if page.tags.size > 0 %}<span class="tags" aria-label="Tags">{% for tag in page.tags %}<a class="tag" href="{{ '/' | relative_url }}?tag={{ tag | uri_escape }}">{{ tag }}</a>{% endfor %}</span>{% endif %}
+          </p>
+        </header>
+        <div class="post-content">
+          {{ content }}
         </div>
-      </header>
-      <div class="post-content">
-        {{ content }}
-      </div>
-      <pre class="hexview" hidden aria-label="Hex dump of this post"></pre>
-      <nav class="post-foot" aria-label="Post navigation">
-        {% if page.previous %}<a class="prev" href="{{ page.previous.url | relative_url }}"><span class="k">« older</span>{{ page.previous.title | escape }}</a>{% else %}<span></span>{% endif %}
-        {% if page.next %}<a class="next" href="{{ page.next.url | relative_url }}"><span class="k">newer »</span>{{ page.next.title | escape }}</a>{% else %}<span></span>{% endif %}
+      </article>
+      <nav class="post-foot" aria-label="More posts">
+        {% if page.previous %}<a class="prev" href="{{ page.previous.url | relative_url }}"><span class="k">Older</span>{{ page.previous.title | escape }}</a>{% else %}<span></span>{% endif %}
+        {% if page.next %}<a class="next" href="{{ page.next.url | relative_url }}"><span class="k">Newer</span>{{ page.next.title | escape }}</a>{% else %}<span></span>{% endif %}
       </nav>
-    </article>
+    </div>
   </div>
   <div class="statusline">
     <span class="seg grow" data-status>Done</span>

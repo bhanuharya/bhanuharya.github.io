@@ -34,7 +34,7 @@
   };
 
   function promptText() {
-    return USER + '@bhanuharya:' + state.cwd + '$ ';
+    return USER + '@obscura:' + state.cwd + '$ ';
   }
 
   function renderPrompt() {
@@ -352,7 +352,7 @@
   var tagline = 'security, systems, ai, thoughts.';
 
   function bannerLines() {
-    return (ART.harya || ['bhanuharya@sec']).slice().concat(['']);
+    return ['obscuraOS (tty1)', ''];
   }
 
   var notesText = [
@@ -418,20 +418,13 @@
     var lines = [
       'getting started',
       '',
-      '  1.  ls               list what is here',
-      '  2.  cat about.txt    read about me',
-      '  3.  posts            list the notes, then read 1',
-      '  4.  neofetch         this shell in a box',
-      '  5.  theme amber      try another phosphor',
-      '  6.  exit             back to the plain site',
+      '  ls           list files',
+      '  posts        list the posts on this site, then read 1',
+      '  neofetch     this system',
+      '  exit         close the terminal',
       '',
       'type help for every command. tab completes, up and down walk history.'
     ];
-    var last = DATA.posts[0];
-    if (last) {
-      lines.push('');
-      lines.push('latest note: ' + last.title + ' (' + last.date + ')  ->  read 1');
-    }
     return lines;
   }
 
@@ -464,7 +457,7 @@
 
   function longLine(e, hum) {
     var perm = e.type === 'f' ? '-rw-r--r--' : 'drwxr-xr-x';
-    return pad(perm, 12) + pad('1 harya harya', 15) +
+    return pad(perm, 12) + pad('1 root root', 15) +
            pad(hum ? human(e.size) : String(e.size), 8) + pad(e.date, 12) +
            e.name + (e.type === 'd' ? '/' : '');
   }
@@ -583,25 +576,24 @@
 
   function cmdWhoami() {
     addLine(USER);
-    if (USER !== 'harya') addLine('this computer belongs to harya, who works in security and keeps notes here.', 'dim');
   }
 
   function cmdUname() {
-    addLine('bhanuharya.github.io static-site 2026 x86_64 (jekyll, no javascript framework)');
+    addLine('obscuraOS obscura ' + (navigator.userAgentData && navigator.userAgentData.platform || navigator.platform || 'unknown') + ' (running in ' + location.host + ')');
   }
 
   function cmdNeofetch() {
     var art = (ART.monitor || []).slice();
     var info = [
-      'bhanuharya@sec',
+      USER + '@obscura',
       '---------------',
-      'site     bhanuharya.github.io',
+      'os       obscuraOS',
+      'host     ' + location.host,
       'shell    terminal.js',
-      'theme    ' + (document.documentElement.getAttribute('data-term') || 'green'),
-      'notes    ' + DATA.posts.length + ' (' + wordCount().toLocaleString() + ' words)',
-      'tags     ' + allTags().length,
-      'hosting  github pages',
-      'uptime   since 2026 :-)'
+      'cpu      ' + (navigator.hardwareConcurrency ? navigator.hardwareConcurrency + ' logical processors' : 'not reported'),
+      'memory   ' + (navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'not reported'),
+      'display  ' + screen.width + 'x' + screen.height,
+      'uptime   ' + Math.floor(performance.now() / 60000) + ' min'
     ];
     var rows = Math.max(art.length, info.length);
     for (var i = 0; i < rows; i++) {
@@ -873,8 +865,7 @@
   function boot() {
     restorePrefs();
     bannerLines().forEach(function (l) { addLine(l, 'banner'); });
-    if (!(ART.harya || []).length) { addLine('bhanuharya@sec', 'banner'); }
-    addLine('terminal.js v1.0, a small shell over a static site', 'dim');
+    addLine('Last login: ' + new Date().toString().slice(0, 24) + ' on tty1', 'dim');
     addLine('');
     welcomeLines().forEach(function (l) { addLine(l, l ? '' : 'dim'); });
     addLine('');

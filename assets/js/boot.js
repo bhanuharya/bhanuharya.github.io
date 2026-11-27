@@ -26,6 +26,9 @@
     if (v) v.setAttribute('content', v.getAttribute('content') + ', maximum-scale=1');
   }
 
+  // Packet Capture reads the browser's request records; keep plenty of them
+  try { if (performance.setResourceTimingBufferSize) performance.setResourceTimingBufferSize(3000); } catch (e) {}
+
   // everything the policy blocks, from the first moment
   window.OSBlocked = [];
   document.addEventListener('securitypolicyviolation', function (e) {

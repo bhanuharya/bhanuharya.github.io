@@ -1,7 +1,0 @@
-# Quick filter buttons above the packet list. expr uses the display filter syntax.
-- label: security
-  expr: 'family == "sec"'
-- label: ai
-  expr: 'family == "ai"'
-- label: games
-  expr: 'family == "game"'

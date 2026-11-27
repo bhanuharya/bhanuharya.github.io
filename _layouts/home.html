@@ -1,57 +1,41 @@
 ---
 layout: default
 ---
-<section class="window win-app" data-app="capture" data-title="bhanuharya.pcapng - Packet Capture" aria-labelledby="cap-title">
-  {% include titlebar.html icon="capture" title="bhanuharya.pcapng - Packet Capture" %}
-  <h1 class="visually-hidden" id="cap-title">Harya's notes: things set up, tested and broken</h1>
-
-  <div class="filterbar">
-    <form class="filter-form" id="filter-form" role="search" autocomplete="off">
-      <label for="filter"><u>F</u>ilter:</label>
-      <input class="filter-input sunken" id="filter" name="filter" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" accesskey="f"
-             placeholder='tag == "sast", len > 1500, or a word'>
-      <button class="btn small" type="button" id="expr-btn" aria-controls="filter-help" aria-expanded="false">Expression…</button>
-      <button class="btn small" type="button" data-expr="">Clear</button>
-      <button class="btn small" type="submit">Apply</button>
-    </form>
-    <div class="quick" role="group" aria-label="Quick filters">
-      {% for f in site.data.filters %}<button class="btn small" type="button" data-expr="{{ f.expr | escape }}" aria-pressed="false">{{ f.label }}</button>{% endfor %}
-    </div>
-    <p class="filter-help sunken" id="filter-help" hidden>Fields: <code>tag</code> <code>proto</code> <code>family</code> <code>frame</code> <code>year</code> <code>len</code> · ops: <code>==</code> <code>!=</code> <code>contains</code> <code>&gt;</code> <code>&lt;</code> · join with <code>&amp;&amp;</code> <code>||</code> · negate with <code>!</code> · or type any word</p>
-  </div>
-
-  <div class="win-body capture-body">
-    <div class="packet-list sunken">
-      <table class="packets" aria-label="Posts">
-        <thead>
-          <tr><th class="num" scope="col">No.</th><th class="col-time" scope="col">Time</th><th class="col-src" scope="col">Source</th><th class="col-dst" scope="col">Destination</th><th scope="col">Protocol</th><th class="num col-len" scope="col">Length</th><th scope="col">Info</th></tr>
-        </thead>
-        <tbody id="packets">
-          {% for post in site.posts %}
-          {% assign n = site.posts.size | minus: forloop.index0 %}
+{%- comment -%} The website's home page, shown in the Browser: every post, newest first. {%- endcomment -%}
+{%- assign btitle = site.title | append: ' - Browser' -%}
+<section class="window win-app" data-app="browser" data-title="{{ btitle | escape }}" aria-label="Browser">
+  {% include browser-top.html title=btitle url='/' %}
+  <div class="win-body page-view sunken" tabindex="-1">
+    <div class="page-doc site home">
+      {% include site-header.html here='home' %}
+      <h1 class="visually-hidden">Posts</h1>
+      <p class="site-intro">{{ site.description | strip | escape }}</p>
+      <div class="topic-bar" hidden role="group" aria-label="Show posts about"></div>
+      {%- assign years = site.posts | group_by_exp: 'p', "p.date | date: '%Y'" -%}
+      {% for y in years %}
+      <section class="year-group" aria-labelledby="y-{{ y.name }}">
+        <h2 class="year" id="y-{{ y.name }}">{{ y.name }}</h2>
+        <ol class="post-list">
+          {% for post in y.items %}
           {% include packet-vars.html post=post %}
-          <tr class="pk {{ pk_family }}" data-n="{{ n }}" data-proto="{{ pk_proto }}" data-family="{{ pk_family }}" data-tags="{{ post.tags | join: ' ' }}" data-date="{{ post.date | date: '%Y-%m-%d' }}" data-words="{{ pk_words }}" data-mins="{{ pk_mins }}" data-url="{{ post.url | relative_url }}" data-excerpt="{{ post.excerpt | strip_html | normalize_whitespace | truncatewords: 40 | escape }}">
-            <td class="num">{{ n }}</td>
-            <td class="col-time">{{ post.date | date: '%Y-%m-%d' }}</td>
-            <td class="col-src">harya</td>
-            <td class="col-dst">you</td>
-            <td>{{ pk_proto }}</td>
-            <td class="num col-len">{{ pk_words }}</td>
-            <td class="info"><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>{% if forloop.first %}<span class="new">new</span>{% endif %}</td>
-          </tr>
+          <li class="post-item" data-topic="{{ pk_family }}" data-tags="{{ post.tags | join: ' ' }}">
+            <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%b %-d' }}</time>
+            <div class="pi-body">
+              <a class="pi-title" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+              <p class="excerpt">{{ post.excerpt | strip_html | normalize_whitespace | truncatewords: 34 }}</p>
+              <p class="pi-meta"><span>{{ pk_mins }} min read</span>{% for tag in post.tags %} <a class="tag" href="{{ '/' | relative_url }}?tag={{ tag | uri_escape }}">{{ tag }}</a>{% endfor %}</p>
+            </div>
+          </li>
           {% endfor %}
-          <tr class="no-match" id="no-match" hidden><td colspan="7">No packets match this filter.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="panes" id="panes" hidden>
-      <div class="tree sunken" id="tree" aria-live="polite"></div>
-      <div class="hex sunken" id="hex" aria-hidden="true"></div>
+        </ol>
+      </section>
+      {% endfor %}
+      <p class="no-posts" hidden>No posts with that tag. <a href="{{ '/' | relative_url }}">Show all</a></p>
     </div>
   </div>
-
   <div class="statusline">
-    <span class="seg grow"><span class="for-mouse">Click a row for details · Enter or double-click opens it</span><span class="for-touch">Tap a row, tap again to read</span></span>
-    <span class="seg" id="pk-count">P: {{ site.posts.size }} D: {{ site.posts.size }} M: 0</span>
+    <span class="seg grow" data-status>Done</span>
+    <span class="seg meter" aria-hidden="true"><i data-meter></i></span>
+    <span class="seg">Internet</span>
   </div>
 </section>

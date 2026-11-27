@@ -15,7 +15,7 @@
   var startMenu = document.getElementById('start-menu');
   if (!desktop || !layer || !tasks) return;
 
-  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall', find: 'find', events: 'log', security: 'shield' };
+  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall', find: 'find', events: 'log', security: 'shield', system: 'computer', stream: 'capture' };
   var wins = [];
   var apps = {};
   var z = 10;
@@ -42,7 +42,7 @@
 
   function appFor(path) {
     path = path.replace(/index\.html$/, '');
-    if (path === '/') return 'capture';
+    if (path === '/') return 'browser';
     if (path === '/about/') return 'about';
     if (path === '/readme/') return 'notepad';
     if (path === '/terminal/') return 'terminal';
@@ -206,7 +206,7 @@
     tasks.appendChild(btn);
     wins.push(w);
     wire(w);
-    if (window.Capture) window.Capture.init(el, url);
+    if (window.Pages) window.Pages.init(el, url);
     if (app === 'about') tabs(el);
     if (app === 'browser') browserChrome(w);
     emit('register', w);
@@ -390,7 +390,6 @@
     var existing = find(app);
     if (existing && app !== 'browser' && !opts.reload) {
       existing.url = rel(u);
-      if (app === 'capture' && window.Capture) window.Capture.init(existing.el, existing.url);
       restore(existing);
       if (opts.push !== false && rel(u) !== rel(location)) history.pushState(null, '', rel(u));
       return;

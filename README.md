@@ -1,8 +1,8 @@
 # bhanuharya.github.io — personal site
 
-A Jekyll site on GitHub Pages that looks like an early-2000s desktop: a boot screen, a log-on box with no password, desktop icons, windows you can drag and resize, a taskbar and a Start menu. Posts open in a Browser window; the archive is a Packet Capture window. Everything is local CSS and JavaScript, with no external fonts, libraries or requests.
+A Jekyll site on GitHub Pages that runs as a small desktop operating system, **obscuraOS**: a boot screen, a log-on box with no password, windows you can drag, snap and resize, a taskbar and a Start menu. The website itself (the posts and the About page) is an ordinary web page shown in the OS's Browser window. Everything is local CSS and JavaScript, with no external fonts, libraries or requests.
 
-Every page is still a real page: without JavaScript each URL renders as the desktop with that one window open.
+Every page is still a real page: without JavaScript each URL renders as the desktop with the Browser open on it.
 
 ## Write a post
 
@@ -43,21 +43,17 @@ Nothing loads from YouTube until a visitor presses Play on a YouTube track and a
 
 ## Structure
 
-- `_posts/` — published posts
-- `_drafts/` — unpublished template (`next-article-template.md`)
-- `_layouts/` — default (the desktop: icons, taskbar, Start menu), home (Packet Capture window), post and page (Browser window), properties (`/about/` as System Properties), notepad (`/readme/`), terminal (`/terminal/`, also shown inside a window)
-- `_includes/` — `icons.svg` (all icons, one sprite), `titlebar.html`, `browser-top.html`, `packet-vars.html` (a post's protocol, colour family, word count and reading time)
-- `_data/protocols.yml` — coloring rules: which tags make a post SAST, ACL, AI, PERF, PORT…
-- `_data/filters.yml` — the quick filter buttons above the packet list
-- `assets/css/style.css` — every window and the desktop, Day and Night
-- `assets/js/os.js` — the window manager: opening pages as windows, drag, resize, minimize, taskbar, Start menu, right-click menus, Recycle Bin, sounds
-- `assets/js/os-apps.js` — boot, log on and off, shut down, Run, calendar, screen saver, Notepad editing, the Firewall game
-- `assets/js/os-player.js` — Media Player and its songs
-- `assets/js/capture.js` — display filter, packet details and hex dump, post extras
-- `assets/music/` — drop audio files here for the player
-- `index.md`, `about.md`, `readme.md`, `terminal.md` — the pages
-- `blog.md` — `/blog/` redirects to the homepage, which lists every post
-- `404.html` — "The page cannot be found" in the Browser
+- `_posts/` — published posts; `_drafts/` — unpublished template
+- `_layouts/default.html` — the OS: desktop icons, taskbar, Start menu, security policy, the JSON the scripts read
+- `_layouts/home.html`, `post.html`, `profile.html`, `page.html` — the website, each inside a Browser window; `_includes/site-header.html` is its header (name, Posts, About, RSS)
+- `about.md` — your profile (`person`, the intro text, `background`); links are in `_layouts/profile.html`
+- `_layouts/notepad.html` + `readme.md` — the OS help file; `_layouts/terminal.html` — the terminal
+- `_includes/` — `icons.svg`, `titlebar.html`, `browser-top.html`, `packet-vars.html` (topic and reading time of a post)
+- `_data/protocols.yml` — which tags put a post under Security, AI or Games on the home page
+- `_data/youtube.yml` — YouTube tracks for Media Player
+- `search.json` — full text of the posts, for Find
+- `assets/js/boot.js` (first, in `<head>`), `os.js` (window manager), `os-apps.js` (boot, log on, Run, calendar, screen saver, Notepad, Firewall), `os-extras.js` (Setup, System Properties, Security Center, Find, Event Viewer, Browser extras), `os-capture.js` (Packet Capture), `os-player.js` (Media Player), `pages.js` (the website's own behaviour)
+- `assets/css/style.css` — the OS and the website, Day and Night
 - `.github/workflows/jekyll-gh-pages.yml` — Pages deployment workflow (do not modify)
 
 ## Local build
@@ -97,6 +93,10 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 - This repository is sanitized: no secrets, credentials, IP addresses, hostnames, or network identifiers.
 
 ## Design notes
+
+- The OS doesn't talk about the site's author. Your profile lives on the About web page; the desktop, Start menu, boot screen and System Properties are about the computer.
+- Packet Capture is real: it lists every HTTP request the page makes, live, from the browser's Resource Timing records (time, address, protocol, size, status, DNS/connect/TLS/first-byte timing). Selecting a packet reads it again from the browser cache to show its real response headers and bytes; Follow Stream shows the response; Save writes a `.har` file; the display filter takes `type == script`, `status >= 400`, `host contains youtube`, `len > 10000`, `cached`, `third`, joined with `&&`, `||`, `!`.
+- System Properties and the boot screen show the device's real hardware as the browser reports it (processors, memory, display, graphics, network), live performance (frame rate, memory, elements, requests, storage) and a ping to the server.
 
 - Start > Settings (or DEL / F2 while booting, or the Setup button on touch screens) opens a text-mode BIOS Setup that changes real settings: Day/Night, wallpaper (blue, teal, packets, graph paper, hex dump, black), color depth (true color, 256, 16, green screen), CRT effect, interface font, reading text size, sounds, quick boot, screen saver delay, mouse trails. Arrow keys, Enter, F9, F10, Esc, or click/tap.
 - Find (Start > Find, Run `find word`, or press `/`) searches the full text of every post from `search.json`, which is built with the site and fetched only when someone searches. Opening a result highlights the matches in the post.

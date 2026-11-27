@@ -51,17 +51,18 @@
     b.addEventListener('click', onTap);
     document.addEventListener('keydown', onKey);
     var d = new Date();
+    var si = OS.sysinfo ? OS.sysinfo() : {};
     var lines = [
-      'obscura BIOS v' + d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '   (c) Harya',
+      'obscura BIOS v' + (OS.data.build || d.getFullYear()) + '    ' + d.toDateString(),
       '',
-      'CPU: one person, part time',
-      'Memory test: 640K OK',
+      'Processor ......... ' + (si.cpu || 'not reported'),
+      'Memory ............ ' + (si.mem || 'not reported'),
+      'Display ........... ' + (si.display || ''),
+      'Input ............. ' + (si.input || ''),
+      'Network ........... ' + (si.net || ''),
+      'Storage ........... ' + (si.storage || ''),
       '',
-      'Detecting drives...',
-      '  C: posts ................ ' + posts.length + ' found',
-      '  D: drafts ............... not telling',
-      'Checking for trackers ..... none',
-      'Checking for cookies ...... none',
+      'Boot device: ' + location.host,
       ''
     ];
     var pre = document.createElement('pre');
@@ -95,12 +96,6 @@
   }
 
   /* ---------------- log on ---------------- */
-  var JOKES = {
-    root: 'Nice try. You are guest today.',
-    admin: 'Nice try. You are guest today.',
-    administrator: 'Nice try. You are guest today.',
-    sudo: 'Not a user. Logging you on as guest.'
-  };
   function logon() {
     var b = bootScreen();
     shell(false);
@@ -108,16 +103,15 @@
     b.innerHTML =
       '<div class="logon-win raised" role="dialog" aria-modal="true" aria-labelledby="lo-t">' +
         '<header class="titlebar"><span class="tt" id="lo-t">Log On to obscuraOS</span></header>' +
-        '<div class="logon-banner">' + svg('logo') + '<span>obscura<b>OS</b><small>Notes on things set up, tested and broken</small></span></div>' +
+        '<div class="logon-banner">' + svg('logo') + '<span>obscura<b>OS</b><small>Version ' + esc(OS.data.build || '') + '</small></span></div>' +
         '<div class="logon-strip" aria-hidden="true"></div>' +
         '<form class="logon-body" autocomplete="off">' +
           '<div class="logon-users" role="radiogroup" aria-label="Users on this computer">' +
             '<button type="button" role="radio" aria-checked="true" data-u="guest">' + svg('user') + '<span>guest</span></button>' +
-            '<button type="button" role="radio" aria-checked="false" data-u="harya">' + svg('user') + '<span>harya</span></button>' +
           '</div>' +
           '<div class="logon-fields">' +
             '<label for="lo-user"><u>U</u>ser name:</label><input class="field sunken" id="lo-user" name="u" value="guest" maxlength="16" spellcheck="false" autocapitalize="off">' +
-            '<label for="lo-pass"><u>P</u>assword:</label><input class="field sunken" id="lo-pass" type="password" disabled placeholder="(none, just press OK)">' +
+            '<label for="lo-pass"><u>P</u>assword:</label><input class="field sunken" id="lo-pass" type="password" disabled placeholder="(no password)">' +
           '</div>' +
           '<p class="logon-note" aria-live="polite"></p>' +
           '<div class="logon-btns"><button class="btn" type="submit">OK</button><button class="btn" type="button" data-cancel>Cancel</button><button class="btn" type="button" data-off>Shut Down…</button></div>' +
@@ -137,7 +131,7 @@
       $$('[data-u]', b).forEach(function (t) { t.setAttribute('aria-checked', String(t.getAttribute('data-u') === v)); });
       note.textContent = '';
     });
-    $('[data-cancel]', b).addEventListener('click', function () { pick('guest'); note.textContent = 'There is nowhere else to go. guest is fine.'; input.focus(); });
+    $('[data-cancel]', b).addEventListener('click', function () { pick('guest'); note.textContent = ''; input.focus(); });
     $('[data-off]', b).addEventListener('click', function () { offScreen(); });
     // on touch screens don't pop the keyboard up for a name most people won't change
     if (OS.coarse.matches) $('.logon-btns [type="submit"]', b).focus();
@@ -146,12 +140,10 @@
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         var name = input.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 16) || 'guest';
-        var said = JOKES[name];
-        if (said) { name = 'guest'; note.textContent = said; OS.sound('error'); OS.log('warn', 'Logon', 529, 'Logon refused for "' + input.value.trim().slice(0, 16) + '". Logged on as guest instead.'); OS.emit('discover', 'root'); }
-        else if (name === 'harya') { note.textContent = 'harya has no password either. That should get fixed.'; OS.emit('discover', 'harya'); }
         setUser(name);
+        try { sessionStorage.setItem('os-logon', String(Date.now())); } catch (x) {}
         $$('button, input', form).forEach(function (x) { x.disabled = true; });
-        wait(said || name === 'harya' ? 1300 : 200).then(function () { return loggingOn(name); }).then(resolve);
+        wait(200).then(function () { return loggingOn(name); }).then(resolve);
       });
     });
   }
@@ -171,7 +163,7 @@
       $$('.dicon').forEach(function (ic, i) { ic.style.setProperty('--i', i); });
       setTimeout(function () { root.classList.remove('fresh'); }, 1600);
       OS.sound('startup');
-      OS.log('info', 'Logon', 528, name + ' logged on. No password was asked for.');
+      OS.log('info', 'Logon', 528, name + ' logged on.');
       OS.emit('login', name);
       setTimeout(function () { welcome(name); }, 900);
     });
@@ -179,18 +171,14 @@
 
   /* ---------------- balloon tips ---------------- */
   var TIPS = [
-    ['Right-click the desktop. There is more there.', 'Press and hold the desktop or an icon. There are menus.'],
-    ['Drag a desktop icon onto the Recycle Bin.', 'The button next to Start shows the desktop.'],
-    ['Click the clock to see which days have posts.', 'Tap the clock to see which days have posts.'],
-    'Start, then Run, takes commands. Try "help".',
-    'Packet Capture takes filters like: tag == "ai"',
-    'Media Player has a few songs. You can open your own, too.',
-    ['Leave the mouse alone for a while.', 'In Packet Capture, tap a row twice to read it.'],
-    'Firewall is a game. Drop the bad packets.',
-    ['Press / to search every post.', 'Start, then Find, searches every post.'],
-    ['Click the shield in the tray to see what this page sends where.', 'Tap the shield in the tray to see what this page sends where.'],
-    ['Press DEL while it boots. Or Start, then Settings.', 'Start, then Settings. It is not what you expect.'],
-    ['Drag a window to the edge of the screen.', 'Start, then Programs, then Event Viewer: a log of this visit.']
+    ['Right-click the desktop, icons and title bars for menus.', 'Press and hold the desktop, icons and title bars for menus.'],
+    ['Drag a window to the top or a side of the screen to snap it.', 'The button next to Start shows the desktop.'],
+    'Packet Capture lists every request this computer makes.',
+    ['Press / to search.', 'Start, then Find, searches the web pages here.'],
+    'The shield in the tray opens Security Center.',
+    'Settings, then System Properties, shows this device\'s hardware.',
+    ['Press DEL while booting to open Setup.', 'Start, then Settings, then Setup changes the display and sounds.'],
+    'The Browser keeps your pages in Favorites.'
   ];
   var balloonTimer = null;
   OS.balloon = function (t, x) { balloon(t, x); };
@@ -213,7 +201,7 @@
   function welcome(name) {
     var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
     if (typeof tip !== 'string') tip = tip[OS.coarse.matches ? 1 : 0];
-    balloon('Welcome, ' + name, 'The posts are in Packet Capture. ' + tip);
+    balloon('Welcome, ' + name, tip);
   }
 
   /* ---------------- shut down, restart, log off ---------------- */
@@ -275,26 +263,22 @@
   });
 
   /* ---------------- Run ---------------- */
-  var RUN_HELP = 'Things to type: capture, browser, terminal, about, readme, notepad, player, firewall, bin, calendar, screensaver, ' +
-    'shutdown, logoff, a post number (1 is the newest), a word from a post title, a filter like tag == "ai", or a web address.';
+  var RUN_HELP = 'Things to type: browser, capture, terminal, player, notepad, system, setup, events, security, find (or find some words), calendar, firewall, screensaver, shutdown, logoff, a page like /about/, or a web address.';
   function run(cmd) {
     var c = cmd.trim(), l = c.toLowerCase();
     if (!c) return true;
     OS.log('info', 'Shell', 4688, 'Run: ' + c.slice(0, 120));
-    var map = { capture: '/', posts: '/', home: '/', wireshark: '/', browser: posts[0] && posts[0].u, about: '/about/', winver: '/about/', ver: '/about/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/' };
+    var map = { home: '/', browser: '/', web: '/', posts: '/', about: '/about/', help: '/readme/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/' };
     if (map[l]) { OS.open(map[l]); return true; }
-    var appAlias = { find: 'find', search: 'find', grep: 'find', events: 'events', eventvwr: 'events', log: 'events', logs: 'events', security: 'security', wscui: 'security', csp: 'security', setup: 'setup', bios: 'setup', settings: 'setup', notepad: 'newtext', 'notepad.exe': 'newtext', edit: 'newtext', player: 'player', music: 'player', mplayer: 'player', firewall: 'firewall', game: 'firewall', bin: 'bin', trash: 'bin', calendar: 'calendar', date: 'calendar', screensaver: 'screensaver' };
+    var appAlias = { capture: 'capture', pcap: 'capture', packets: 'capture', system: 'system', winver: 'system', ver: 'system', sysinfo: 'system', find: 'find', search: 'find', grep: 'find', events: 'events', eventvwr: 'events', log: 'events', logs: 'events', security: 'security', wscui: 'security', csp: 'security', setup: 'setup', bios: 'setup', settings: 'setup', notepad: 'newtext', 'notepad.exe': 'newtext', edit: 'newtext', player: 'player', music: 'player', mplayer: 'player', firewall: 'firewall', game: 'firewall', bin: 'bin', trash: 'bin', calendar: 'calendar', date: 'calendar', screensaver: 'screensaver' };
     if (appAlias[l] && OS.apps[appAlias[l]]) { OS.apps[appAlias[l]](); return true; }
     if (l === 'shutdown') { offScreen(); return true; }
     if (l === 'logoff' || l === 'logout' || l === 'exit') { logoff(false); return true; }
-    if (l === 'help' || l === '?') { OS.msg({ title: 'Run', icon: 'help', text: RUN_HELP }); return true; }
+    if (l === '?') { OS.msg({ title: 'Run', icon: 'help', text: RUN_HELP }); return true; }
     if (l === 'whoami') { OS.msg({ title: 'whoami', icon: 'user', text: user() }); return true; }
-    if (/^sudo\b/.test(l)) { OS.emit('discover', 'sudo'); }
     if (/^(find|grep|search)\s+\S/.test(l) && OS.apps.find) { OS.apps.find(c.replace(/^\S+\s+/, '')); return true; }
     if (/^sudo\b/.test(l)) { OS.msg({ title: 'sudo', icon: 'warn', text: user() + ' is not in the sudoers file. This incident will be reported.\n\n(To the Event Viewer on this computer. Nobody else.)' }); OS.log('warn', 'Security', 4673, user() + ' asked for sudo. Refused.'); return true; }
     if (/^rm\s+-rf/.test(l) || l === 'format c:' || l === 'del *.*') { OS.msg({ title: 'Run', icon: 'warn', text: 'Let\'s not.' }); return true; }
-    if (/^\d+$/.test(l) && posts[+l - 1]) { OS.open(posts[+l - 1].u); return true; }
-    if (/==|!=|contains|matches/.test(c)) { OS.open('/?filter=' + encodeURIComponent(c)); return true; }
     if (/^(https?:\/\/|www\.)/i.test(c) || /^[a-z0-9-]+\.[a-z]{2,}(\/|$)/i.test(c)) { OS.open(/^https?:/i.test(c) ? c : 'https://' + c); return true; }
     if (c.charAt(0) === '/') { OS.open(c); return true; }
     var hit = posts.filter(function (p) { return p.t.toLowerCase().indexOf(l) !== -1 || p.u.indexOf(l.replace(/\s+/g, '-')) !== -1; });
@@ -302,11 +286,11 @@
     return false;
   }
   OS.apps.run = function () {
-    var list = ['capture', 'terminal', 'about', 'readme', 'notepad', 'player', 'firewall', 'calendar', 'screensaver', 'help'].concat(posts.map(function (p, i) { return String(i + 1); }));
+    var list = ['browser', 'capture', 'terminal', 'player', 'notepad', 'system', 'setup', 'events', 'security', 'find', 'calendar', 'firewall', 'screensaver', 'about', 'help'];
     var again = function (start) {
       OS.msg({
         title: 'Run', icon: 'run',
-        text: 'Type the name of a program, a post, or a filter, and obscuraOS will open it for you.',
+        text: 'Type the name of a program, a page or a web address, and obscuraOS will open it for you.',
         html: '<label class="run-row"><span><u>O</u>pen:</span><input class="field sunken" id="run-in" list="run-list" spellcheck="false" autocapitalize="off" value="' + esc(start || '') + '"></label>' +
           '<datalist id="run-list">' + list.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>',
         buttons: ['OK', 'Cancel'],
@@ -316,7 +300,7 @@
         var v = OS.apps.run.v;
         if (!run(v)) {
           OS.sound('error');
-          OS.msg({ title: v, icon: 'warn', text: 'Cannot find \'' + v + '\'. Make sure you typed the name correctly, then try again. Type help to see what works.' })
+          OS.msg({ title: v, icon: 'warn', text: 'Cannot find \'' + v + '\'. Make sure you typed the name correctly, then try again. Type ? to see what works.' })
             .then(function () { again(v); });
         }
       });
@@ -331,7 +315,6 @@
     if (calEl) { closeCal(); return; }
     var now = new Date(), view = new Date(now.getFullYear(), now.getMonth(), 1);
     var byDay = {};
-    posts.forEach(function (p) { (byDay[p.d] = byDay[p.d] || []).push(p); });
     calEl = document.createElement('div');
     calEl.className = 'cal raised';
     calEl.setAttribute('role', 'dialog');
@@ -356,8 +339,6 @@
       calEl.innerHTML = '<header class="titlebar"><span class="tt">Date/Time</span><span class="tbtns"><button type="button" class="tbtn" data-x aria-label="Close"><i class="g-close"></i></button></span></header>' +
         '<div class="cal-head"><button type="button" class="btn small" data-m="-1" aria-label="Previous month">◂</button><b>' + month + ' ' + y + '</b><button type="button" class="btn small" data-m="1" aria-label="Next month">▸</button></div>' +
         '<div class="cal-grid sunken">' + cells.join('') + '</div>' +
-        '<div class="cal-list">' + (inMonth.length ? '<ul>' + inMonth.map(function (p) { return '<li><span class="dim">' + p.d.slice(8) + '</span> <a href="' + esc(p.u) + '">' + esc(p.t) + '</a></li>'; }).join('') + '</ul>' :
-          '<p class="dim">No posts this month.' + (posts.length ? ' <button type="button" class="linkish" data-latest>Jump to the latest.</button>' : '') + '</p>') + '</div>' +
         '<div class="cal-foot"><span class="dim">' + now.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) + ', ' + now.toDateString() + '</span></div>';
     };
     calEl.addEventListener('click', function (e) {
@@ -461,7 +442,14 @@
     var size = function () { W = saver.width = innerWidth * dpr; H = saver.height = innerHeight * dpr; };
     size();
     var COLORS = { sec: '#c9c4ff', ai: '#b7dcff', game: '#b6f09a', misc: '#e8e8e8' };
-    var names = posts.length ? posts : [{ p: 'TCP', f: 'misc', t: 'hello' }];
+    var names = [];
+    try {
+      performance.getEntriesByType('resource').slice(-80).forEach(function (e) {
+        var u = new URL(e.name);
+        names.push({ p: (e.initiatorType || 'get').toUpperCase().slice(0, 6), f: u.origin === location.origin ? 'ai' : 'game', t: u.host + u.pathname });
+      });
+    } catch (e) {}
+    if (!names.length) names = [{ p: 'GET', f: 'misc', t: location.host + '/' }];
     var pk = [];
     var spawn = function (x) {
       var p = names[Math.floor(Math.random() * names.length)], z = 0.35 + Math.random() * 0.9;
@@ -490,7 +478,7 @@
       });
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#555'; ctx.font = (12 * dpr) + 'px "Lucida Console", monospace'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText('obscuraOS · captured ' + Math.floor((t - start) / 1000 * 7) + ' packets while you were away', 20 * dpr, H - 20 * dpr);
+      ctx.fillText('obscuraOS · ' + new Date().toLocaleTimeString('en-GB'), 20 * dpr, H - 20 * dpr);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
