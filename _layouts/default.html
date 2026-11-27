@@ -115,7 +115,7 @@
 {%- comment -%} what os-apps.js needs: posts for the calendar and Run box, songs in assets/music for the player {%- endcomment -%}
 <script type="application/json" id="os-data">
 {"posts": [{% for post in site.posts %}{% include packet-vars.html post=post %}{"t": {{ post.title | jsonify }}, "u": {{ post.url | relative_url | jsonify }}, "d": "{{ post.date | date: '%Y-%m-%d' }}", "p": {{ pk_proto | jsonify }}, "f": {{ pk_family | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
- "yt": [{% if site.data.youtube %}{% for v in site.data.youtube %}{"t": {{ v.title | jsonify }}, "id": {{ v.id | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}],
+ "yt": [{% if site.data.youtube %}{% for v in site.data.youtube %}{"t": {{ v.title | jsonify }}, "by": {{ v.by | default: "YouTube" | jsonify }}, "id": {{ v.id | jsonify }}{% if v.default %}, "d": true{% endif %}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}],
  "songs": [{% assign first_song = true %}{% for f in site.static_files %}{% if f.path contains '/assets/music/' %}{% assign ext = f.extname | downcase %}{% if ext == '.mp3' or ext == '.ogg' or ext == '.m4a' or ext == '.wav' or ext == '.opus' or ext == '.flac' %}{% unless first_song %},{% endunless %}{% assign first_song = false %}{"t": {{ f.basename | replace: '_', ' ' | replace: '-', ' ' | jsonify }}, "u": {{ f.path | relative_url | jsonify }}}{% endif %}{% endif %}{% endfor %}]}
 </script>
 <script defer src="{{ '/assets/js/capture.js' | relative_url }}"></script>

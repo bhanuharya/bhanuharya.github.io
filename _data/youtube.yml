@@ -10,3 +10,10 @@
 #
 # - title: "Big Buck Bunny"
 #   id: "aqz-KE-bpKQ"
+
+# default: true makes the player open on that track (it still asks before
+# loading YouTube).
+- title: "Yellow Magic (Tong Poo)"
+  by: "Yellow Magic Orchestra"
+  id: "K3DSwl3gMTc"
+  default: true

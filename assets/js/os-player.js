@@ -180,8 +180,13 @@
   /* ---------------- player state ---------------- */
   var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'obscuraOS', synth: s, ev: c.ev, dur: c.dur }; });
   (OS.data.songs || []).forEach(function (s) { list.push({ t: s.t, by: 'assets/music', url: s.u, dur: 0 }); });
-  (OS.data.yt || []).forEach(function (v) { if (/^[\w-]{11}$/.test(v.id || '')) list.push({ t: v.t || 'YouTube video', by: 'YouTube', yt: v.id, dur: 0 }); });
-  var cur = 0, playing = false, pos = 0, t0 = 0, idx = 0, timer = null, vol = 0.8, shuffle = false, repeat = true, mode = 0;
+  var first = 0;
+  (OS.data.yt || []).forEach(function (v) {
+    if (!/^[\w-]{11}$/.test(v.id || '')) return;
+    list.push({ t: v.t || 'YouTube video', by: v.by || 'YouTube', yt: v.id, dur: 0 });
+    if (v.d && !first) first = list.length - 1; // _data/youtube.yml: default: true
+  });
+  var cur = first, playing = false, pos = 0, t0 = 0, idx = 0, timer = null, vol = 0.8, shuffle = false, repeat = true, mode = 0;
   var win = null, ui = {};
 
   /* ---------------- YouTube, only when asked ----------------
