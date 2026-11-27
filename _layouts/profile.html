@@ -15,8 +15,14 @@ layout: default
         </div>
         {% if page.experience %}
         <h2>Experience</h2>
-        <ul class="plain">
-          {% for p in page.experience %}<li>{{ p }}</li>{% endfor %}
+        <ul class="plain exp">
+          {% for p in page.experience %}
+          {%- if p.role -%}
+          <li><span class="exp-head"><span><b>{{ p.role | escape }}</b>{% if p.org %}, {{ p.org | escape }}{% endif %}</span> <span class="exp-years">{{ p.years | escape }}</span></span>{% if p.focus %}<span class="exp-focus">{{ p.focus | escape }}</span>{% endif %}</li>
+          {%- else -%}
+          <li>{{ p }}</li>
+          {%- endif %}
+          {% endfor %}
         </ul>
         {% endif %}
         {% if page.education %}
