@@ -2,14 +2,15 @@
 (function () {
   'use strict';
 
-  var DATA = window.TERM_DATA || { posts: [], site: {} };
+  var DATA = { posts: [], site: {} };
+  try { DATA = JSON.parse(document.getElementById('term-data').textContent); } catch (e) {}
   var screen = document.getElementById('screen');
   var typedEl = document.getElementById('typed');
   var promptEl = document.getElementById('prompt');
   var crt = document.getElementById('crt');
   var catcher = document.getElementById('keycatcher');
 
-  /* inside bhanuharya OS the terminal runs in a window (an iframe):
+  /* inside obscuraOS the terminal runs in a window (an iframe):
      opening a post or logging out asks the desktop to do it */
   var EMBED = window.parent !== window;
   var USER = 'guest';

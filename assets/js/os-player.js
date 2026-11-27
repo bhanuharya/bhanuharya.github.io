@@ -1,8 +1,10 @@
-/* bhanuharya OS: Media Player.
+/* obscuraOS: Media Player.
    Three short songs are written below as notes and played by the browser's
    own synthesizer, so they need no files. Audio files placed in
    assets/music/ join the playlist on the next build, and "Open..." plays a
-   file from the visitor's computer without uploading it anywhere. */
+   file from the visitor's computer without uploading it anywhere.
+   YouTube videos listed in _data/youtube.yml (or pasted with "Open URL...")
+   play in the player's screen, loaded only after the visitor agrees. */
 (function () {
   'use strict';
   var OS = window.OS;
@@ -176,13 +178,124 @@
   }
 
   /* ---------------- player state ---------------- */
-  var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'bhanuharya OS', synth: s, ev: c.ev, dur: c.dur }; });
+  var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'obscuraOS', synth: s, ev: c.ev, dur: c.dur }; });
   (OS.data.songs || []).forEach(function (s) { list.push({ t: s.t, by: 'assets/music', url: s.u, dur: 0 }); });
-  var cur = 0, playing = false, pos = 0, t0 = 0, idx = 0, timer = null, vol = 0.8, shuffle = false, repeat = true, mode = 0;
+  var first = 0;
+  (OS.data.yt || []).forEach(function (v) {
+    if (!/^[\w-]{11}$/.test(v.id || '')) return;
+    list.push({ t: v.t || 'YouTube video', by: v.by || 'YouTube', yt: v.id, dur: 0 });
+    if (v.d && !first) first = list.length - 1; // _data/youtube.yml: default: true
+  });
+  var cur = first, playing = false, pos = 0, t0 = 0, idx = 0, timer = null, vol = 0.8, shuffle = false, repeat = true, mode = 0;
   var win = null, ui = {};
+
+  /* ---------------- YouTube, only when asked ----------------
+     A YouTube track loads YouTube's own player (from youtube-nocookie.com)
+     in the player's screen, and only after the visitor presses Play and
+     agrees. Stop, or moving to another track, removes it again. The
+     buttons here drive it through YouTube's postMessage interface, so no
+     YouTube script ever runs in this page. */
+  var YT = 'https://www.youtube-nocookie.com';
+  var yt = { frame: null, id: null, time: 0, ready: false, asking: null };
+  function ytRemembered() { try { return sessionStorage.getItem('yt-ok') === '1'; } catch (e) { return false; } }
+  function ytPost(msg) { if (yt.frame && yt.frame.contentWindow) yt.frame.contentWindow.postMessage(JSON.stringify(msg), YT); }
+  function ytCmd(func, args) { ytPost({ event: 'command', func: func, args: args || [], id: 'mp', channel: 'widget' }); }
+  function ytIdFrom(text) {
+    var s = String(text || '').trim(), m;
+    if (/^[\w-]{11}$/.test(s)) return s;
+    var u;
+    try { u = new URL(/^https?:\/\//i.test(s) ? s : 'https://' + s); } catch (e) { return null; }
+    var host = u.hostname.replace(/^(www|m|music)\./, '');
+    if (host === 'youtu.be') m = u.pathname.slice(1).split('/')[0];
+    else if (/(^|\.)youtube(-nocookie)?\.com$/.test(host)) m = u.searchParams.get('v') || (u.pathname.match(/^\/(?:embed|shorts|live|v)\/([\w-]{11})/) || [])[1];
+    return m && /^[\w-]{11}$/.test(m) ? m : null;
+  }
+  window.addEventListener('message', function (e) {
+    if (e.origin !== YT || !yt.frame || e.source !== yt.frame.contentWindow) return;
+    var d;
+    try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (x) { return; }
+    if (!d || typeof d !== 'object') return;
+    var item = list[cur];
+    if (d.event === 'onReady' || d.event === 'initialDelivery') {
+      if (!yt.ready) { yt.ready = true; ytCmd('setVolume', [Math.round(vol * 100)]); }
+    }
+    var info = d.info;
+    if (d.event === 'onStateChange' && typeof info === 'number') ytState(info);
+    if (info && typeof info === 'object') {
+      if (typeof info.currentTime === 'number') yt.time = info.currentTime;
+      if (item && item.yt === yt.id) {
+        if (typeof info.duration === 'number' && info.duration > 0 && !item.dur) { item.dur = info.duration; draw(); }
+        if (info.videoData && info.videoData.title && item.auto) { item.t = info.videoData.title; item.auto = false; draw(); }
+      }
+      if (typeof info.playerState === 'number') ytState(info.playerState);
+    }
+  });
+  function ytState(s) {
+    if (s === yt.state) return;
+    yt.state = s;
+    if (s === 1) { playing = true; setStatus('Playing from YouTube'); }
+    else if (s === 2) { playing = false; setStatus('Paused'); }
+    else if (s === 0) { playing = false; ended(); return; }
+    else if (s === 3) setStatus('Buffering...');
+    draw();
+  }
+  function ytLoad(s, at) {
+    ytUnload();
+    yt.id = s.yt;
+    var f = document.createElement('iframe');
+    f.className = 'yt-frame';
+    f.title = 'YouTube video: ' + s.t;
+    f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    f.allowFullscreen = true;
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    f.src = YT + '/embed/' + encodeURIComponent(s.yt) + '?enablejsapi=1&autoplay=1&playsinline=1&rel=0&iv_load_policy=3' +
+      (at ? '&start=' + Math.floor(at) : '') + '&origin=' + encodeURIComponent(location.origin);
+    f.addEventListener('load', function () {
+      var n = 0;
+      var hello = function () { if (yt.frame !== f || yt.ready || n++ > 12) return; ytPost({ event: 'listening', id: 'mp', channel: 'widget' }); setTimeout(hello, 400); };
+      hello();
+    });
+    yt.frame = f;
+    if (ui.video) { ui.video.innerHTML = ''; ui.video.appendChild(f); }
+    playing = true;
+    setStatus('Loading from YouTube...');
+    OS.log('warn', 'Media Player', 2, 'Loaded YouTube\'s player for "' + s.t + '" at your request. From here YouTube (Google) can see this visit.');
+    OS.emit('discover', 'music');
+    draw();
+  }
+  function ytUnload() {
+    if (yt.frame && yt.frame.parentNode) yt.frame.parentNode.removeChild(yt.frame);
+    yt = { frame: null, id: null, time: 0, ready: false, asking: null, state: -1 };
+  }
+  function ytAsk(s, at) {
+    yt.asking = s.yt;
+    playing = false;
+    if (!ui.video) return;
+    ui.video.innerHTML = '<div class="yt-ask"><p><b>This one plays from YouTube.</b></p>' +
+      '<p>Pressing Play loads YouTube\'s player (from youtube-nocookie.com). From then on YouTube, which is Google, can see your IP address and may store data in your browser. Nothing has loaded yet.</p>' +
+      '<p class="yt-btns"><button type="button" class="btn" data-yt="ok">Play from YouTube</button>' +
+      '<a class="btn" href="https://www.youtube.com/watch?v=' + encodeURIComponent(s.yt) + '" target="_blank" rel="noopener noreferrer">Open on youtube.com</a></p>' +
+      '<label class="yt-remember"><input type="checkbox" data-yt-remember> Don\'t ask again until I close this tab</label></div>';
+    $('[data-yt="ok"]', ui.video).addEventListener('click', function () {
+      var r = $('[data-yt-remember]', ui.video);
+      if (r && r.checked) { try { sessionStorage.setItem('yt-ok', '1'); } catch (e) {} }
+      ytLoad(s, at);
+    });
+    setStatus('Waiting for you');
+    draw();
+  }
+  function screenFor(s) {
+    if (!ui.video) return;
+    ui.screen.classList.toggle('video', !!s.yt);
+    if (!s.yt) return;
+    if (yt.frame && yt.id === s.yt) return;
+    if (yt.asking === s.yt) return;
+    ui.video.innerHTML = '<div class="yt-idle"><b>' + esc(s.t) + '</b><span>YouTube video. Press Play when you want it; nothing loads before that.</span></div>';
+  }
 
   function now() {
     var s = list[cur];
+    if (s.yt) return yt.id === s.yt ? yt.time : pos;
     if (!playing) return pos;
     if (s.url) return mediaEl ? mediaEl.currentTime : 0;
     return ctx.currentTime - t0;
@@ -190,7 +303,7 @@
   function fmt(x) { if (!isFinite(x) || x <= 0) return '0:00'; x = Math.floor(x); return Math.floor(x / 60) + ':' + String(x % 60).padStart(2, '0'); }
   function pump() {
     var s = list[cur];
-    if (!playing || s.url) return;
+    if (!playing || s.url || s.yt) return;
     var horizon = ctx.currentTime + 0.15;
     while (idx < s.ev.length && s.ev[idx].t + t0 < horizon) {
       var e = s.ev[idx++], when = Math.max(ctx.currentTime, e.t + t0);
@@ -201,8 +314,21 @@
     if (ctx.currentTime - t0 >= s.dur) ended();
   }
   function play(at) {
-    if (!graph()) { OS.msg({ title: 'Media Player', icon: 'warn', text: 'This browser cannot play sound here.' }); return; }
     var s = list[cur];
+    if (s.yt) {
+      clearInterval(timer); timer = null; hush();
+      if (mediaEl) mediaEl.pause();
+      pos = Math.max(0, at || 0);
+      if (yt.frame && yt.id === s.yt) {
+        if (at !== undefined && Math.abs(at - yt.time) > 1) ytCmd('seekTo', [at, true]);
+        ytCmd('playVideo');
+        playing = true;
+        draw();
+      } else if (ytRemembered()) ytLoad(s, pos);
+      else ytAsk(s, pos);
+      return;
+    }
+    if (!graph()) { OS.msg({ title: 'Media Player', icon: 'warn', text: 'This browser cannot play sound here.' }); return; }
     stopAll();
     pos = Math.max(0, at || 0);
     playing = true;
@@ -229,22 +355,33 @@
     }
     setStatus('Playing');
     draw();
+    OS.log('info', 'Media Player', 1, 'Playing ' + s.t + '.');
+    OS.emit('discover', 'music');
   }
   function stopAll() {
     clearInterval(timer); timer = null;
     hush();
     if (mediaEl) mediaEl.pause();
+    if (yt.frame || yt.asking) ytUnload();
   }
-  function pause() { pos = now(); playing = false; stopAll(); setStatus('Paused'); draw(); }
-  function stop() { playing = false; pos = 0; stopAll(); setStatus('Stopped'); draw(); }
+  function pause() {
+    var s = list[cur];
+    if (s.yt && yt.frame) { ytCmd('pauseVideo'); pos = yt.time; playing = false; setStatus('Paused'); draw(); return; }
+    pos = now(); playing = false; stopAll(); setStatus('Paused'); draw();
+  }
+  function stop() { playing = false; pos = 0; stopAll(); setStatus('Stopped'); if (win) screenFor(list[cur]); draw(); }
   function go(i, autoplay) {
     cur = (i + list.length) % list.length;
     pos = 0;
-    if (autoplay) play(0); else { stopAll(); playing = false; draw(); }
+    stopAll();
+    playing = false;
+    if (win) screenFor(list[cur]);
+    if (autoplay) play(0); else draw();
   }
   function next(auto) {
     if (shuffle && list.length > 1) { var j; do { j = Math.floor(Math.random() * list.length); } while (j === cur); go(j, true); return; }
     if (auto && !repeat && cur === list.length - 1) { stop(); return; }
+    // a YouTube track still asks first (see play) unless the visitor said not to
     go(cur + 1, true);
   }
   function ended() { next(true); }
@@ -253,7 +390,7 @@
   /* ---------------- window ---------------- */
   function rows() {
     return list.map(function (s, i) {
-      return '<li role="option" data-i="' + i + '" aria-selected="' + (i === cur) + '" tabindex="' + (i === cur ? 0 : -1) + '">' +
+      return '<li role="option" data-i="' + i + '" aria-selected="' + (i === cur) + '" tabindex="' + (i === cur ? 0 : -1) + '"' + (s.yt ? ' class="yt"' : '') + '>' +
         '<span class="n">' + (i + 1) + '.</span><span class="tt">' + esc(s.t) + '</span><span class="by">' + esc(s.by) + '</span><span class="du">' + (s.dur ? fmt(s.dur) : '--:--') + '</span></li>';
     }).join('');
   }
@@ -266,6 +403,7 @@
     ui.shuffle.setAttribute('aria-pressed', String(shuffle));
     ui.repeat.setAttribute('aria-pressed', String(repeat));
     ui.list.innerHTML = rows();
+    ui.count.textContent = list.length + ' songs';
     OS.setTitle(win, (playing ? s.t + ' - ' : '') + 'Media Player');
     tickUI();
   }
@@ -273,6 +411,7 @@
     if (!win) return;
     var s = list[cur], n = now(), d = s.dur || (s.url && mediaEl && mediaEl._u === s.url ? mediaEl.duration : 0);
     ui.time.textContent = fmt(n) + ' / ' + (d ? fmt(d) : '--:--');
+    if (ui.ytime) ui.ytime.textContent = s.yt ? fmt(n) + ' / ' + (d ? fmt(d) : '--:--') : '';
     if (!ui.seeking) ui.seek.value = d ? Math.min(1000, Math.round(n / d * 1000)) : 0;
   }
   var raf = 0;
@@ -280,6 +419,7 @@
     raf = requestAnimationFrame(paint);
     if (!win || win.el.classList.contains('minimized')) return;
     tickUI();
+    if (list[cur].yt) return;
     var c = ui.canvas, g = c.getContext('2d');
     var W = c.width = c.clientWidth * (window.devicePixelRatio || 1), H = c.height = c.clientHeight * (window.devicePixelRatio || 1);
     g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
@@ -305,34 +445,55 @@
       g.stroke();
     }
   }
+  function openUrl() {
+    OS.msg({
+      title: 'Open URL', icon: 'player',
+      text: 'Paste a YouTube link. It is added to this playlist until you close the tab, and nothing loads from YouTube until you press Play.',
+      html: '<label class="run-row"><span>URL:</span><input class="field sunken" id="mp-url" spellcheck="false" autocapitalize="off" placeholder="https://www.youtube.com/watch?v=..."></label>',
+      buttons: ['Add', 'Cancel'],
+      onDone: function (i, bg) { if (i === 0) openUrl.v = bg.querySelector('#mp-url').value; }
+    }).then(function (i) {
+      if (i !== 0 || !openUrl.v || !openUrl.v.trim()) return;
+      var id = ytIdFrom(openUrl.v);
+      if (!id) {
+        OS.sound('error');
+        OS.msg({ title: 'Open URL', icon: 'warn', text: 'That doesn\'t look like a YouTube video link.\n\nThese work: youtube.com/watch?v=..., youtu.be/..., youtube.com/shorts/...' });
+        return;
+      }
+      var at = -1;
+      list.forEach(function (s, j) { if (s.yt === id) at = j; });
+      if (at === -1) { list.push({ t: 'YouTube video ' + id, by: 'YouTube (yours)', yt: id, dur: 0, auto: true }); at = list.length - 1; }
+      go(at, true);
+    });
+  }
 
   OS.player = { playing: function () { return playing; } };
   OS.apps.player = function (from) {
     if (win) { OS.restore(win); return; }
     win = OS.makeWindow('player', 'Media Player',
       '<div class="win-body player-body">' +
-        '<div class="player-screen"><canvas aria-hidden="true" title="Click to change the view"></canvas><div class="lcd"><span data-title></span><span data-time>0:00</span></div></div>' +
+        '<div class="player-screen"><canvas aria-hidden="true" title="Click to change the view"></canvas><div class="lcd"><span data-title></span><span data-time>0:00</span></div><div class="player-video"></div></div>' +
         '<input class="slider" type="range" min="0" max="1000" value="0" aria-label="Position" data-seek>' +
         '<div class="player-ctrls">' +
           '<button type="button" class="btn tool" data-p="prev" aria-label="Previous"><i class="g-prev"></i></button>' +
           '<button type="button" class="btn tool" data-p="play" aria-label="Play"><i class="g-play"></i></button>' +
           '<button type="button" class="btn tool" data-p="stop" aria-label="Stop"><i class="g-stop"></i></button>' +
           '<button type="button" class="btn tool" data-p="next" aria-label="Next"><i class="g-next"></i></button>' +
-          '<span class="sp"></span>' +
+          '<span class="yt-time" data-ytime></span><span class="sp"></span>' +
           '<button type="button" class="btn tool" data-p="shuffle" aria-pressed="false">Shuffle</button>' +
           '<button type="button" class="btn tool" data-p="repeat" aria-pressed="true">Repeat</button>' +
           '<label class="vol">' + OS.svg('speaker') + '<input class="slider" type="range" min="0" max="100" value="' + Math.round(vol * 100) + '" aria-label="Volume" data-vol></label>' +
         '</div>' +
         '<ul class="playlist sunken" role="listbox" aria-label="Playlist"></ul>' +
-        '<div class="player-foot"><button type="button" class="btn small" data-p="open">Open…</button><input type="file" accept="audio/*" multiple hidden data-file>' +
-          '<span class="dim">Your own files play here and are not uploaded.</span></div>' +
+        '<div class="player-foot"><button type="button" class="btn small" data-p="open">Open…</button><button type="button" class="btn small" data-p="url">Open URL…</button><input type="file" accept="audio/*" multiple hidden data-file>' +
+          '<span class="dim">Your own files play here and are not uploaded. YouTube links load only when you press Play.</span></div>' +
       '</div>' +
       '<div class="statusline"><span class="seg grow" data-status>Stopped</span><span class="seg" data-count></span></div>', { from: from, noMax: true });
     var el = win.el;
     ui = { canvas: $('canvas', el), title: $('[data-title]', el), time: $('[data-time]', el), seek: $('[data-seek]', el),
       play: $('[data-p="play"]', el), shuffle: $('[data-p="shuffle"]', el), repeat: $('[data-p="repeat"]', el),
-      list: $('.playlist', el), status: $('[data-status]', el), file: $('[data-file]', el) };
-    $('[data-count]', el).textContent = list.length + ' songs';
+      list: $('.playlist', el), status: $('[data-status]', el), file: $('[data-file]', el), count: $('[data-count]', el),
+      screen: $('.player-screen', el), video: $('.player-video', el), ytime: $('[data-ytime]', el) };
     el.addEventListener('click', function (e) {
       var b = e.target.closest('[data-p]');
       if (!b) return;
@@ -344,9 +505,10 @@
       else if (p === 'shuffle') { shuffle = !shuffle; draw(); }
       else if (p === 'repeat') { repeat = !repeat; draw(); }
       else if (p === 'open') ui.file.click();
+      else if (p === 'url') openUrl();
     });
     ui.canvas.addEventListener('click', function () { mode = (mode + 1) % 2; });
-    ui.list.addEventListener('click', function (e) { var r = e.target.closest('[data-i]'); if (r) go(+r.getAttribute('data-i'), playing); });
+    ui.list.addEventListener('click', function (e) { var r = e.target.closest('[data-i]'); if (r && +r.getAttribute('data-i') !== cur) go(+r.getAttribute('data-i'), playing); });
     ui.list.addEventListener('dblclick', function (e) { var r = e.target.closest('[data-i]'); if (r) go(+r.getAttribute('data-i'), true); });
     ui.list.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); go(cur + (e.key === 'ArrowDown' ? 1 : -1), false); var r = $('[aria-selected="true"]', ui.list); if (r) r.focus(); }
@@ -357,18 +519,23 @@
       ui.seeking = false;
       var s = list[cur], d = s.dur || (mediaEl && mediaEl.duration) || 0;
       var at = +ui.seek.value / 1000 * d;
+      if (s.yt) { if (yt.frame) { ytCmd('seekTo', [at, true]); yt.time = at; } else pos = at; tickUI(); return; }
       if (playing) play(at); else { pos = at; tickUI(); }
     });
-    $('[data-vol]', el).addEventListener('input', function (e) { vol = +e.target.value / 100; if (master) master.gain.value = vol; });
+    $('[data-vol]', el).addEventListener('input', function (e) {
+      vol = +e.target.value / 100;
+      if (master) master.gain.value = vol;
+      if (yt.frame) ytCmd('setVolume', [Math.round(vol * 100)]);
+    });
     ui.file.addEventListener('change', function () {
       var first = list.length;
       Array.prototype.forEach.call(ui.file.files, function (f) {
         list.push({ t: f.name.replace(/\.[a-z0-9]+$/i, ''), by: 'your file', url: URL.createObjectURL(f), dur: 0 });
       });
       ui.file.value = '';
-      $('[data-count]', el).textContent = list.length + ' songs';
       if (list.length > first) go(first, true);
     });
+    screenFor(list[cur]);
     draw();
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(paint);
@@ -378,5 +545,6 @@
     stop();
     cancelAnimationFrame(raf);
     win = null;
+    ui = {};
   });
 })();

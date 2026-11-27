@@ -1,4 +1,4 @@
-/* bhanuharya OS: boot, log on, and the small programs.
+/* obscuraOS: boot, log on, and the small programs.
    Boot + log on run once per tab. The name you log on with stays in this
    tab (sessionStorage) and is forgotten when you close it. */
 (function () {
@@ -30,18 +30,29 @@
     if (!b) { b = document.createElement('div'); b.className = 'bootscreen'; b.id = 'bootscreen'; document.body.appendChild(b); }
     return b;
   }
+  function setting(k, d) { var s = OS.settings ? OS.settings() : {}; return k in s ? s[k] : d; }
   function boot(fast) {
     var b = bootScreen();
+    root.classList.remove('boot-pending');
     shell(false);
     b.className = 'bootscreen';
     b.innerHTML = '';
-    var skipped = false;
-    var skip = function () { skipped = true; };
-    b.addEventListener('pointerdown', skip);
-    document.addEventListener('keydown', skip, { once: true });
+    var quick = fast || setting('boot', 'full') === 'quick';
+    var skipped = false, setup = false;
+    var onKey = function (e) {
+      if (e.key === 'Delete' || e.key === 'F2') { e.preventDefault(); setup = true; }
+      skipped = true;
+    };
+    var onTap = function (e) {
+      var t = e.target.closest('[data-boot]');
+      if (t && t.getAttribute('data-boot') === 'setup') setup = true;
+      skipped = true;
+    };
+    b.addEventListener('click', onTap);
+    document.addEventListener('keydown', onKey);
     var d = new Date();
     var lines = [
-      'bhanuharya BIOS v' + d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '   (c) Harya',
+      'obscura BIOS v' + d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '   (c) Harya',
       '',
       'CPU: one person, part time',
       'Memory test: 640K OK',
@@ -55,10 +66,13 @@
     ];
     var pre = document.createElement('pre');
     pre.className = 'post-text';
-    b.innerHTML = svg('logo', 'post-logo') + '<p class="post-skip">' + (OS.coarse.matches ? 'Tap to skip' : 'Press any key to skip') + '</p>';
+    b.innerHTML = svg('logo', 'post-logo') + '<p class="post-skip">' + (OS.coarse.matches ?
+      '<button type="button" class="boot-key" data-boot="setup">Setup</button> <button type="button" class="boot-key" data-boot="skip">Skip</button>' :
+      'Press <b>DEL</b> to enter Setup, any other key to skip') + '</p>';
     b.insertBefore(pre, b.firstChild);
     var i = 0;
-    var p = fast ? Promise.resolve() : new Promise(function (done) {
+    if (quick) pre.textContent = lines.join('\n');
+    var p = quick ? wait(900) : new Promise(function (done) {
       var step = function () {
         if (skipped || i >= lines.length) { pre.textContent = lines.join('\n'); done(); return; }
         pre.textContent += (i ? '\n' : '') + lines[i++];
@@ -66,14 +80,16 @@
       };
       step();
     });
-    return p.then(function () { return skipped || fast ? null : wait(450); }).then(function () {
-      if (skipped) return;
-      b.innerHTML = '<div class="splash"><div class="mark">' + svg('logo') + '<span>bhanuharya<b>OS</b></span></div>' +
+    var enterSetup = function () { return OS.apps.setup ? OS.apps.setup({ boot: true }) : null; };
+    return p.then(function () { return skipped || quick ? null : wait(650); }).then(function () {
+      if (setup) return enterSetup();
+      if (skipped || quick) return;
+      b.innerHTML = '<div class="splash"><div class="mark">' + svg('logo') + '<span>obscura<b>OS</b></span></div>' +
         '<div class="bar"><i></i></div><small>Starting up...</small></div>';
-      return wait(1500);
+      return wait(1500).then(function () { if (setup) return enterSetup(); });
     }).then(function () {
-      b.removeEventListener('pointerdown', skip);
-      document.removeEventListener('keydown', skip);
+      b.removeEventListener('click', onTap);
+      document.removeEventListener('keydown', onKey);
       return logon();
     });
   }
@@ -91,8 +107,8 @@
     b.className = 'bootscreen logon';
     b.innerHTML =
       '<div class="logon-win raised" role="dialog" aria-modal="true" aria-labelledby="lo-t">' +
-        '<header class="titlebar"><span class="tt" id="lo-t">Log On to bhanuharya OS</span></header>' +
-        '<div class="logon-banner">' + svg('logo') + '<span>bhanuharya<b>OS</b><small>Notes on things set up, tested and broken</small></span></div>' +
+        '<header class="titlebar"><span class="tt" id="lo-t">Log On to obscuraOS</span></header>' +
+        '<div class="logon-banner">' + svg('logo') + '<span>obscura<b>OS</b><small>Notes on things set up, tested and broken</small></span></div>' +
         '<div class="logon-strip" aria-hidden="true"></div>' +
         '<form class="logon-body" autocomplete="off">' +
           '<div class="logon-users" role="radiogroup" aria-label="Users on this computer">' +
@@ -131,8 +147,8 @@
         e.preventDefault();
         var name = input.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 16) || 'guest';
         var said = JOKES[name];
-        if (said) { name = 'guest'; note.textContent = said; OS.sound('error'); }
-        else if (name === 'harya') note.textContent = 'harya has no password either. That should get fixed.';
+        if (said) { name = 'guest'; note.textContent = said; OS.sound('error'); OS.log('warn', 'Logon', 529, 'Logon refused for "' + input.value.trim().slice(0, 16) + '". Logged on as guest instead.'); OS.emit('discover', 'root'); }
+        else if (name === 'harya') { note.textContent = 'harya has no password either. That should get fixed.'; OS.emit('discover', 'harya'); }
         setUser(name);
         $$('button, input', form).forEach(function (x) { x.disabled = true; });
         wait(said || name === 'harya' ? 1300 : 200).then(function () { return loggingOn(name); }).then(resolve);
@@ -142,7 +158,7 @@
   function loggingOn(name) {
     var b = bootScreen();
     b.innerHTML = '<div class="logon-win busybox raised" role="status"><header class="titlebar"><span class="tt">Logging On</span></header>' +
-      '<div class="logon-banner">' + svg('logo') + '<span>bhanuharya<b>OS</b></span></div><div class="logon-strip"></div>' +
+      '<div class="logon-banner">' + svg('logo') + '<span>obscura<b>OS</b></span></div><div class="logon-strip"></div>' +
       '<div class="logon-body"><p class="ld">Loading your personal settings...</p><div class="bar sunken"><i></i></div></div></div>';
     return wait(650).then(function () {
       $('.ld', b).textContent = 'Applying your personal settings...';
@@ -155,6 +171,7 @@
       $$('.dicon').forEach(function (ic, i) { ic.style.setProperty('--i', i); });
       setTimeout(function () { root.classList.remove('fresh'); }, 1600);
       OS.sound('startup');
+      OS.log('info', 'Logon', 528, name + ' logged on. No password was asked for.');
       OS.emit('login', name);
       setTimeout(function () { welcome(name); }, 900);
     });
@@ -169,9 +186,14 @@
     'Packet Capture takes filters like: tag == "ai"',
     'Media Player has a few songs. You can open your own, too.',
     ['Leave the mouse alone for a while.', 'In Packet Capture, tap a row twice to read it.'],
-    'Firewall is a game. Drop the bad packets.'
+    'Firewall is a game. Drop the bad packets.',
+    ['Press / to search every post.', 'Start, then Find, searches every post.'],
+    ['Click the shield in the tray to see what this page sends where.', 'Tap the shield in the tray to see what this page sends where.'],
+    ['Press DEL while it boots. Or Start, then Settings.', 'Start, then Settings. It is not what you expect.'],
+    ['Drag a window to the edge of the screen.', 'Start, then Programs, then Event Viewer: a log of this visit.']
   ];
   var balloonTimer = null;
+  OS.balloon = function (t, x) { balloon(t, x); };
   function balloon(title, text) {
     var old = $('.balloon');
     if (old) old.remove();
@@ -196,6 +218,7 @@
 
   /* ---------------- shut down, restart, log off ---------------- */
   function offScreen() {
+    OS.log('info', 'Kernel', 13, 'The system was shut down by ' + user() + '.');
     OS.sound('shutdown');
     var s = document.createElement('div');
     s.className = 'offscreen';
@@ -218,7 +241,7 @@
   }
   function shutdownDialog() {
     OS.msg({
-      title: 'Shut Down bhanuharya OS', icon: 'power', text: 'What do you want the computer to do?',
+      title: 'Shut Down obscuraOS', icon: 'power', text: 'What do you want the computer to do?',
       html: '<div class="choices"><label><input type="radio" name="sd" value="off" checked> Shut down</label>' +
         '<label><input type="radio" name="sd" value="restart"> Restart</label>' +
         '<label><input type="radio" name="sd" value="logoff"> Log off ' + esc(user()) + '</label></div>',
@@ -235,6 +258,7 @@
   function reopenHome() { if (!OS.wins.length) OS.open('/', { push: false }); }
   function logoff(sure) {
     var go = function () {
+      OS.log('info', 'Logon', 538, user() + ' logged off.');
       OS.sound('shutdown');
       OS.closeAll();
       setUser(null);
@@ -242,7 +266,7 @@
       logon().then(reopenHome);
     };
     if (sure) { go(); return; }
-    OS.msg({ title: 'Log Off bhanuharya OS', icon: 'logoff', text: 'Are you sure you want to log off?', buttons: ['Log Off', 'Cancel'] })
+    OS.msg({ title: 'Log Off obscuraOS', icon: 'logoff', text: 'Are you sure you want to log off?', buttons: ['Log Off', 'Cancel'] })
       .then(function (i) { if (i === 0) go(); });
   }
   OS.on('action', function (a) {
@@ -256,15 +280,18 @@
   function run(cmd) {
     var c = cmd.trim(), l = c.toLowerCase();
     if (!c) return true;
+    OS.log('info', 'Shell', 4688, 'Run: ' + c.slice(0, 120));
     var map = { capture: '/', posts: '/', home: '/', wireshark: '/', browser: posts[0] && posts[0].u, about: '/about/', winver: '/about/', ver: '/about/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/' };
     if (map[l]) { OS.open(map[l]); return true; }
-    var appAlias = { notepad: 'newtext', 'notepad.exe': 'newtext', edit: 'newtext', player: 'player', music: 'player', mplayer: 'player', firewall: 'firewall', game: 'firewall', bin: 'bin', trash: 'bin', calendar: 'calendar', date: 'calendar', screensaver: 'screensaver' };
+    var appAlias = { find: 'find', search: 'find', grep: 'find', events: 'events', eventvwr: 'events', log: 'events', logs: 'events', security: 'security', wscui: 'security', csp: 'security', setup: 'setup', bios: 'setup', settings: 'setup', notepad: 'newtext', 'notepad.exe': 'newtext', edit: 'newtext', player: 'player', music: 'player', mplayer: 'player', firewall: 'firewall', game: 'firewall', bin: 'bin', trash: 'bin', calendar: 'calendar', date: 'calendar', screensaver: 'screensaver' };
     if (appAlias[l] && OS.apps[appAlias[l]]) { OS.apps[appAlias[l]](); return true; }
     if (l === 'shutdown') { offScreen(); return true; }
     if (l === 'logoff' || l === 'logout' || l === 'exit') { logoff(false); return true; }
     if (l === 'help' || l === '?') { OS.msg({ title: 'Run', icon: 'help', text: RUN_HELP }); return true; }
     if (l === 'whoami') { OS.msg({ title: 'whoami', icon: 'user', text: user() }); return true; }
-    if (/^sudo\b/.test(l)) { OS.msg({ title: 'sudo', icon: 'warn', text: user() + ' is not in the sudoers file. This incident will be reported.\n\n(It won\'t. Nothing here reports anything.)' }); return true; }
+    if (/^sudo\b/.test(l)) { OS.emit('discover', 'sudo'); }
+    if (/^(find|grep|search)\s+\S/.test(l) && OS.apps.find) { OS.apps.find(c.replace(/^\S+\s+/, '')); return true; }
+    if (/^sudo\b/.test(l)) { OS.msg({ title: 'sudo', icon: 'warn', text: user() + ' is not in the sudoers file. This incident will be reported.\n\n(To the Event Viewer on this computer. Nobody else.)' }); OS.log('warn', 'Security', 4673, user() + ' asked for sudo. Refused.'); return true; }
     if (/^rm\s+-rf/.test(l) || l === 'format c:' || l === 'del *.*') { OS.msg({ title: 'Run', icon: 'warn', text: 'Let\'s not.' }); return true; }
     if (/^\d+$/.test(l) && posts[+l - 1]) { OS.open(posts[+l - 1].u); return true; }
     if (/==|!=|contains|matches/.test(c)) { OS.open('/?filter=' + encodeURIComponent(c)); return true; }
@@ -279,7 +306,7 @@
     var again = function (start) {
       OS.msg({
         title: 'Run', icon: 'run',
-        text: 'Type the name of a program, a post, or a filter, and bhanuharya OS will open it for you.',
+        text: 'Type the name of a program, a post, or a filter, and obscuraOS will open it for you.',
         html: '<label class="run-row"><span><u>O</u>pen:</span><input class="field sunken" id="run-in" list="run-list" spellcheck="false" autocapitalize="off" value="' + esc(start || '') + '"></label>' +
           '<datalist id="run-list">' + list.map(function (x) { return '<option value="' + esc(x) + '">'; }).join('') + '</datalist>',
         buttons: ['OK', 'Cancel'],
@@ -368,7 +395,7 @@
     var save = function () {
       OS.msg({ title: 'Notepad', icon: 'warn', text: 'Saving is turned off on this computer.\n\nNothing you type here leaves this tab. Copy it somewhere if you want to keep it.' });
     };
-    var aboutNp = function () { OS.msg({ title: 'About Notepad', icon: 'notepad', text: 'Notepad for bhanuharya OS.\nIt edits text. It does not save it.' }); };
+    var aboutNp = function () { OS.msg({ title: 'About Notepad', icon: 'notepad', text: 'Notepad for obscuraOS.\nIt edits text. It does not save it.' }); };
     var MENUS = {
       File: [
         { label: 'New', act: function () { OS.apps.newtext(); } },
@@ -424,6 +451,8 @@
   var saver = null, idleTimer = null, IDLE = 120000;
   OS.apps.screensaver = function () {
     if (saver || OS.reduce.matches) return;
+    OS.log('info', 'Display', 7, 'Screen saver started.');
+    OS.emit('discover', 'saver');
     saver = document.createElement('canvas');
     saver.className = 'saver';
     saver.setAttribute('aria-hidden', 'true');
@@ -461,7 +490,7 @@
       });
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#555'; ctx.font = (12 * dpr) + 'px "Lucida Console", monospace'; ctx.textBaseline = 'alphabetic';
-      ctx.fillText('bhanuharya OS · captured ' + Math.floor((t - start) / 1000 * 7) + ' packets while you were away', 20 * dpr, H - 20 * dpr);
+      ctx.fillText('obscuraOS · captured ' + Math.floor((t - start) / 1000 * 7) + ' packets while you were away', 20 * dpr, H - 20 * dpr);
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
@@ -482,6 +511,9 @@
     clearTimeout(idleTimer);
     // not on phones (they sleep on their own), not mid-read, not while music plays
     if (OS.coarse.matches) return;
+    var mins = +setting('saver', 2);
+    if (!mins) return;
+    IDLE = mins * 60000;
     idleTimer = setTimeout(function () {
       var t = OS.top();
       if (t && (t.app === 'browser' || t.app === 'terminal' || t.app === 'untitled')) { poke(); return; }
@@ -560,6 +592,7 @@
     var lose = function (why) {
       S.lives--;
       OS.sound('error');
+      OS.log('warn', 'Firewall', 5157, why);
       lane.classList.remove('hit'); void lane.offsetWidth; lane.classList.add('hit');
       setMsg(why);
       if (S.lives <= 0) end();
@@ -569,6 +602,8 @@
       if (S.handled % 12 === 0) {
         S.level++;
         OS.sound('ding');
+        OS.log('info', 'Firewall', 5440, 'Level ' + S.level + ' reached. Score ' + S.score + '.');
+        if (S.level >= 5) OS.emit('discover', 'fw5');
         setMsg(S.level <= RULES.length ? 'Level ' + S.level + '. New rule: ' + RULES[S.level - 1].text : 'Level ' + S.level + '. Faster.');
       }
       hud();
@@ -605,6 +640,7 @@
       over.hidden = true;
       hud();
       setMsg('Rule 1 is up. Watch for TELNET.');
+      OS.log('info', 'Firewall', 5024, 'Firewall started. Rule 1: drop TELNET.');
       lane.focus();
       S.raf = requestAnimationFrame(frame);
     };
@@ -612,6 +648,7 @@
       S.run = false;
       cancelAnimationFrame(S.raf);
       best = Math.max(best, S.score);
+      OS.log('info', 'Firewall', 5025, 'Firewall stopped. Score ' + S.score + ', level ' + S.level + '.');
       over.hidden = false;
       over.innerHTML = '<p><b>Game over</b></p><p>Score ' + S.score + ' · level ' + S.level + ' · best this visit ' + best + '</p><button type="button" class="btn" data-go>Play again</button>';
       $('[data-go]', over).focus();
@@ -634,6 +671,6 @@
   /* ---------------- start ---------------- */
   OS.on('ready', function () {
     logoffLabel();
-    if (document.getElementById('bootscreen')) boot(false);
+    if (root.classList.contains('boot-pending')) boot(false);
   });
 })();

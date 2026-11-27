@@ -9,7 +9,7 @@ This document describes the current Jekyll site after the rebuild and refinement
 
 ## Layouts
 
-The site is an early-2000s desktop, "bhanuharya OS": grey 3D bevels, gradient title bars, sunken panes, a taskbar and Start menu. Apps are windows. Each URL renders the desktop with its own window open, so pages work without JavaScript; with it, links open as windows in place (fetched, then added to the desktop) and the URL follows the focused window.
+The site is an early-2000s desktop, "obscuraOS": grey 3D bevels, gradient title bars, sunken panes, a taskbar and Start menu. Apps are windows. Each URL renders the desktop with its own window open, so pages work without JavaScript; with it, links open as windows in place (fetched, then added to the desktop) and the URL follows the focused window.
 
 - `default` — the desktop: icons (Packet Capture, Browser, Terminal, readme.txt, About, Media Player, Firewall, RSS, GitHub, LinkedIn, Recycle Bin), the window layer, Start menu (programs, Posts and Programs flyouts, Run, Log Off, Shut Down), taskbar with tray (sound, Day/Night, no-trackers shield, clock). Canonical URL, Open Graph / Twitter meta, BlogPosting JSON-LD on posts, RSS link, skip link, and a JSON block with posts and songs for the scripts.
 - `home` — Packet Capture window: filter toolbar with quick filters, the packet list, a detail tree and hex dump of the selected post, status line.
@@ -20,6 +20,8 @@ The site is an early-2000s desktop, "bhanuharya OS": grey 3D bevels, gradient ti
 - `404.html` — "The page cannot be found" in the Browser.
 
 Phones (narrow, or short with a touch screen) get full-screen windows, one-row toolbars, icon-only taskbar buttons when crowded, press-and-hold menus, a show-desktop button, and tap-twice-to-read in Packet Capture. Touch screens get larger targets; safe areas and the on-screen keyboard are respected.
+
+Version 2 adds BIOS Setup (settings), Security Center (live request list, the enforced CSP and a blocked test request, stored data with Forget everything), Find (full-text search over `search.json`, highlights in the post), Event Viewer (session log and twelve discoveries), a Contents panel and text size in the Browser, window snapping, not-found suggestions, and an easter egg. All inline scripts moved to files (`assets/js/boot.js` runs first in `<head>`) so the Content Security Policy can forbid inline scripts.
 
 Script-only windows: Media Player (three original synthesized songs plus files in `assets/music/`), Firewall (a game), Recycle Bin, Untitled Notepad, Run, calendar, screen saver, boot and log-on screens.
 
@@ -48,7 +50,7 @@ Script-only windows: Media Player (three original synthesized songs plus files i
 ## Constraints honored
 
 - `.github/workflows/jekyll-gh-pages.yml` untouched.
-- No external fonts, CDNs or third-party requests; no analytics, no cookies.
+- No external fonts, CDNs or third-party requests; no analytics, no cookies. A Content Security Policy makes the browser enforce this: `script-src 'self'` with no inline scripts, `connect-src 'self'`, `img-src 'self' data: blob:`, `object-src 'none'`, and `frame-src 'self' https://www.youtube-nocookie.com` for Media Player's YouTube tracks, which load only after the visitor presses Play and agrees.
 - Sanitized: no secrets/IPs/hostnames in content. The Firewall game only uses documentation (RFC 5737) and private addresses.
 - The `/terminal/` view keeps its own layout and styles.
 
