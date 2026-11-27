@@ -517,7 +517,7 @@
     });
   }
 
-  OS.player = { playing: function () { return playing; } };
+  OS.player = { playing: function () { return playing; }, pause: function () { if (playing) pause(); } };
   // right after log on, Media Player opens on the default track. Your own
   // video starts playing (the log-on click lets the browser allow sound);
   // a YouTube one waits for Play, since it asks before loading.

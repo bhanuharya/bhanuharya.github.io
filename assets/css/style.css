@@ -870,9 +870,6 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .vx-err-body svg { width: 32px; height: 32px; }
 .vx-err-body p { margin: 0; }
 .vx-btns { display: flex; justify-content: center; margin: 4px 0 6px; }
-.vx-bug { position: fixed; left: 0; top: 0; z-index: 3100; width: 64px; pointer-events: none; text-align: center; }
-.vx-bug svg { width: 56px; height: 56px; }
-.vx-bug span { display: inline-block; padding: 1px 6px; font: bold 12px var(--ui); color: #000; background: #ffffe1; border: 1px solid #000; border-radius: 6px; }
 .vx-hint { position: fixed; left: 50%; bottom: calc(var(--tb-h) + 14px); z-index: 3200; transform: translateX(-50%); padding: 4px 12px; font: bold 13px var(--ui); color: #fff; background: #8a0000; border: 2px solid #fff; pointer-events: none; }
 .infected .desktop, .infected .taskbar { animation: vx-wobble 2.6s ease-in-out infinite, vx-colour 8s linear infinite; }
 .infected .dicon { transition: transform 0.18s ease-out; }
@@ -880,6 +877,45 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .infected-calm .desktop, .infected-calm .taskbar { animation: none; }
 @keyframes vx-wobble { 0%, 100% { transform: none; } 25% { transform: rotate(-1.2deg) skewX(1.5deg); } 75% { transform: rotate(1.2deg) skewX(-1.5deg); } }
 @keyframes vx-colour { to { filter: hue-rotate(360deg); } }
+
+.vx-comic body, .vx-comic body * { font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive !important; }
+.vx-char { position: fixed; z-index: 3050; pointer-events: none; }
+.vx-svg { display: block; width: 110px; height: 110px; overflow: visible; animation: vx-bob 0.36s ease-in-out infinite alternate; }
+.vx-svg .pupil { fill: #000; animation: vx-look 1.7s ease-in-out infinite; }
+.vx-svg .arm { transform-box: fill-box; animation: vx-wave 0.5s ease-in-out infinite alternate; }
+.vx-svg .arm-l { transform-origin: 100% 100%; }
+.vx-svg .arm-r { transform-origin: 0% 100%; animation-delay: -0.25s; }
+.vx-svg .legs { transform-box: fill-box; transform-origin: 50% 0; animation: vx-step 0.36s ease-in-out infinite alternate; }
+@keyframes vx-bob { from { transform: translateY(0) rotate(-5deg); } to { transform: translateY(-10px) rotate(5deg); } }
+@keyframes vx-look { 0%, 100% { transform: translate(0, 0); } 35% { transform: translate(-2.5px, 1px); } 70% { transform: translate(2px, -1px); } }
+@keyframes vx-wave { from { transform: rotate(-28deg); } to { transform: rotate(22deg); } }
+@keyframes vx-step { from { transform: skewX(-12deg); } to { transform: skewX(12deg); } }
+.vx-toasty { right: 26px; bottom: calc(var(--tb-h) + 14px); }
+.vx-toasty .vx-svg { width: 130px; height: 130px; }
+.vx-say { position: absolute; right: 8px; bottom: 100%; width: max-content; max-width: 250px; padding: 6px 10px; font-size: 13px; line-height: 1.4; color: #000; background: #ffffe1; border: 1px solid #000; border-radius: 9px; box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3); pointer-events: auto; }
+.vx-conga .vx-say, .vx-bug .vx-say { right: auto; left: 50%; transform: translateX(-30%); }
+.vx-ask { display: flex; gap: 6px; margin-top: 6px; }
+.vx-conga { left: -140px; bottom: calc(var(--tb-h) + 4px); animation: vx-conga 9s linear infinite; animation-delay: var(--d, 0s); }
+.vx-conga .vx-svg { width: 92px; height: 92px; }
+@keyframes vx-conga { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 300px)); } }
+.vx-bug { left: 0; top: 0; z-index: 3100; }
+.vx-bug .vx-svg { width: 58px; height: 58px; }
+.vx-bow .vx-svg { animation: vx-bow 1.1s ease-in-out 2; }
+.vx-bow.vx-conga { animation-play-state: paused; }
+@keyframes vx-bow { 50% { transform: rotate(-32deg) translateY(10px); } }
+.vx-marquee { position: fixed; left: 0; right: 0; top: 0; z-index: 3060; padding: 4px 0; overflow: hidden; white-space: nowrap; font-size: 15px; font-weight: bold; color: #ffff00; background: #000080; border-bottom: 3px solid #ff00ff; pointer-events: none; }
+.vx-marquee span { display: inline-block; padding-left: 100%; animation: vx-scroll 22s linear infinite; }
+@keyframes vx-scroll { to { transform: translateX(-100%); } }
+.vx-ad { position: fixed; z-index: 3040; width: 300px; padding: 3px; }
+.vx-ad .titlebar { color: #000; background: linear-gradient(90deg, #ff2ad0, #ffd000); }
+.vx-ad-body { padding: 14px 12px; text-align: center; background: repeating-linear-gradient(45deg, #fff6a8 0 12px, #ffe066 12px 24px); }
+.vx-ad-body p { margin: 0 0 10px; font-size: 18px; line-height: 1.3; color: #c00000; }
+.vx-ad-body b { font-size: 27px; color: #0000c0; }
+.vx-blink { animation: vx-blink 1s steps(2) infinite; }
+@keyframes vx-blink { 50% { opacity: 0.3; } }
+.vx-spark { position: fixed; z-index: 9000; font-size: 16px; font-style: normal; pointer-events: none; animation: vx-spark 0.9s ease-out forwards; }
+@keyframes vx-spark { to { transform: translateY(26px) scale(0.3) rotate(90deg); opacity: 0; } }
+.vx-melt .windows .window { transition: transform 7s ease-in, filter 7s; transform: translateY(45vh) rotate(var(--r, 4deg)) skewY(6deg); filter: blur(0.6px); }
 
 /* ===============================================================
    SYNTAX (rouge)
