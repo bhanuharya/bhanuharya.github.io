@@ -922,7 +922,8 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .vx-err-body svg { width: 32px; height: 32px; }
 .vx-err-body p { margin: 0; }
 .vx-btns { display: flex; justify-content: center; margin: 4px 0 6px; }
-.vx-hint { position: fixed; left: 50%; bottom: calc(var(--tb-h) + 14px); z-index: 3200; transform: translateX(-50%); padding: 4px 12px; font: bold 13px var(--ui); color: #fff; background: #8a0000; border: 2px solid #fff; pointer-events: none; }
+.vx-hint { position: fixed; left: 50%; bottom: calc(var(--tb-h) + 14px); z-index: 3200; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; font: bold 13px var(--ui); color: #fff; background: #8a0000; border: 2px solid #fff; white-space: nowrap; }
+.vx-hint button { padding: 1px 7px; font: bold 11px var(--ui); color: #000; background: #fff; border: 1px solid #000; cursor: pointer; }
 .vx-rumble .desktop, .vx-rumble .taskbar { animation: vx-rumble 0.357s ease-in-out infinite; }
 .infected .desktop, .infected .taskbar { animation: vx-shake 0.357s ease-in-out infinite, vx-colour 8s linear infinite; }
 .infected .dicon { transition: transform 0.18s ease-out; }
@@ -1219,7 +1220,7 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html:not(.vx-party), html:not(.vx-party) *, html:not(.vx-party) *::before, html:not(.vx-party) *::after { animation: none !important; transition: none !important; }
 }
 @media print {
   body { overflow: visible; background: #fff; color: #000; }

@@ -13,7 +13,8 @@
   var root = document.documentElement;
   var $ = function (s, el) { return (el || document).querySelector(s); };
   var $$ = function (s, el) { return Array.prototype.slice.call((el || document).querySelectorAll(s)); };
-  var esc = OS.esc, svg = OS.svg, calm = function () { return OS.reduce.matches; };
+  var calmMode = false;
+  var esc = OS.esc, svg = OS.svg, calm = function () { return calmMode; };
 
   var ERRORS = [
     'Task failed successfully.', 'Not enough memory to display this error.', 'Keyboard not found. Press F1 to continue.',
@@ -240,13 +241,13 @@
 
   function install() {
     on = true;
+    calmMode = false;
     voice = pickVoice();
     var who = 'guest';
     try { who = sessionStorage.getItem('os-user') || 'guest'; } catch (e) {}
     OS.log('warn', 'Antivirus', 1337, 'notavirus.exe was run by ' + who + '.');
     if (OS.player && OS.player.pause) OS.player.pause();
-    if (!calm()) root.classList.add('vx-rumble');
-    else root.classList.add('infected-calm');
+    root.classList.add('vx-party', 'vx-rumble');
     startMusic();
     startDanceFloor();
     var w = installWin = OS.makeWindow('virus', 'notavirus.exe', '<div class="win-body vx-install">' +
@@ -265,7 +266,7 @@
       n++;
       bar.style.width = Math.min(100, n / steps * 100) + '%';
       file.textContent = n <= FILES.length ? FILES[n - 1] : 'Done. Enjoy your new computer.';
-      if (n < steps) later(step, calm() ? 200 : 230 + Math.random() * 140);
+      if (n < steps) later(step, 230 + Math.random() * 140);
       else later(function () { installWin = null; OS.off('close', onCloseInstall); OS.close(w, true); chaos(); }, 500);
     };
     later(step, 260);
@@ -274,7 +275,7 @@
   function chaos() {
     if (!on) return;
     root.classList.remove('vx-rumble');
-    root.classList.add('infected', 'vx-comic');
+    root.classList.add('vx-party', 'infected', 'vx-comic');
     if (calm()) root.classList.add('infected-calm');
     if (!music) startMusic();
     startDanceFloor();
@@ -282,7 +283,13 @@
     if (start) { startLabel = start.textContent; start.textContent = 'Panic'; }
     var hint = document.createElement('div');
     hint.className = 'vx-hint';
-    hint.textContent = 'Press Esc to make it stop';
+    hint.innerHTML = '<span>Press Esc to stop</span><button type="button" data-vx-calm>Calm</button><button type="button" data-vx-stop>Stop</button>';
+    $('[data-vx-calm]', hint).addEventListener('click', function () {
+      calmMode = !calmMode;
+      root.classList.toggle('infected-calm', calmMode);
+      this.textContent = calmMode ? 'Shake' : 'Calm';
+    });
+    $('[data-vx-stop]', hint).addEventListener('click', function () { finish(false); });
     document.body.appendChild(hint);
     // the clock runs backwards
     var clock = $('#clock'), back = new Date();
@@ -434,6 +441,7 @@
   function stop(sadDone) {
     if (!on) return;
     on = false;
+    calmMode = false;
     timers.forEach(clearTimeout);
     timers = [];
     clearInterval(clockTimer);
@@ -442,7 +450,7 @@
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
     document.removeEventListener('pointermove', flee, true);
     document.removeEventListener('pointermove', glitter, true);
-    root.classList.remove('infected', 'infected-calm', 'vx-rumble', 'vx-comic', 'vx-melt');
+    root.classList.remove('vx-party', 'infected', 'infected-calm', 'vx-rumble', 'vx-comic', 'vx-melt');
     $$('.vx-err, .vx-ad, .vx-char, .vx-hint, .vx-marquee, .vx-spark').forEach(function (n) { n.parentNode.removeChild(n); });
     $$('.dicon').forEach(function (ic) { ic.style.transform = ''; ic._vx = null; });
     $$('.windows .window').forEach(function (w) { w.style.removeProperty('--r'); });
