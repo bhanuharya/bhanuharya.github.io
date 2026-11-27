@@ -16,12 +16,11 @@ text: |
   shows the desktop.
 
   Programs
-    Browser          the web, starting at the home page.
-                     Favorites lists the pages on this site.
-                     Source shows a page's HTML.
-    The Web (2001)   popular sites from around 2000, as the
-                     Internet Archive saved them. Any address
-                     typed into the Browser goes there too.
+    Browser          Home lists Harya's site and popular
+                     sites from around 2000, as the Internet
+                     Archive saved them. Any address typed in
+                     opens as it looked back then. Source
+                     shows a page's HTML.
     Packet Capture   every HTTP request this computer makes,
                      live: timing, headers, bytes. Save writes
                      a .har file.

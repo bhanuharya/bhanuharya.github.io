@@ -1,21 +1,22 @@
 ---
 layout: default
-title: The Web
+title: Home
 permalink: /web/
 description: Popular websites from around 2000, as the Internet Archive saved them.
 sitemap: false
 ---
 {%- comment -%} The Browser's window onto the old web. With ?u=<address>&y=<year> os-extras.js opens that address from the Internet Archive's Wayback Machine (after asking); without, this is the list. {%- endcomment -%}
-{%- assign btitle = 'The Web - Browser' -%}
+{%- assign btitle = 'Home - Browser' -%}
 <section class="window win-app" data-app="browser" data-title="{{ btitle }}" aria-label="Browser">
   {% include browser-top.html title=btitle url='/web/' %}
   <div class="win-body page-view sunken wb-view" tabindex="-1">
     <div class="page-doc site wb-portal">
       <header class="wb-head">
         <h1>The Web</h1>
-        <p>Popular websites from around 2000, as the <a href="https://web.archive.org/" data-ext>Internet Archive</a> saved them. They open here, and their links still work wherever the archive kept a copy. Plug-ins like Flash are gone, so anything that needed one stays blank.</p>
+        <p>Harya's site, and popular websites from around 2000 as the <a href="https://web.archive.org/" data-ext>Internet Archive</a> saved them. They open here, and their links still work wherever the archive kept a copy. Plug-ins like Flash are gone, so anything that needed one stays blank.</p>
       </header>
       <ul class="wb-list">
+        <li class="wb-home"><a href="{{ '/' | relative_url }}"><b>Harya</b><span class="wb-y">today</span></a><span class="dim">{{ site.description | strip | escape }}</span></li>
         {% for s in site.data.oldweb %}<li><a href="{{ '/web/' | relative_url }}?u={{ s.url | uri_escape }}&amp;y={{ s.year }}"><b>{{ s.name | escape }}</b><span class="wb-y">{{ s.year }}</span></a><span class="dim">{{ s.note | escape }}</span></li>
         {% endfor %}
       </ul>

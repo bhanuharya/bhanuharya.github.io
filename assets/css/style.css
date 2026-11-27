@@ -921,6 +921,7 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .wb-portal .wb-head h1 { margin-bottom: 8px; }
 .wb-portal .wb-head p { margin: 0 0 16px; font: 14px/1.6 var(--read); }
 .wb-list { list-style: none; margin: 0 0 16px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px 14px; }
+.wb-list .wb-home { border-color: var(--sel); box-shadow: inset 3px 0 0 var(--sel); }
 .wb-list li { display: grid; gap: 1px; padding: 8px 10px; border: 1px solid var(--light); background: var(--window); }
 .wb-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font: bold 16px Georgia, "Times New Roman", serif; text-decoration: none; }
 .wb-list a:hover b { text-decoration: underline; }
