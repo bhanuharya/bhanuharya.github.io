@@ -3,48 +3,43 @@ layout: notepad
 title: readme.txt
 file: readme.txt
 permalink: /readme/
-description: How to use this site.
+description: How to use obscuraOS.
 text: |
   readme.txt
+  obscuraOS
 
-  This site is a pretend computer. There is no password;
-  log on as anyone.
+  Double-click an icon to open it; on a touch screen, tap.
+  Right-click (or press and hold) the desktop, icons, title
+  bars and taskbar buttons for menus. Drag a window by its
+  title bar. Drag it to the top edge to maximize it, or to a
+  side to fill half the screen. The button next to Start
+  shows the desktop.
 
-  Double-click an icon to open it. Windows can be dragged,
-  resized, minimized, maximized and closed. Right-click
-  things. Some of them have menus.
+  Programs
+    Browser          the web, starting at the home page.
+                     Favorites lists the pages on this site.
+                     Source shows a page's HTML.
+    Packet Capture   every HTTP request this computer makes,
+                     live: timing, headers, bytes. Save writes
+                     a .har file.
+    Terminal         a shell. Type help.
+    Media Player     music, and YouTube on request.
+    Notepad          text. It can't save.
+    Event Viewer     what happened since you logged on.
+    Security Center  what this computer sends where.
+    Firewall         a game.
 
-  On a phone: tap to open, press and hold for menus. The
-  button next to Start shows the desktop.
+  Settings > System Properties shows this device's hardware.
+  Settings > Setup changes the display, sounds and boot.
 
-  Packet Capture  every post, newest first. Click a row to
-                  look inside, double-click to read it
-                  (on a phone, tap it twice).
-                  The filter takes things like: tag == "sast"
-  Browser         where posts open.
-  Terminal        the same notes, if you prefer typing.
-  Media Player    a few short songs, made of notes, not files.
-                  It also plays YouTube links, but only loads
-                  YouTube after you press Play and say yes.
-  Firewall        a game. Drop the packets the rules name.
-  About           who writes this.
+  Keys
+    /           Find
+    Esc         close menus
+    DEL or F2   Setup, while booting
 
-  Start > Run takes commands. Type help there.
-  Start > Find (or press /) searches every post.
-  Start > Settings is a BIOS. So is DEL while it boots.
-  The clock opens a calendar of posts.
-  The shield in the tray shows what this page sends where.
-  Event Viewer keeps a log of this visit, and counts
-  what you have found. There are twelve things.
-
-  Nothing here tracks you, and your browser is told to
-  refuse anything from another site (YouTube only when you
-  ask for a video). It keeps a few
-  settings (Day or Night, sounds, Setup, terminal colours)
-  and, until you close the tab, the name you logged on
-  with and the event log. None of it is sent anywhere.
-
-  This file can be edited. It can't be saved.
-
-  - Harya
+  Privacy
+    Nothing is tracked. Your browser is told to refuse files
+    from other sites; YouTube loads only after you press Play
+    on a video and agree. Settings stay in this browser. The
+    log-on name and the event log go when you close the tab.
 ---

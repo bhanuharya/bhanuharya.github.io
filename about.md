@@ -1,6 +1,7 @@
 ---
-layout: properties
+layout: profile
 title: About
+person: Harya (Wishnu)
 permalink: /about/
 description: About Harya, who writes this site.
 background:
@@ -8,4 +9,4 @@ background:
   - Since then I've worked on security at banks and other finance companies.
 ---
 
-Harya (Wishnu). I write things down here after I set something up and see where it breaks: code scanners, models running on my own graphics card, an agent I want to be able to stop, a game I wanted on my tablet.
+I write things down here after I set something up and see where it breaks: code scanners, models running on my own graphics card, an agent I want to be able to stop, a game I wanted on my tablet.

@@ -45,16 +45,12 @@
 
 <div class="desktop" id="desktop">
   <nav class="icons" aria-label="Desktop">
-    <a class="dicon" href="{{ '/' | relative_url }}" data-app="capture"><svg aria-hidden="true"><use href="#i-capture"/></svg><span>Packet Capture</span></a>
-    {% if latest %}<a class="dicon" href="{{ latest.url | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-browser"/></svg><span>Browser</span></a>{% endif %}
+    <button class="dicon" type="button" data-app="system" hidden><svg aria-hidden="true"><use href="#i-computer"/></svg><span>Computer</span></button>
+    <a class="dicon" href="{{ '/' | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-browser"/></svg><span>Browser</span></a>
+    <button class="dicon" type="button" data-app="capture" hidden><svg aria-hidden="true"><use href="#i-capture"/></svg><span>Packet Capture</span></button>
     <a class="dicon" href="{{ '/terminal/' | relative_url }}" data-app="terminal"><svg aria-hidden="true"><use href="#i-terminal"/></svg><span>Terminal</span></a>
-    <a class="dicon" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-notepad"/></svg><span>readme.txt</span></a>
-    <a class="dicon" href="{{ '/about/' | relative_url }}" data-app="about"><svg aria-hidden="true"><use href="#i-computer"/></svg><span>About</span></a>
     <button class="dicon" type="button" data-app="player" hidden><svg aria-hidden="true"><use href="#i-player"/></svg><span>Media Player</span></button>
-    <button class="dicon" type="button" data-app="firewall" hidden><svg aria-hidden="true"><use href="#i-firewall"/></svg><span>Firewall</span></button>
-    <a class="dicon" href="{{ '/feed.xml' | relative_url }}" data-ext><svg aria-hidden="true"><use href="#i-rss"/></svg><span>RSS feed</span></a>
-    <a class="dicon" href="https://github.com/bhanuharya" rel="me" data-ext><svg aria-hidden="true"><use href="#i-browser"/></svg><svg class="ov" aria-hidden="true"><use href="#i-arrow"/></svg><span>GitHub</span></a>
-    <a class="dicon" href="https://www.linkedin.com/in/wishnumurti" rel="me" data-ext><svg aria-hidden="true"><use href="#i-browser"/></svg><svg class="ov" aria-hidden="true"><use href="#i-arrow"/></svg><span>LinkedIn</span></a>
+    <a class="dicon" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-notepad"/></svg><span>readme.txt</span></a>
     <button class="dicon" type="button" data-app="bin" hidden><svg aria-hidden="true"><use href="#i-bin"/></svg><span>Recycle Bin</span></button>
   </nav>
 
@@ -66,33 +62,31 @@
 <div class="start-menu" id="start-menu" hidden>
   <div class="sm-banner" aria-hidden="true"><span>obscura<b>OS</b></span></div>
   <ul class="sm-items" role="menu" aria-label="Start">
-    <li role="none"><a role="menuitem" href="{{ '/' | relative_url }}" data-app="capture"><svg aria-hidden="true"><use href="#i-capture"/></svg>Packet Capture</a></li>
-    {% if latest %}<li role="none"><a role="menuitem" href="{{ latest.url | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-browser"/></svg>Browser</a></li>{% endif %}
+    <li role="none"><a role="menuitem" href="{{ '/' | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-browser"/></svg>Browser</a></li>
+    <li role="none" hidden><button role="menuitem" type="button" data-act="capture"><svg aria-hidden="true"><use href="#i-capture"/></svg>Packet Capture</button></li>
     <li role="none"><a role="menuitem" href="{{ '/terminal/' | relative_url }}" data-app="terminal"><svg aria-hidden="true"><use href="#i-terminal"/></svg>Terminal</a></li>
-    <li role="none" class="sm-sub">
-      <button role="menuitem" type="button" aria-haspopup="true" aria-expanded="false"><svg aria-hidden="true"><use href="#i-post"/></svg>Posts<span class="arrow" aria-hidden="true">▸</span></button>
-      <ul class="sm-fly" role="menu" aria-label="Posts">
-        {% for post in site.posts %}<li role="none"><a role="menuitem" href="{{ post.url | relative_url }}" data-app="browser"><svg aria-hidden="true"><use href="#i-post"/></svg>{{ post.title | escape }}</a></li>{% endfor %}
-      </ul>
-    </li>
+    <li role="none" hidden><button role="menuitem" type="button" data-act="player"><svg aria-hidden="true"><use href="#i-player"/></svg>Media Player</button></li>
+    <li role="separator" class="sep"></li>
     <li role="none" class="sm-sub" hidden>
       <button role="menuitem" type="button" aria-haspopup="true" aria-expanded="false"><svg aria-hidden="true"><use href="#i-run"/></svg>Programs<span class="arrow" aria-hidden="true">▸</span></button>
       <ul class="sm-fly" role="menu" aria-label="Programs">
-        <li role="none"><button role="menuitem" type="button" data-act="player"><svg aria-hidden="true"><use href="#i-player"/></svg>Media Player</button></li>
-        <li role="none"><button role="menuitem" type="button" data-act="firewall"><svg aria-hidden="true"><use href="#i-firewall"/></svg>Firewall (a game)</button></li>
         <li role="none"><button role="menuitem" type="button" data-act="newtext"><svg aria-hidden="true"><use href="#i-notepad"/></svg>Notepad</button></li>
-        <li role="none"><button role="menuitem" type="button" data-act="security"><svg aria-hidden="true"><use href="#i-shield"/></svg>Security Center</button></li>
         <li role="none"><button role="menuitem" type="button" data-act="events"><svg aria-hidden="true"><use href="#i-log"/></svg>Event Viewer</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="security"><svg aria-hidden="true"><use href="#i-shield"/></svg>Security Center</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="firewall"><svg aria-hidden="true"><use href="#i-firewall"/></svg>Firewall (game)</button></li>
         <li role="none"><button role="menuitem" type="button" data-act="screensaver"><svg aria-hidden="true"><use href="#i-capture"/></svg>Screen saver</button></li>
       </ul>
     </li>
+    <li role="none" class="sm-sub" hidden>
+      <button role="menuitem" type="button" aria-haspopup="true" aria-expanded="false"><svg aria-hidden="true"><use href="#i-setup"/></svg>Settings<span class="arrow" aria-hidden="true">▸</span></button>
+      <ul class="sm-fly" role="menu" aria-label="Settings">
+        <li role="none"><button role="menuitem" type="button" data-act="system"><svg aria-hidden="true"><use href="#i-computer"/></svg>System Properties</button></li>
+        <li role="none"><button role="menuitem" type="button" data-act="setup"><svg aria-hidden="true"><use href="#i-setup"/></svg>Setup…</button></li>
+      </ul>
+    </li>
     <li role="none" hidden><button role="menuitem" type="button" data-act="find"><svg aria-hidden="true"><use href="#i-find"/></svg>Find…<span class="key" aria-hidden="true">/</span></button></li>
-    <li role="none" hidden><button role="menuitem" type="button" data-act="setup"><svg aria-hidden="true"><use href="#i-setup"/></svg>Settings…</button></li>
-    <li role="none"><a role="menuitem" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-notepad"/></svg>readme.txt</a></li>
-    <li role="none"><a role="menuitem" href="{{ '/about/' | relative_url }}" data-app="about"><svg aria-hidden="true"><use href="#i-computer"/></svg>About</a></li>
-    <li role="separator" class="sep"></li>
+    <li role="none"><a role="menuitem" href="{{ '/readme/' | relative_url }}" data-app="notepad"><svg aria-hidden="true"><use href="#i-help"/></svg>Help</a></li>
     <li role="none" hidden><button role="menuitem" type="button" data-act="run"><svg aria-hidden="true"><use href="#i-run"/></svg>Run…</button></li>
-    <li role="none"><a role="menuitem" href="{{ '/feed.xml' | relative_url }}" data-ext><svg aria-hidden="true"><use href="#i-rss"/></svg>RSS feed</a></li>
     <li role="separator" class="sep"></li>
     <li role="none" hidden><button role="menuitem" type="button" data-act="logoff"><svg aria-hidden="true"><use href="#i-logoff"/></svg><span>Log Off…</span></button></li>
     <li role="none"><button role="menuitem" type="button" data-act="shutdown"><svg aria-hidden="true"><use href="#i-power"/></svg>Shut Down…</button></li>
@@ -114,15 +108,17 @@
 
 {%- comment -%} what os-apps.js needs: posts for the calendar and Run box, songs in assets/music for the player {%- endcomment -%}
 <script type="application/json" id="os-data">
-{"posts": [{% for post in site.posts %}{% include packet-vars.html post=post %}{"t": {{ post.title | jsonify }}, "u": {{ post.url | relative_url | jsonify }}, "d": "{{ post.date | date: '%Y-%m-%d' }}", "p": {{ pk_proto | jsonify }}, "f": {{ pk_family | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
+{"build": "{{ site.time | date: '%Y.%m' }}", "posts": [{% for post in site.posts %}{% include packet-vars.html post=post %}{"t": {{ post.title | jsonify }}, "u": {{ post.url | relative_url | jsonify }}, "d": "{{ post.date | date: '%Y-%m-%d' }}", "p": {{ pk_proto | jsonify }}, "f": {{ pk_family | jsonify }}}{% unless forloop.last %},{% endunless %}{% endfor %}],
  "yt": [{% if site.data.youtube %}{% for v in site.data.youtube %}{"t": {{ v.title | jsonify }}, "by": {{ v.by | default: "YouTube" | jsonify }}, "id": {{ v.id | jsonify }}{% if v.default %}, "d": true{% endif %}}{% unless forloop.last %},{% endunless %}{% endfor %}{% endif %}],
+ "videos": [{% assign first_video = true %}{% for f in site.static_files %}{% if f.path contains '/assets/video/' %}{% assign ext = f.extname | downcase %}{% if ext == '.mp4' or ext == '.webm' or ext == '.m4v' %}{% assign meta = site.data.videos | where: 'file', f.name | first %}{% unless first_video %},{% endunless %}{% assign first_video = false %}{"t": {% if meta.title %}{{ meta.title | jsonify }}{% else %}{{ f.basename | replace: '_', ' ' | replace: '-', ' ' | jsonify }}{% endif %}, "by": {{ meta.by | default: 'assets/video' | jsonify }}, "u": {{ f.path | relative_url | jsonify }}{% if meta.default %}, "d": true{% endif %}}{% endif %}{% endif %}{% endfor %}],
  "songs": [{% assign first_song = true %}{% for f in site.static_files %}{% if f.path contains '/assets/music/' %}{% assign ext = f.extname | downcase %}{% if ext == '.mp3' or ext == '.ogg' or ext == '.m4a' or ext == '.wav' or ext == '.opus' or ext == '.flac' %}{% unless first_song %},{% endunless %}{% assign first_song = false %}{"t": {{ f.basename | replace: '_', ' ' | replace: '-', ' ' | jsonify }}, "u": {{ f.path | relative_url | jsonify }}}{% endif %}{% endif %}{% endfor %}]}
 </script>
-<script defer src="{{ '/assets/js/capture.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/pages.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/os.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/os-apps.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/os-player.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/os-extras.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/os-capture.js' | relative_url }}"></script>
 <script defer src="{{ '/assets/js/visits.js' | relative_url }}"></script>
 </body>
 </html>

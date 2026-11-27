@@ -763,6 +763,75 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .nf-guess { font-size: 15px; }
 
 /* ===============================================================
+   THE WEBSITE (inside the Browser)
+   =============================================================== */
+.page-doc.site { max-width: 760px; margin: 0 auto; padding: 18px clamp(14px, 4vw, 40px) 36px; }
+.site-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; padding: 2px 0 12px; margin-bottom: 24px; border-bottom: 2px solid var(--text); }
+.site-name, .site-name:visited { font-family: Georgia, "Times New Roman", serif; font-size: 26px; font-weight: bold; letter-spacing: -0.3px; color: var(--text); text-decoration: none; }
+.site-nav { display: flex; gap: 18px; font-family: var(--read); font-size: 14px; }
+.site-nav a[aria-current="page"] { color: var(--text); font-weight: bold; text-decoration: none; }
+.site-intro { margin: 0 0 18px; font-family: Georgia, "Times New Roman", serif; font-size: 18px; line-height: 1.5; color: var(--dim); }
+.topic-bar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.chip { padding: 3px 11px; font: 13px var(--read); color: var(--text); background: var(--window); border: 1px solid var(--shadow); border-radius: 12px; cursor: pointer; }
+.chip span { color: var(--dim); }
+.chip[aria-pressed="true"] { color: var(--window); background: var(--text); border-color: var(--text); }
+.chip[aria-pressed="true"] span { color: inherit; }
+.year { margin: 26px 0 0; padding-bottom: 5px; font: bold 13px var(--read); letter-spacing: 1px; color: var(--dim); border-bottom: 1px solid var(--light); }
+.post-list { list-style: none; margin: 0; padding: 0; }
+.post-item { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--light); }
+.post-item time { padding-top: 4px; font: 13px var(--read); color: var(--dim); white-space: nowrap; }
+.pi-title, .pi-title:visited { font-family: Georgia, "Times New Roman", serif; font-size: 19px; font-weight: bold; line-height: 1.3; text-decoration: none; }
+.pi-title:hover { text-decoration: underline; }
+.excerpt { margin: 6px 0; font: 14px/1.6 var(--read); color: var(--text); }
+.pi-meta { display: flex; flex-wrap: wrap; gap: 3px 12px; margin: 0; font: 12px var(--read); color: var(--dim); }
+.tag, .tag:visited { color: var(--dim); }
+.tag::before { content: "#"; }
+.no-posts { margin: 18px 0; color: var(--dim); }
+.site .post-head { border-bottom: 0; box-shadow: none; margin-bottom: 20px; padding-bottom: 0; }
+.site .post-title, .site h1 { margin: 0 0 10px; font-family: Georgia, "Times New Roman", serif; font-size: 30px; line-height: 1.2; }
+.site .post-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; font: 13px var(--read); color: var(--dim); }
+.site .post-content h2 { font-family: Georgia, "Times New Roman", serif; font-size: 22px; }
+.site .post-foot { margin-top: 34px; }
+.profile h2 { margin: 28px 0 8px; font: bold 15px var(--read); }
+.plain { list-style: none; margin: 0; padding: 0; font: 15px/1.6 var(--read); }
+.plain li { padding: 4px 0; }
+.plain .dim { font-size: 13px; }
+
+/* ===============================================================
+   PACKET CAPTURE (real), FOLLOW STREAM, SYSTEM PROPERTIES
+   =============================================================== */
+.cap-bar .btn i { display: inline-block; vertical-align: middle; }
+.g-rec { width: 9px; height: 9px; border-radius: 50%; background: #c00000; }
+.cap-bar .btn:disabled { color: var(--shadow); text-shadow: 1px 1px var(--hilite); cursor: default; }
+.cap-bar .btn:disabled .g-rec, .cap-bar .btn:disabled .g-stop { background: var(--shadow); }
+.cap-err { flex-basis: 100%; font-size: 12px; color: var(--new); }
+.cap-err:empty { display: none; }
+.cap-table tr.r-doc { background: var(--game); }
+.cap-table tr.r-code { background: var(--sec); }
+.cap-table tr.r-media { background: var(--ai); }
+.cap-table tr.r-third { background: var(--empty); }
+.cap-table tr.r-err, .cap-table tr.r-err td { background: #000; color: #ff7070; }
+.cap-table td.info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; }
+.cap-led { width: 24px; flex: none; }
+.cap-led::before { content: ""; display: block; width: 10px; height: 10px; margin: 4px auto 0; border-radius: 50%; background: var(--shadow); }
+.cap-led.on::before { background: #2fbf4a; box-shadow: 0 0 4px #2fbf4a; animation: blink 1.2s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.35; } }
+.tree .hdrs .kv { word-break: break-all; }
+.win-app[data-app="stream"] { left: max(124px, calc(50% - 330px)); top: 60px; width: min(660px, calc(100% - 144px)); height: min(480px, calc(100% - 80px)); }
+.stream-body { background: var(--window); }
+.stream { margin: 0; padding: 8px 10px; font: 12.5px/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: none; box-shadow: none; }
+.stream .req { color: #a00000; }
+.stream .res { color: #0000a8; }
+:root[data-theme="dark"] .stream .req { color: #ff8a8a; }
+:root[data-theme="dark"] .stream .res { color: #8ab4ff; }
+.stat-table { margin-top: 8px; font-size: 12px; }
+.stat-types { margin: 8px 0 0; font-size: 12px; }
+.win-app[data-app="system"] { left: max(104px, calc(50% - 260px)); top: 36px; width: min(520px, calc(100% - 20px)); height: auto; max-height: calc(100% - 50px); }
+.sysprops .tab-panel dl { margin-top: 4px; }
+.sysprops .ping { margin: 6px 0 0; padding: 6px 8px; font-size: 12px; white-space: pre-wrap; }
+.small { font-size: 12px; }
+
+/* ===============================================================
    SYNTAX (rouge)
    =============================================================== */
 .highlight .c, .highlight .c1, .highlight .cm, .highlight .cs { color: #008000; }
@@ -791,6 +860,11 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
   .hex { display: none; }
   .page-doc { padding: 16px 14px 22px; }
   .post-content { font-size: calc(16px * var(--rs, 1)); line-height: 1.7; }
+  .post-item { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .cap-filter label { display: none; }
+  .cap-filter .filter-input { order: -1; flex: 1 1 100%; }
+  .site .post-title, .site h1 { font-size: 25px; }
+  .site-name { font-size: 22px; }
   .browser-bar .lbl { display: none; }
   .toc { position: absolute; inset: 0; z-index: 3; width: auto; flex: none; font-size: 14px; }
   .toc a { padding: 9px 12px; }

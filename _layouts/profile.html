@@ -1,0 +1,40 @@
+---
+layout: default
+---
+{%- comment -%} /about/: the profile page of the website, shown in the Browser. {%- endcomment -%}
+{%- assign btitle = page.title | append: ' - ' | append: site.title | append: ' - Browser' -%}
+<section class="window win-app" data-app="browser" data-title="{{ btitle | escape }}" aria-label="Browser">
+  {% include browser-top.html title=btitle url=page.url %}
+  <div class="win-body page-view sunken" tabindex="-1">
+    <div class="page-doc site">
+      {% include site-header.html here='about' %}
+      <article class="profile">
+        <h1>{{ page.person | default: page.title | escape }}</h1>
+        <div class="post-content">
+          {{ content }}
+        </div>
+        {% if page.background %}
+        <h2>Background</h2>
+        <ul class="plain">
+          {% for p in page.background %}<li>{{ p }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        <h2>Elsewhere</h2>
+        <ul class="plain links">
+          <li><a href="https://github.com/bhanuharya" rel="me">GitHub</a> <span class="dim">github.com/bhanuharya</span></li>
+          <li><a href="https://www.linkedin.com/in/wishnumurti" rel="me">LinkedIn</a> <span class="dim">linkedin.com/in/wishnumurti</span></li>
+          <li><a href="{{ '/feed.xml' | relative_url }}" data-ext>RSS feed</a> <span class="dim">new posts, in any feed reader</span></li>
+          <li><a href="{{ '/.well-known/security.txt' | relative_url }}" data-ext>security.txt</a> <span class="dim">how to report a security problem with this site</span></li>
+        </ul>
+        <h2>Recent posts</h2>
+        <ul class="plain recent">
+          {% for post in site.posts limit: 3 %}<li><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a> <span class="dim">{{ post.date | date: '%b %-d, %Y' }}</span></li>{% endfor %}
+        </ul>
+      </article>
+    </div>
+  </div>
+  <div class="statusline">
+    <span class="seg grow" data-status>Done</span>
+    <span class="seg">Internet</span>
+  </div>
+</section>

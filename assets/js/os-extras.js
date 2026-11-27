@@ -84,30 +84,7 @@
   /* =================================================================
      DISCOVERIES + EVENT LOG GLUE
      ================================================================= */
-  var FINDS = {
-    setup: 'Entered BIOS Setup',
-    root: 'Tried to log on as root',
-    harya: 'Logged on as harya',
-    sudo: 'Asked for sudo',
-    bin: 'Emptied the Recycle Bin',
-    fw5: 'Reached level 5 in Firewall',
-    depth: 'Changed the color depth',
-    csp: 'Watched the browser block a request',
-    saver: 'Saw the screen saver',
-    music: 'Played a song',
-    find: 'Searched the posts',
-    konami: 'Typed the old cheat code'
-  };
-  var KEYS = Object.keys(FINDS);
-  var found = [];
-  try { found = JSON.parse(sessionStorage.getItem('os-found') || '[]') || []; } catch (e) {}
-  OS.on('discover', function (k) {
-    if (!FINDS[k] || found.indexOf(k) !== -1) return;
-    found.push(k);
-    try { sessionStorage.setItem('os-found', JSON.stringify(found)); } catch (e) {}
-    OS.log('audit', 'Discovery', 900 + KEYS.indexOf(k), FINDS[k] + '. (' + found.length + ' of ' + KEYS.length + ')');
-    if (OS.balloon) OS.balloon('Discovery ' + found.length + ' of ' + KEYS.length, FINDS[k] + '.' + (found.length === KEYS.length ? ' That was all of them.' : ''));
-  });
+  var found = [], KEYS = [];
   OS.on('register', function (w) {
     var t = w.el.getAttribute('data-title') || w.app;
     OS.log('info', 'Shell', 4100, 'Opened ' + t + (w.url ? ' (' + w.url + ')' : '') + '.');
@@ -124,12 +101,14 @@
   var WALL = [['blue', 'Blue'], ['teal', 'Teal'], ['packets', 'Packets'], ['grid', 'Graph Paper'], ['hex', 'Hex Dump'], ['black', 'Black']];
   var MENUS = [
     { name: 'Main', items: [
-      { label: 'System Time', info: function () { return new Date().toLocaleTimeString('en-GB'); }, help: 'Read from your device. This computer keeps no time of its own.' },
-      { label: 'System Date', info: function () { return new Date().toDateString(); }, help: 'Read from your device.' },
-      { label: 'Logged On As', info: function () { return user(); }, help: 'The name typed at log on. It is kept in this tab only and forgotten when the tab closes.' },
-      { label: 'Posts Installed', info: function () { return String(posts.length); }, help: 'Every post is a packet in Packet Capture.' },
-      { label: 'Processor', info: function () { return 'One person, part time'; }, help: 'Writes after work and on weekends.' },
-      { label: 'Memory', info: function () { return '640 KB (should be enough)'; }, help: 'Famous last words.' }
+      { label: 'System Time', info: function () { return new Date().toLocaleTimeString('en-GB'); }, help: 'Read from this device.' },
+      { label: 'System Date', info: function () { return new Date().toDateString(); }, help: 'Read from this device.' },
+      { label: 'Processor', info: function () { return sysinfo().cpu; }, help: 'Logical processors, as the browser reports them.' },
+      { label: 'Memory', info: function () { return sysinfo().memShort; }, help: 'Browsers round this down and stop at 8 GB on purpose, so pages cannot tell devices apart by it.' },
+      { label: 'Display', info: function () { return sysinfo().displayShort; }, help: 'Screen size in CSS pixels and the pixel ratio.' },
+      { label: 'Platform', info: function () { return sysinfo().platform; }, help: 'Reported by the browser.' },
+      { label: 'Browser', info: function () { return sysinfo().browser; }, help: 'obscuraOS runs inside it.' },
+      { label: 'OS Version', info: function () { return 'obscuraOS ' + (OS.data.build || ''); }, help: 'The date this copy was built.' }
     ] },
     { name: 'Display', items: [
       { k: 'theme', label: 'Theme', opts: [['day', 'Day'], ['night', 'Night']], help: 'Day is the classic grey. Night is the same, dimmed. The moon in the tray switches too.' },
@@ -148,11 +127,10 @@
       { k: 'trails', label: 'Mouse Trails', opts: [[false, 'Disabled'], [true, 'Enabled']], help: 'For when the pointer was hard to find on a slow screen. Mouse only.' }
     ] },
     { name: 'Security', items: [
-      { label: 'Trackers', fixed: 'Disabled', help: 'Not a setting. There is no tracking code here to turn on.' },
-      { label: 'Cookies', fixed: 'Disabled', help: 'This site sets no cookies at all.' },
-      { label: 'Third-Party Requests', fixed: 'Blocked', help: 'Your browser enforces a Content Security Policy: this page can only load files from bhanuharya.github.io. One exception, and only when you ask: a YouTube track in Media Player loads YouTube\'s player after you press Play and agree. The Security Center shows all of it.' },
-      { label: 'Supervisor Password', fixed: 'Not Installed', help: 'There is no password. There never was.' },
-      { label: 'Boot Sector Write', fixed: 'Protected', help: 'Nothing here can write to your disk. It is a web page.' }
+      { label: 'Supervisor Password', fixed: 'Not Installed', help: 'No password is set.' },
+      { label: 'Content Security Policy', fixed: 'Enforced', help: 'The browser only lets this system load files from its own address. Security Center shows the policy and what it has blocked.' },
+      { label: 'Cookies', fixed: 'None', help: 'This system sets no cookies.' },
+      { label: 'Third-Party Frames', fixed: 'Ask First', help: 'Only YouTube, and only after you press Play on a video in Media Player and agree.' }
     ] },
     { name: 'Exit', items: [
       { label: 'Save Changes and Exit', act: 'save', help: 'Keep these settings in this browser and continue.' },
@@ -317,7 +295,7 @@
           '<p>Cookies: <b data-sc-cookies></b></p>' +
           '<p><button type="button" class="btn small" data-sc-forget>Forget everything</button></p></fieldset>' +
         '<fieldset class="group"><legend>Connection</legend><dl class="sc-dl" data-sc-conn></dl></fieldset>' +
-        '<p class="sc-foot">Found a security problem with this site? <a href="/.well-known/security.txt" target="_blank" rel="noopener">security.txt</a> says how to reach me.</p>' +
+        '<p class="sc-foot">Found a security problem with this site? <a href="/.well-known/security.txt" target="_blank" rel="noopener">security.txt</a> explains how to report one.</p>' +
       '</div>' +
       '<div class="statusline"><span class="seg grow" data-sc-status>Up to date</span></div>', { from: from });
     var el = w.el;
@@ -557,7 +535,7 @@
     if (w) { OS.restore(w); return; }
     w = OS.makeWindow('events', 'Event Viewer',
       '<div class="toolbar ev-bar"><button type="button" class="btn tool" data-ev="clear">Clear Log</button>' +
-        '<label class="ev-show">Show <select class="field sunken" data-ev-filter><option value="">All events</option><option value="warn">Warnings</option><option value="audit">Discoveries</option><option value="info">Information</option></select></label></div>' +
+        '<label class="ev-show">Show <select class="field sunken" data-ev-filter><option value="">All events</option><option value="warn">Warnings</option><option value="audit">Audit</option><option value="info">Information</option></select></label></div>' +
       '<div class="win-body ev-body"><div class="ev-list sunken"><table class="packets ev-table"><thead><tr><th scope="col">Type</th><th scope="col" class="ev-date">Date and Time</th><th scope="col">Source</th><th scope="col" class="num">Event</th><th scope="col">Description</th></tr></thead><tbody data-ev-rows></tbody></table></div>' +
         '<div class="ev-detail sunken" data-ev-detail><p class="dim">Select an event to read it here.</p></div></div>' +
       '<div class="statusline"><span class="seg grow" data-ev-count></span><span class="seg" data-ev-found></span></div>', { from: from });
@@ -581,7 +559,7 @@
       });
       if (!list.length) rows.innerHTML = '<tr><td colspan="5" class="dim">No events.</td></tr>';
       $('[data-ev-count]', el).textContent = OS.events.length + ' event(s) in this tab';
-      $('[data-ev-found]', el).textContent = 'Discoveries: ' + found.length + ' of ' + KEYS.length;
+      $('[data-ev-found]', el).textContent = 'User: ' + user();
       if (sel && OS.events.indexOf(sel) !== -1) show(sel); else show(null);
     };
     rows.addEventListener('click', function (e) { var tr = e.target.closest('tr'); if (tr && tr._ev) show(tr._ev); });
@@ -607,6 +585,165 @@
     OS.on('log', onLog);
     draw();
   };
+
+  /* =================================================================
+     SYSTEM INFORMATION (real, read from this device)
+     ================================================================= */
+  function sysinfo() {
+    var n = navigator, s = window.screen || {}, c = n.connection || {}, uad = n.userAgentData, ua = n.userAgent || '';
+    var brand = '';
+    if (uad && uad.brands) uad.brands.forEach(function (b) { if (!brand && !/not.?a.?brand|chromium/i.test(b.brand)) brand = b.brand + ' ' + b.version; });
+    if (!brand) {
+      var m = /Firefox\/(\d+)/.exec(ua) || /Edg\/(\d+)/.exec(ua) || /Version\/(\d+)[^ ]* (Mobile\/\S+ )?Safari/.exec(ua) || /Chrome\/(\d+)/.exec(ua);
+      brand = m ? (/Firefox/.test(m[0]) ? 'Firefox ' : /Edg/.test(m[0]) ? 'Edge ' : /Safari/.test(m[0]) ? 'Safari ' : 'Chrome ') + m[1] : 'Unknown';
+      if (/Chromium|Chrome/.test(brand) && uad && uad.brands) uad.brands.forEach(function (b) { if (/chromium/i.test(b.brand)) brand = 'Chromium ' + b.version; });
+    }
+    var store = true;
+    try { localStorage.setItem('os-probe', '1'); localStorage.removeItem('os-probe'); } catch (e) { store = false; }
+    var dpr = window.devicePixelRatio || 1;
+    var mem = n.deviceMemory;
+    return {
+      cpu: n.hardwareConcurrency ? n.hardwareConcurrency + ' logical processors' : 'not reported',
+      mem: mem ? (mem >= 8 ? '8 GB or more' : mem + ' GB') + ' (as reported)' : 'not reported',
+      memShort: mem ? (mem >= 8 ? '8 GB or more' : mem + ' GB') : 'not reported',
+      display: s.width + ' x ' + s.height + ' at ' + dpr + 'x, ' + (s.colorDepth || 24) + '-bit color',
+      displayShort: s.width + ' x ' + s.height + ' @' + dpr + 'x',
+      win: window.innerWidth + ' x ' + window.innerHeight,
+      input: (window.matchMedia && matchMedia('(pointer: coarse)').matches ? 'touch' : 'mouse') + (n.maxTouchPoints ? ', ' + n.maxTouchPoints + ' touch points' : ''),
+      net: (n.onLine === false ? 'offline' : 'online') + (c.effectiveType ? ', ' + c.effectiveType : ''),
+      storage: store ? 'local storage available' : 'local storage blocked',
+      browser: brand,
+      platform: (uad && uad.platform) || n.platform || 'unknown',
+      lang: n.language || '',
+      tz: (Intl.DateTimeFormat().resolvedOptions().timeZone) || ''
+    };
+  }
+  OS.sysinfo = sysinfo;
+  function since(ms) {
+    var m = Math.floor(ms / 60000), h = Math.floor(m / 60);
+    return h ? h + ' h ' + (m % 60) + ' min' : m ? m + ' min ' + Math.floor(ms / 1000) % 60 + ' s' : Math.floor(ms / 1000) + ' s';
+  }
+  function gpu() {
+    try {
+      var g = document.createElement('canvas').getContext('webgl');
+      if (!g) return 'no WebGL';
+      var d = g.getExtension('WEBGL_debug_renderer_info');
+      return String(d ? g.getParameter(d.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER));
+    } catch (e) { return 'not reported'; }
+  }
+  OS.apps.system = function (from) {
+    var w = OS.find('system');
+    if (w) { OS.restore(w); return; }
+    var si = sysinfo(), tabs = ['General', 'Hardware', 'Performance', 'Network'];
+    var dl = function (rows) { return '<dl>' + rows.map(function (r) { return '<dt>' + r[0] + '</dt><dd' + (r[2] ? ' data-live="' + r[2] + '"' : '') + '>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>'; };
+    var logon = 0;
+    try { logon = +sessionStorage.getItem('os-logon') || 0; } catch (e) {}
+    w = OS.makeWindow('system', 'System Properties',
+      '<div class="win-body dialog-body props sysprops">' +
+        '<div class="tabs" role="tablist" aria-label="System Properties">' + tabs.map(function (t, i) { return '<button type="button" role="tab" id="sp-t' + i + '" aria-controls="sp-p' + i + '" aria-selected="' + (i === 0) + '"' + (i ? ' tabindex="-1"' : '') + '>' + t + '</button>'; }).join('') + '</div>' +
+        '<div class="tab-panels">' +
+          '<div class="tab-panel" id="sp-p0" role="tabpanel" aria-labelledby="sp-t0"><div class="sysinfo">' + svg('computer', 'big-ico') + '<div>' +
+            '<p><b>obscuraOS</b><br><span class="dim">Version ' + esc(OS.data.build || '') + '</span></p>' +
+            '<p>Registered to:<br>' + esc(user()) + '</p></div></div>' +
+            dl([['Logged on', logon ? new Date(logon).toLocaleTimeString('en-GB') : 'this session'], ['Up for', since(performance.now()), 'up'], ['Browser', si.browser], ['Platform', si.platform], ['Language', si.lang], ['Time zone', si.tz]]) + '</div>' +
+          '<div class="tab-panel" id="sp-p1" role="tabpanel" aria-labelledby="sp-t1" hidden>' +
+            dl([['Processor', si.cpu], ['Memory', si.mem], ['Graphics', '…', 'gpu'], ['Display', si.display], ['Window', si.win, 'win'], ['Input', si.input], ['Storage', si.storage]]) +
+            '<p class="dim small">Read from this device by the browser. Nothing here is sent anywhere.</p></div>' +
+          '<div class="tab-panel" id="sp-p2" role="tabpanel" aria-labelledby="sp-t2" hidden>' +
+            dl([['Frame rate', 'measuring…', 'fps'], ['Script memory', '…', 'heap'], ['Page elements', '…', 'dom'], ['Windows open', '…', 'wins'], ['Requests so far', '…', 'reqs'], ['Storage used', '…', 'quota']]) + '</div>' +
+          '<div class="tab-panel" id="sp-p3" role="tabpanel" aria-labelledby="sp-t3" hidden>' +
+            dl([['Status', si.net, 'net'], ['Server', location.host], ['Protocol', '…', 'proto'], ['Downlink', '…', 'down'], ['Round trip', '…', 'rtt']]) +
+            '<p><button type="button" class="btn small" data-ping>Ping ' + esc(location.host) + '</button></p><pre class="ping sunken" hidden></pre></div>' +
+        '</div>' +
+        '<div class="dialog-buttons"><button type="button" class="btn" data-act="close">OK</button></div>' +
+      '</div>', { from: from });
+    var el = w.el, tabEls = $$('[role="tab"]', el);
+    var showTab = function (t, f) {
+      tabEls.forEach(function (o) { var on = o === t; o.setAttribute('aria-selected', String(on)); o.tabIndex = on ? 0 : -1; document.getElementById(o.getAttribute('aria-controls')).hidden = !on; });
+      if (f) t.focus();
+    };
+    tabEls.forEach(function (t, i) {
+      t.addEventListener('click', function () { showTab(t); });
+      t.addEventListener('keydown', function (e) {
+        var j = e.key === 'ArrowRight' ? (i + 1) % tabEls.length : e.key === 'ArrowLeft' ? (i - 1 + tabEls.length) % tabEls.length : -1;
+        if (j !== -1) { e.preventDefault(); showTab(tabEls[j], true); }
+      });
+    });
+    var set = function (k, v) { var d = $('[data-live="' + k + '"]', el); if (d) d.textContent = v; };
+    setTimeout(function () { set('gpu', gpu()); }, 50);
+    var nav = (performance.getEntriesByType('navigation') || [])[0];
+    set('proto', nav && nav.nextHopProtocol ? nav.nextHopProtocol.toUpperCase().replace('H2', 'HTTP/2').replace('H3', 'HTTP/3') : 'not reported');
+    var frames = 0, last = performance.now(), alive = true;
+    var count = function () { if (!alive) return; frames++; requestAnimationFrame(count); };
+    requestAnimationFrame(count);
+    var tick = function () {
+      if (!document.contains(el)) { alive = false; clearInterval(timer); return; }
+      var nowT = performance.now();
+      set('fps', Math.round(frames * 1000 / (nowT - last)) + ' frames per second');
+      frames = 0; last = nowT;
+      set('up', since(nowT));
+      set('win', window.innerWidth + ' x ' + window.innerHeight);
+      var pm = performance.memory;
+      set('heap', pm ? (pm.usedJSHeapSize / 1048576).toFixed(1) + ' MB of ' + (pm.jsHeapSizeLimit / 1048576).toFixed(0) + ' MB' : 'not reported by this browser');
+      set('dom', document.getElementsByTagName('*').length + ' elements');
+      set('wins', String(OS.wins.length));
+      set('reqs', String(performance.getEntriesByType('resource').length + 1));
+      var c = navigator.connection || {};
+      set('net', (navigator.onLine === false ? 'offline' : 'online') + (c.effectiveType ? ', ' + c.effectiveType : '') + (c.saveData ? ', data saver on' : ''));
+      set('down', c.downlink ? c.downlink + ' Mbps (estimate)' : 'not reported');
+      set('rtt', c.rtt ? c.rtt + ' ms (estimate)' : 'not reported');
+    };
+    var timer = setInterval(tick, 1000);
+    tick();
+    if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (q) { set('quota', (q.usage / 1024).toFixed(1) + ' KB of ' + (q.quota / 1073741824).toFixed(1) + ' GB available to this site'); }).catch(function () { set('quota', 'not reported'); });
+    else set('quota', 'not reported');
+    $('[data-ping]', el).addEventListener('click', function () {
+      var out = $('.ping', el), n = 0, times = [];
+      out.hidden = false;
+      out.textContent = 'Pinging ' + location.host + ' over ' + location.protocol.replace(':', '').toUpperCase() + ':\n';
+      var one = function () {
+        var t0 = performance.now();
+        fetch('/search.json?ping=' + Date.now(), { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+          var t = Math.round(performance.now() - t0);
+          times.push(t);
+          out.textContent += 'Reply from ' + location.host + ': status=' + r.status + ' time=' + t + 'ms\n';
+        }).catch(function () { out.textContent += 'Request failed.\n'; }).then(function () {
+          if (++n < 4) setTimeout(one, 400);
+          else if (times.length) out.textContent += '\nMinimum = ' + Math.min.apply(null, times) + 'ms, Maximum = ' + Math.max.apply(null, times) + 'ms, Average = ' + Math.round(times.reduce(function (a, b) { return a + b; }, 0) / times.length) + 'ms';
+        });
+      };
+      one();
+    });
+  };
+
+  /* Browser: Favorites and View Source */
+  function favorites(w) {
+    var b = $('[data-act="fav"]', w.el);
+    if (!b) return;
+    b.addEventListener('click', function () {
+      var r = b.getBoundingClientRect();
+      var items = [
+        { label: 'Home', act: function () { OS.open('/'); } },
+        { label: 'About', act: function () { OS.open('/about/'); } },
+        { sep: true }
+      ].concat(posts.slice(0, 12).map(function (p) { return { label: p.t, act: function () { OS.open(p.u); } }; }))
+        .concat([{ sep: true }, { label: 'RSS feed', act: function () { window.open('/feed.xml', '_blank', 'noopener'); } }]);
+      OS.menu(items, r.left, r.bottom, { returnFocus: b });
+    });
+  }
+  function viewSource(w) {
+    var b = $('[data-act="source"]', w.el);
+    if (!b) return;
+    b.addEventListener('click', function () {
+      var url = w.url || location.pathname;
+      fetch(url, { cache: 'force-cache', credentials: 'same-origin' }).then(function (r) { return r.text(); }).then(function (html) {
+        var name = (url.replace(/[?#].*$/, '').replace(/\/$/, '/index.html').split('/').pop()) || 'index.html';
+        OS.makeWindow('untitled', name + ' - Notepad', '<div class="menubar" aria-hidden="true"></div><div class="win-body notepad-body sunken"><pre class="notepad-text">' + esc(html) + '</pre></div>');
+        var ta = $('.win-app[data-app="untitled"]:last-of-type textarea');
+        if (ta) { ta.classList.add('nowrap'); ta.scrollTop = 0; }
+      }).catch(function () { OS.msg({ title: 'Source', icon: 'warn', text: 'Could not read the source of this page.' }); });
+    });
+  }
 
   /* =================================================================
      BROWSER: contents, text size, find highlights, 404 help
@@ -711,6 +848,8 @@
   OS.on('register', function (w) {
     if (w.app !== 'browser') return;
     textButton(w);
+    favorites(w);
+    viewSource(w);
     contents(w);
     notFound(w);
     if (pending && w.url && w.url.indexOf(pending.u) === 0) {
@@ -719,54 +858,6 @@
       setTimeout(function () { highlight(w, q); }, 30);
     }
   });
-
-  /* =================================================================
-     ↑ ↑ ↓ ↓ ← → ← → B A
-     ================================================================= */
-  var CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'], at = 0;
-  document.addEventListener('keydown', function (e) {
-    var k = e.key && e.key.length === 1 ? e.key.toLowerCase() : e.key;
-    at = k === CODE[at] ? at + 1 : (k === CODE[0] ? 1 : 0);
-    if (at < CODE.length) return;
-    at = 0;
-    OS.emit('discover', 'konami');
-    OS.log('warn', 'Firewall', 5152, 'Packet storm. Nothing was unlocked, but nice reflexes.');
-    storm();
-  });
-  function storm() {
-    if (OS.reduce.matches) return;
-    OS.sound('startup');
-    var c = document.createElement('canvas');
-    c.className = 'storm';
-    c.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(c);
-    var dpr = Math.min(window.devicePixelRatio || 1, 2), W = c.width = innerWidth * dpr, H = c.height = innerHeight * dpr, g = c.getContext('2d');
-    var COL = { sec: '#c9c4ff', ai: '#b7dcff', game: '#b6f09a', misc: '#ffffff' };
-    var src = posts.length ? posts : [{ p: 'TCP', f: 'misc' }];
-    var drops = [];
-    for (var i = 0; i < 90; i++) {
-      var p = src[i % src.length];
-      drops.push({ x: Math.random() * W, y: -Math.random() * H * 1.5, v: (4 + Math.random() * 9) * dpr, p: p });
-    }
-    var t0 = performance.now();
-    var frame = function (t) {
-      var age = t - t0;
-      g.clearRect(0, 0, W, H);
-      g.font = 'bold ' + (11 * dpr) + 'px Tahoma, Verdana, sans-serif';
-      g.textBaseline = 'middle';
-      g.globalAlpha = age > 3500 ? Math.max(0, 1 - (age - 3500) / 800) : 1;
-      drops.forEach(function (d) {
-        d.y += d.v; d.x += d.v * 0.25;
-        if (d.y > H + 30) { d.y = -30; d.x = Math.random() * W; }
-        var w2 = 46 * dpr, h2 = 16 * dpr;
-        g.fillStyle = '#0a246a'; g.fillRect(d.x, d.y, w2, h2);
-        g.fillStyle = COL[d.p.f] || COL.misc; g.fillRect(d.x + w2, d.y, 18 * dpr, h2);
-        g.fillStyle = '#fff'; g.fillText(d.p.p, d.x + 4 * dpr, d.y + h2 / 2);
-      });
-      if (age < 4300) requestAnimationFrame(frame); else c.parentNode.removeChild(c);
-    };
-    requestAnimationFrame(frame);
-  }
 
   OS.on('ready', function () {
     if (window.OSBlocked && window.OSBlocked.length) OS.log('warn', 'Security', 4957, 'Content Security Policy blocked ' + window.OSBlocked.length + ' request(s) while the page loaded.');

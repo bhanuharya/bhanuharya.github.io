@@ -1,0 +1,7 @@
+# Titles for the videos in assets/video. Without an entry here, a video's
+# file name is its title. default: true makes Media Player open on it right
+# after log on and start playing.
+- file: yellow-magic-tong-poo.mp4
+  title: "Yellow Magic (Tong Poo)"
+  by: "Yellow Magic Orchestra"
+  default: true
