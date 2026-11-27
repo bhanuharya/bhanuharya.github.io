@@ -13,7 +13,7 @@ experience:
   - role: Information Security Analyst
     org: Mandiri Sekuritas
     years: 2024–2026
-    focus: "Infrastructure and cloud security, network security (NGFW, WAF, NAC and more), vulnerability management and security operations."
+    focus: "Infrastructure and cloud security, NetSec (NGFW, WAF, NAC and more), vulnerability management and security operations."
   - role: Network Security Engineer
     years: 2023–2024
     focus: Firewalls.
