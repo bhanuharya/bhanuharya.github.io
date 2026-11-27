@@ -180,13 +180,17 @@
   /* ---------------- player state ---------------- */
   var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'obscuraOS', synth: s, ev: c.ev, dur: c.dur }; });
   (OS.data.songs || []).forEach(function (s) { list.push({ t: s.t, by: 'assets/music', url: s.u, dur: 0 }); });
-  (OS.data.videos || []).forEach(function (v) { list.push({ t: v.t, by: 'assets/video', vid: v.u, dur: 0 }); });
-  var first = 0;
+  var first = 0, firstVid = -1;
+  (OS.data.videos || []).forEach(function (v) {
+    list.push({ t: v.t, by: v.by || 'assets/video', vid: v.u, dur: 0 });
+    if (v.d && firstVid === -1) firstVid = list.length - 1; // _data/videos.yml: default: true
+  });
   (OS.data.yt || []).forEach(function (v) {
     if (!/^[\w-]{11}$/.test(v.id || '')) return;
     list.push({ t: v.t || 'YouTube video', by: v.by || 'YouTube', yt: v.id, dur: 0 });
     if (v.d && !first) first = list.length - 1; // _data/youtube.yml: default: true
   });
+  if (firstVid !== -1) first = firstVid; // your own default video wins over a YouTube one
   var cur = first, playing = false, pos = 0, t0 = 0, idx = 0, timer = null, vol = 0.8, shuffle = false, repeat = true, mode = 0;
   var win = null, ui = {};
 
@@ -353,7 +357,7 @@
       v.volume = vol;
       playing = true;
       var pr = v.play();
-      if (pr && pr.catch) pr.catch(function () { playing = false; setStatus('Could not play ' + s.t + '.'); draw(); });
+      if (pr && pr.catch) pr.catch(function (err) { playing = false; setStatus(err && err.name === 'NotAllowedError' ? 'Press Play to start.' : 'Could not play ' + s.t + '.'); draw(); });
       setStatus('Playing');
       draw();
       OS.log('info', 'Media Player', 1, 'Playing ' + s.t + '.');
@@ -513,6 +517,17 @@
   }
 
   OS.player = { playing: function () { return playing; } };
+  // right after log on, Media Player opens on the default track. Your own
+  // video starts playing (the log-on click lets the browser allow sound);
+  // a YouTube one waits for Play, since it asks before loading.
+  OS.on('login', function () {
+    setTimeout(function () {
+      if (win) return;
+      cur = first;
+      OS.apps.player();
+      if (list[cur] && list[cur].vid) play(0);
+    }, 1200);
+  });
   OS.apps.player = function (from) {
     if (win) { OS.restore(win); return; }
     win = OS.makeWindow('player', 'Media Player',

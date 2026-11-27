@@ -10,7 +10,7 @@ Put `.mp4` files here. Each one appears in obscuraOS's Media Player on the next 
 
 ## Naming
 
-The file name becomes the title: `tokyo-night-walk.mp4` shows as "tokyo night walk".
+The file name becomes the title: `tokyo-night-walk.mp4` shows as "tokyo night walk". To give it a proper title and artist, add it to `_data/videos.yml`. The entry marked `default: true` (`yellow-magic-tong-poo.mp4`) opens and plays when someone logs on.
 
 ## What works best
 

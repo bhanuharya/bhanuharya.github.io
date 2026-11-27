@@ -39,6 +39,8 @@ Visitors can also play a file from their own computer with Open… in the player
 
 Upload `.mp4` files to `assets/video/` (on github.com: open the folder, **Add file → Upload files**). They appear in Media Player and play in its screen, served from this site. Use H.264 video with AAC audio, keep files small (web upload limit 25 MB, git push limit 100 MB, and every version stays in the history); `assets/video/README.md` has an ffmpeg line for shrinking one.
 
+Titles come from the file name, or from `_data/videos.yml` (`file`, `title`, `by`). The entry with `default: true` is what Media Player opens on right after log on, and it starts playing (the log-on click lets the browser allow sound). Without a default video, it opens on the YouTube default and waits for Play.
+
 ### YouTube
 
 YouTube videos play inside the player's screen. List them in `_data/youtube.yml` (a title and the 11-character video id), or paste any YouTube link with **Open URL…** in the player (that one lasts until the tab closes).
