@@ -9,7 +9,7 @@ experience:
   - role: IT Security
     org: Mirae Asset Securities
     years: 2026–present
-    focus: Security across the board, mostly AI, application security, vulnerability management and security operations.
+    focus: "Security across the board: AI-assisted security, application security, vulnerability management and security operations."
   - role: Information Security Analyst
     org: Mandiri Sekuritas
     years: 2024–2026
