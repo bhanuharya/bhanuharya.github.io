@@ -856,6 +856,32 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 }
 
 /* ===============================================================
+   notavirus.exe (a joke; only changes what is drawn)
+   =============================================================== */
+.win-app[data-app="virus"] { left: calc(50% - 190px); top: 30%; width: min(380px, calc(100% - 20px)); height: auto; }
+.vx-install { padding: 10px 12px 12px; }
+.vx-install p { margin: 0 0 8px; }
+.vx-bar { height: 18px; padding: 2px; }
+.vx-bar i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--sel) 0 8px, transparent 8px 10px); transition: width 0.25s; }
+.vx-file { min-height: 2.9em; margin-top: 8px !important; font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.vx-err { position: fixed; z-index: 3000; width: 290px; padding: 3px; }
+.vx-err .titlebar { background: linear-gradient(90deg, #8a0000, #e05050); }
+.vx-err-body { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; align-items: center; padding: 10px 10px 4px; }
+.vx-err-body svg { width: 32px; height: 32px; }
+.vx-err-body p { margin: 0; }
+.vx-btns { display: flex; justify-content: center; margin: 4px 0 6px; }
+.vx-bug { position: fixed; left: 0; top: 0; z-index: 3100; width: 64px; pointer-events: none; text-align: center; }
+.vx-bug svg { width: 56px; height: 56px; }
+.vx-bug span { display: inline-block; padding: 1px 6px; font: bold 12px var(--ui); color: #000; background: #ffffe1; border: 1px solid #000; border-radius: 6px; }
+.vx-hint { position: fixed; left: 50%; bottom: calc(var(--tb-h) + 14px); z-index: 3200; transform: translateX(-50%); padding: 4px 12px; font: bold 13px var(--ui); color: #fff; background: #8a0000; border: 2px solid #fff; pointer-events: none; }
+.infected .desktop, .infected .taskbar { animation: vx-wobble 2.6s ease-in-out infinite, vx-colour 8s linear infinite; }
+.infected .dicon { transition: transform 0.18s ease-out; }
+.infected, .infected * { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 32 32'%3E%3Cellipse cx='16' cy='19' rx='8' ry='10' fill='%23d42020' stroke='%23000'/%3E%3Ccircle cx='16' cy='8' r='4' fill='%23222'/%3E%3C/svg%3E") 12 12, auto !important; }
+.infected-calm .desktop, .infected-calm .taskbar { animation: none; }
+@keyframes vx-wobble { 0%, 100% { transform: none; } 25% { transform: rotate(-1.2deg) skewX(1.5deg); } 75% { transform: rotate(1.2deg) skewX(-1.5deg); } }
+@keyframes vx-colour { to { filter: hue-rotate(360deg); } }
+
+/* ===============================================================
    SYNTAX (rouge)
    =============================================================== */
 .highlight .c, .highlight .c1, .highlight .cm, .highlight .cs { color: #008000; }

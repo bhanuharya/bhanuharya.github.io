@@ -15,7 +15,7 @@
   var startMenu = document.getElementById('start-menu');
   if (!desktop || !layer || !tasks) return;
 
-  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall', find: 'find', events: 'log', security: 'shield', system: 'computer', stream: 'capture' };
+  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall', find: 'find', events: 'log', security: 'shield', system: 'computer', stream: 'capture', virus: 'bug' };
   var wins = [];
   var apps = {};
   var z = 10;
