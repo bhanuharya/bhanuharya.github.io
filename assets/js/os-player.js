@@ -604,10 +604,17 @@
       if (win) return;
       cur = first;
       OS.apps.player();
-      // start compact on phones, and wherever the full player would cover the Browser
-      var br = document.querySelector('.win-app[data-app="browser"]:not(.minimized)');
-      var r1 = br && br.getBoundingClientRect(), r2 = win.el.getBoundingClientRect();
-      if (OS.phone.matches || (r1 && r2.left < r1.right && r2.right > r1.left && r2.top < r1.bottom && r2.bottom > r1.top)) setCompact(true);
+      // phones get the compact bar; on a desktop the video shows, and the Browser
+      // narrows to sit beside it when there is room to read (at least 640px)
+      if (OS.phone.matches) setCompact(true);
+      else {
+        var br = document.querySelector('.win-app[data-app="browser"]:not(.minimized)');
+        var r1 = br && br.getBoundingClientRect(), r2 = win.el.getBoundingClientRect();
+        if (r1 && r2.left < r1.right && r2.right > r1.left && r2.top < r1.bottom && r2.bottom > r1.top && !br.classList.contains('maximized')) {
+          var room = Math.floor(r2.left - 8 - r1.left);
+          if (room >= 640) br.style.width = room + 'px';
+        }
+      }
       if (list[cur] && list[cur].vid) play(0);
     }, 1200);
   });
