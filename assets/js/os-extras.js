@@ -317,10 +317,12 @@
       });
       var others = Object.keys(by).filter(function (o) { return o !== location.origin; });
       var head = $('[data-sc-head]', el), banner = $('[data-sc-banner]', el);
-      var onlyYt = others.length && others.every(function (o) { return o === 'https://www.youtube-nocookie.com'; });
+      // sites this page only contacts when you ask: YouTube (Media Player) and the Internet Archive (The Web)
+      var ASKED = { 'https://www.youtube-nocookie.com': 'YouTube, because you pressed Play on a YouTube video', 'https://web.archive.org': 'the Internet Archive, because you opened an old web page' };
+      var onlyYt = others.length && others.every(function (o) { return ASKED[o]; });
       head.textContent = others.length ? 'This page contacted ' + others.length + ' other site' + (others.length > 1 ? 's' : '') + '.' : 'This page has contacted 0 other sites.';
       $('[data-sc-sub]', el).textContent = onlyYt ?
-        'That is YouTube, because you pressed Play on a YouTube video and agreed. Its player then makes its own requests, which this page cannot see. Stop the video, or close Media Player, to unload it.' :
+        'That is ' + others.map(function (o) { return ASKED[o]; }).join(', and ') + ', and you agreed. They make their own requests from there, which this page cannot see. Closing the video or the page unloads them.' :
         'Counted live from your browser\'s own record of everything this page loaded.';
       banner.classList.toggle('bad', others.length > 0 && !onlyYt);
       banner.classList.toggle('note', !!onlyYt);
@@ -716,6 +718,54 @@
     });
   };
 
+  /* Browser: The Web, old sites from the Internet Archive (asks first) */
+  function wbYear() { try { return +sessionStorage.getItem('wb-year') || 2001; } catch (e) { return 2001; } }
+  function wayback(w) {
+    var view = $('.wb-view', w.el);
+    if (!view) return;
+    var sel = $('.wb-year', w.el);
+    if (sel) {
+      $('.wb-type', w.el).hidden = false;
+      sel.value = String(wbYear());
+      sel.addEventListener('change', function () { try { sessionStorage.setItem('wb-year', sel.value); } catch (e) {} });
+    }
+    var q;
+    try { q = new URL(w.url || location.href, location.href).searchParams; } catch (e) { return; }
+    var target = q.get('u'), year = parseInt(q.get('y'), 10) || wbYear();
+    if (!target) return;
+    if (!/^https?:\/\//i.test(target)) target = 'http://' + target;
+    var host = target;
+    try { host = new URL(target).hostname.replace(/^www\./, ''); } catch (e) { return; }
+    year = Math.max(1996, Math.min(new Date().getFullYear(), year));
+    var src = 'https://web.archive.org/web/' + year + '0601000000if_/' + target;
+    var full = 'https://web.archive.org/web/' + year + '0601000000/' + target;
+    var addr = $('.address input', w.el), status = $('[data-status]', w.el);
+    if (addr) addr.value = target;
+    OS.setTitle(w, host + ' (' + year + ') - Browser');
+    w.docTitle = host + ' (' + year + ') · ' + OS.siteName;
+    var load = function () {
+      view.classList.add('wb-framed');
+      view.innerHTML = '<div class="wb-bar"><span>' + OS.svg('oldweb') + ' <b>' + esc(host) + '</b> as saved around ' + year + ' by the Internet Archive</span>' +
+        '<a href="' + esc(full) + '" target="_blank" rel="noopener noreferrer">open in a new tab</a></div>' +
+        '<iframe class="wb-frame" title="' + esc(host) + ' in ' + year + '" src="' + esc(src) + '" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerpolicy="no-referrer"></iframe>';
+      if (status) status.textContent = 'Opening ' + host + ' from the Internet Archive...';
+      $('iframe', view).addEventListener('load', function () { if (status) status.textContent = 'Done (web.archive.org)'; });
+      OS.log('warn', 'Browser', 3, 'Opened ' + target + ' as of ' + year + ' from web.archive.org at your request.');
+    };
+    var ok = false;
+    try { ok = sessionStorage.getItem('wb-ok') === '1'; } catch (e) {}
+    if (ok) { load(); return; }
+    view.innerHTML = '<div class="page-doc site wb-ask"><h1>' + esc(host) + ', ' + year + '</h1>' +
+      '<p>This page comes from the Internet Archive\'s Wayback Machine. Opening it connects to web.archive.org, which sees your IP address, the same as visiting it yourself. Nothing has loaded yet.</p>' +
+      '<p class="wb-btns"><button type="button" class="btn" data-wb="go">Open it</button> <a class="btn" href="' + esc(full) + '" target="_blank" rel="noopener noreferrer">Open in a new tab instead</a> <a class="btn" href="/web/">Back to the list</a></p>' +
+      '<label class="yt-remember"><input type="checkbox" data-wb-remember> Don\'t ask again until I close this tab</label></div>';
+    $('[data-wb="go"]', view).addEventListener('click', function () {
+      var r = $('[data-wb-remember]', view);
+      if (r && r.checked) { try { sessionStorage.setItem('wb-ok', '1'); } catch (e) {} }
+      load();
+    });
+  }
+
   /* Browser: Favorites and View Source */
   function favorites(w) {
     var b = $('[data-act="fav"]', w.el);
@@ -725,6 +775,7 @@
       var items = [
         { label: 'Home', act: function () { OS.open('/'); } },
         { label: 'About', act: function () { OS.open('/about/'); } },
+        { label: 'The Web (2001)', act: function () { OS.open('/web/'); } },
         { sep: true }
       ].concat(posts.slice(0, 12).map(function (p) { return { label: p.t, act: function () { OS.open(p.u); } }; }))
         .concat([{ sep: true }, { label: 'RSS feed', act: function () { window.open('/feed.xml', '_blank', 'noopener'); } }]);
@@ -850,6 +901,7 @@
     textButton(w);
     favorites(w);
     viewSource(w);
+    wayback(w);
     contents(w);
     notFound(w);
     if (pending && w.url && w.url.indexOf(pending.u) === 0) {

@@ -917,6 +917,24 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 @keyframes vx-spark { to { transform: translateY(26px) scale(0.3) rotate(90deg); opacity: 0; } }
 .vx-melt .windows .window { transition: transform 7s ease-in, filter 7s; transform: translateY(45vh) rotate(var(--r, 4deg)) skewY(6deg); filter: blur(0.6px); }
 
+/* The Web: old sites from the Internet Archive */
+.wb-portal .wb-head h1 { margin-bottom: 8px; }
+.wb-portal .wb-head p { margin: 0 0 16px; font: 14px/1.6 var(--read); }
+.wb-list { list-style: none; margin: 0 0 16px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px 14px; }
+.wb-list li { display: grid; gap: 1px; padding: 8px 10px; border: 1px solid var(--light); background: var(--window); }
+.wb-list a { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font: bold 16px Georgia, "Times New Roman", serif; text-decoration: none; }
+.wb-list a:hover b { text-decoration: underline; }
+.wb-y { font: 12px var(--mono); color: var(--dim); }
+.wb-list .dim { font-size: 12px; }
+.wb-type { font-size: 13px; }
+.wb-type .field { width: auto; min-height: 22px; padding: 0 4px; }
+.wb-view.wb-framed { display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+.wb-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; padding: 3px 8px; font-size: 12px; color: #000; background: #ffffe1; border-bottom: 1px solid #b0a060; }
+.wb-bar svg { width: 14px; height: 14px; vertical-align: -2px; }
+.wb-frame { flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: #fff; }
+.wb-ask p { font: 14px/1.6 var(--read); }
+.wb-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+
 /* ===============================================================
    SYNTAX (rouge)
    =============================================================== */
