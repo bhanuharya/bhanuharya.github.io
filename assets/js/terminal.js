@@ -177,6 +177,8 @@
       return;
     }
     if (e.target.closest('a, button')) return;
+    // during a game, taps are for the game: focusing the text box would open the phone keyboard
+    if (state.gameActive) return;
     focusCatcher();
   });
   if (EMBED) {
@@ -667,6 +669,8 @@
     var host = document.createElement('div');
     screen.appendChild(host);
     state.gameActive = true;
+    // close the phone keyboard if typing the command left it open
+    if (document.activeElement === catcher) catcher.blur();
     var il = document.getElementById('inputline');
     if (il) il.hidden = true;
     starter(host, function (score) {
