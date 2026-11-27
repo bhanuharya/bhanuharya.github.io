@@ -7,10 +7,10 @@
 
   // --- Web Audio Synthesizer for Retro Clicks, Beeps, and Degauss ---
   var audioCtx = null;
-  var soundEnabled = false;
+  var soundEnabled = true;
   var osMasterVol = 0.8;
   try {
-    soundEnabled = localStorage.getItem('term-sound') === '1';
+    if (localStorage.getItem('term-sound') === '0') soundEnabled = false;
     if (localStorage.getItem('sound') === 'off') osMasterVol = 0;
     else {
       var rv = parseFloat(localStorage.getItem('volume'));
@@ -656,11 +656,23 @@
 
     gameBox.appendChild(memGrid);
 
+    var btnRow = document.createElement('div');
+    btnRow.className = 'game-btn-row';
+
+    var againBtn = document.createElement('button');
+    againBtn.type = 'button';
+    againBtn.className = 'game-exit-btn';
+    againBtn.textContent = 'Play Again [ENTER]';
+    againBtn.hidden = true;
+    btnRow.appendChild(againBtn);
+
     var exitBtn = document.createElement('button');
     exitBtn.type = 'button';
     exitBtn.className = 'game-exit-btn';
     exitBtn.textContent = 'Exit Hack [ESC]';
-    gameBox.appendChild(exitBtn);
+    btnRow.appendChild(exitBtn);
+
+    gameBox.appendChild(btnRow);
 
     targetContainer.appendChild(gameBox);
     gameBox.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -689,6 +701,7 @@
         Sound.score();
         attemptsLeft = 0;
         if (btnEl) btnEl.classList.add('hack-word-win');
+        againBtn.hidden = false;
       } else {
         attemptsLeft--;
         var attEl = gameBox.querySelector('#hack-attempts');
@@ -704,12 +717,23 @@
           overP.innerHTML = '<span class="err">&gt; [LOCKOUT] SYSTEM TERMINATED. Correct key was: ' + secret + '</span>';
           logView.appendChild(overP);
           Sound.over();
+          againBtn.hidden = false;
         }
       }
       logView.scrollTop = logView.scrollHeight;
     }
 
+    function replay() {
+      startHack(targetContainer, onExit);
+    }
+
     function handleKey(e) {
+      if (attemptsLeft <= 0 && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        e.stopPropagation();
+        replay();
+        return;
+      }
       if (e.key === 'Escape' || e.key === 'q' || e.key === 'Q') {
         e.preventDefault();
         e.stopPropagation();
@@ -723,6 +747,7 @@
       if (typeof onExit === 'function') onExit();
     }
 
+    againBtn.addEventListener('click', replay);
     exitBtn.addEventListener('click', exit);
     document.addEventListener('keydown', handleKey);
 

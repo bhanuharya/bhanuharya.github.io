@@ -250,6 +250,9 @@ pre.blob {
   border-color: var(--fg);
 }
 
+.game-btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.game-btn-row .game-exit-btn { margin-top: 0; }
+
 /* a game in its own window (/terminal/?game=...) */
 .solo .terminal-game-box { margin: 4px auto; }
 .solo #inputline { display: none; }

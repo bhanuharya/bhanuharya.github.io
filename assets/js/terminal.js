@@ -961,8 +961,8 @@
 
   window.addEventListener('message', function (e) {
     if (e.origin !== location.origin || !e.data || e.data.type !== 'os-audio') return;
-    if (window.TermGames && window.TermGames.Sound && window.TermGames.Sound.setMaster) {
-      window.TermGames.Sound.setMaster(!!e.data.on, e.data.vol);
+    if (window.TerminalGames && window.TerminalGames.Sound && window.TerminalGames.Sound.setMaster) {
+      window.TerminalGames.Sound.setMaster(!!e.data.on, e.data.vol);
     }
   });
 

@@ -829,13 +829,12 @@
   });
   window.addEventListener('message', function (e) {
     if (e.origin !== location.origin || !e.data || typeof e.data !== 'object') return;
-    var t = find('terminal');
+    var srcWin = null;
+    wins.forEach(function (x) { var f = $('iframe', x.el); if (f && f.contentWindow === e.source) srcWin = x; });
+    var t = srcWin || find('terminal');
     if (e.data.type === 'os-open' && typeof e.data.url === 'string') open(e.data.url);
-    if (e.data.type === 'os-close' && t) close(t);
-    // a game window's game was exited: close that window
-    if (e.data.type === 'os-close-game') {
-      wins.slice().forEach(function (x) { var gf = $('iframe', x.el); if (gf && gf.contentWindow === e.source) close(x); });
-    }
+    if (e.data.type === 'os-close-game') { if (srcWin) close(srcWin); }
+    else if (e.data.type === 'os-close' && t) close(t);
     if (e.data.type === 'os-focus' && t && top() !== t) focus(t);
     if (e.data.type === 'os-discover' && typeof e.data.id === 'string') emit('discover', e.data.id);
   });
