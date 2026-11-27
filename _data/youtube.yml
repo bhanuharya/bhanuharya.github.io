@@ -12,8 +12,10 @@
 #   id: "aqz-KE-bpKQ"
 
 # default: true makes the player open on that track (it still asks before
-# loading YouTube).
-- title: "Yellow Magic (Tong Poo)"
-  by: "Yellow Magic Orchestra"
-  id: "K3DSwl3gMTc"
-  default: true
+# loading YouTube). A video in assets/video marked default in
+# _data/videos.yml wins over it.
+#
+# - title: "Yellow Magic (Tong Poo)"
+#   by: "Yellow Magic Orchestra"
+#   id: "K3DSwl3gMTc"
+#   default: true
