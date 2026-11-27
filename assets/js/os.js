@@ -250,10 +250,10 @@
     });
     var bar = $('.titlebar', el);
     if (bar) {
-      bar.addEventListener('dblclick', function (e) { if (!e.target.closest('.tbtn') && !phone.matches) toggleMax(w); });
+      bar.addEventListener('dblclick', function (e) { if (!e.target.closest('.tbtn') && !phone.matches && !el.classList.contains('compact')) toggleMax(w); });
       bar.addEventListener('contextmenu', function (e) { e.preventDefault(); windowMenu(w, e.clientX, e.clientY); });
       bar.addEventListener('pointerdown', function (e) {
-        if (e.button !== 0 || e.target.closest('.tbtn') || phone.matches) return;
+        if (e.button !== 0 || e.target.closest('.tbtn') || (phone.matches && !el.classList.contains('compact'))) return;
         e.preventDefault();
         var dr = desktop.getBoundingClientRect(), W = desktop.clientWidth, H = desktop.clientHeight;
         var sx = e.clientX, sy = e.clientY, sl, st, ew, started = false, zone = null;
@@ -276,7 +276,7 @@
           el.style.left = Math.min(W - 60, Math.max(60 - ew, sl + ev.clientX - sx)) + 'px';
           el.style.top = Math.min(H - 26, Math.max(0, st + ev.clientY - sy)) + 'px';
           var x = ev.clientX - dr.left, y = ev.clientY - dr.top;
-          var z2 = y <= 2 ? 'max' : x <= 3 ? 'left' : x >= W - 4 ? 'right' : null;
+          var z2 = el.classList.contains('compact') ? null : y <= 2 ? 'max' : x <= 3 ? 'left' : x >= W - 4 ? 'right' : null;
           if (z2 !== zone) { zone = z2; snapPreview(zone, W, H); }
         }, function () {
           snapPreview(null);

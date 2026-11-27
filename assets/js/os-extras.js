@@ -1236,4 +1236,11 @@
   OS.on('ready', function () {
     if (window.OSBlocked && window.OSBlocked.length) OS.log('warn', 'Security', 4957, 'Content Security Policy blocked ' + window.OSBlocked.length + ' request(s) while the page loaded.');
   });
+  // the website's own Search link opens Find
+  OS.on('register', function (w) {
+    var sf = w.el.querySelector('.site-find');
+    if (!sf || !OS.apps.find) return;
+    sf.hidden = false;
+    sf.addEventListener('click', function () { OS.apps.find(); });
+  });
 })();

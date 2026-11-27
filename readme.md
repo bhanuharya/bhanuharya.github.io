@@ -23,7 +23,7 @@ text: |
                      words to search posts. Star saves Favorites,
                      Ctrl+F finds text in a page, right-click opens
                      links in new tabs, and Source shows page HTML.
-    Packet Capture   every HTTP request this computer makes,
+    Packet Capture   every HTTP request this page makes,
                      live: timing, headers, bytes. Save writes
                      a .har file.
     Terminal         a shell with games (snake, pong, hack). Type help.

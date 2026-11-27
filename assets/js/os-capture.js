@@ -1,5 +1,5 @@
 /* obscuraOS: Packet Capture.
-   A real capture of the HTTP traffic this computer makes: every page,
+   A real capture of the HTTP traffic this page makes: every page,
    script, image, search index and video frame, read from the browser's
    own Resource Timing records as they happen. Selecting a packet fetches
    it again from the browser cache (same site only) to show its response
@@ -152,7 +152,7 @@
     ui.count.textContent = 'Packets: ' + packets.length + ' · Displayed: ' + shown;
     ui.led.className = 'seg cap-led' + (capturing ? ' on' : '');
     ui.led.title = capturing ? 'Capturing' : 'Stopped';
-    ui.state.textContent = capturing ? 'Capturing from this browser. Every request this computer makes appears here as it happens.' : 'Capture stopped.';
+    ui.state.textContent = capturing ? 'Capturing from this browser. Every HTTP request this page makes appears here as it happens.' : 'Capture stopped.';
     ui.start.disabled = capturing;
     ui.stop.disabled = !capturing;
   }

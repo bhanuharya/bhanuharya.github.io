@@ -576,11 +576,38 @@
   // right after log on, Media Player opens on the default track. Your own
   // video starts playing (the log-on click lets the browser allow sound);
   // a YouTube one waits for Play, since it asks before loading.
+  // compact: a small bar with the main buttons; drag it by its title bar (phones too)
+  var full = null;
+  function setCompact(on) {
+    if (!win) return;
+    var el = win.el, desk = document.getElementById('desktop');
+    if (on === el.classList.contains('compact')) return;
+    if (on) {
+      full = { l: el.style.left, t: el.style.top, w: el.style.width, h: el.style.height, p: el.getAttribute('data-pinned') };
+      el.classList.remove('maximized');
+      el.classList.add('compact');
+      el.style.width = ''; el.style.height = '';
+      el.style.left = Math.max(0, desk.clientWidth - el.offsetWidth - 8) + 'px';
+      el.style.top = Math.max(0, desk.clientHeight - el.offsetHeight - 8) + 'px';
+      el.setAttribute('data-pinned', '1');
+    } else {
+      el.classList.remove('compact');
+      el.style.left = full ? full.l : ''; el.style.top = full ? full.t : ''; el.style.width = full ? full.w : ''; el.style.height = full ? full.h : '';
+      if (!full || !full.p) el.removeAttribute('data-pinned');
+    }
+    var b = el.querySelector('[data-p="mini"]');
+    if (b) { b.textContent = on ? 'Full' : 'Mini'; b.setAttribute('aria-pressed', String(on)); b.title = on ? 'Full player' : 'Compact player'; }
+  }
+  OS.player.compact = setCompact;
   OS.on('login', function () {
     setTimeout(function () {
       if (win) return;
       cur = first;
       OS.apps.player();
+      // start compact on phones, and wherever the full player would cover the Browser
+      var br = document.querySelector('.win-app[data-app="browser"]:not(.minimized)');
+      var r1 = br && br.getBoundingClientRect(), r2 = win.el.getBoundingClientRect();
+      if (OS.phone.matches || (r1 && r2.left < r1.right && r2.right > r1.left && r2.top < r1.bottom && r2.bottom > r1.top)) setCompact(true);
       if (list[cur] && list[cur].vid) play(0);
     }, 1200);
   });
@@ -596,6 +623,7 @@
           '<button type="button" class="btn tool" data-p="play" aria-label="Play"><i class="g-play"></i></button>' +
           '<button type="button" class="btn tool" data-p="stop" aria-label="Stop"><i class="g-stop"></i></button>' +
           '<button type="button" class="btn tool" data-p="next" aria-label="Next"><i class="g-next"></i></button>' +
+          '<button type="button" class="btn tool" data-p="mini" title="Compact player" aria-pressed="false">Mini</button>' +
           '<span class="yt-time" data-ytime></span><span class="sp"></span>' +
           '<button type="button" class="btn tool" data-p="shuffle" aria-pressed="false">Shuffle</button>' +
           '<button type="button" class="btn tool" data-p="repeat" aria-pressed="true">Repeat</button>' +
@@ -632,6 +660,7 @@
       }
       else if (p === 'open') ui.file.click();
       else if (p === 'url') openUrl();
+      else if (p === 'mini') setCompact(!win.el.classList.contains('compact'));
     });
     el.addEventListener('keydown', function (e) {
       if (e.target.closest('input, button, [role="option"]')) return;
