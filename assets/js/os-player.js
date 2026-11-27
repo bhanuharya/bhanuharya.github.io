@@ -616,14 +616,14 @@
       cur = first;
       OS.apps.player();
       // phones get the small floating player; on a desktop the full one, and the Browser
-      // narrows to sit beside it when there is room to read (at least 640px)
+      // narrows to sit beside it when there is room to read (at least 560px)
       if (OS.phone.matches) setCompact(true);
       else {
         var br = document.querySelector('.win-app[data-app="browser"]:not(.minimized)');
         var r1 = br && br.getBoundingClientRect(), r2 = win.el.getBoundingClientRect();
         if (r1 && r2.left < r1.right && r2.right > r1.left && r2.top < r1.bottom && r2.bottom > r1.top && !br.classList.contains('maximized')) {
           var room = Math.floor(r2.left - 8 - r1.left);
-          if (room >= 640) br.style.width = room + 'px';
+          if (room >= 560) br.style.width = room + 'px';
         }
       }
       if (list[cur] && list[cur].vid) play(0);

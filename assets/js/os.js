@@ -15,7 +15,7 @@
   var startMenu = document.getElementById('start-menu');
   if (!desktop || !layer || !tasks) return;
 
-  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall', find: 'find', events: 'log', security: 'shield', system: 'computer', stream: 'capture', virus: 'bug' };
+  var ICON = { capture: 'capture', browser: 'browser', terminal: 'terminal', notepad: 'notepad', untitled: 'notepad', about: 'computer', bin: 'bin', player: 'player', firewall: 'firewall', snake: 'snake', pong: 'pong', hack: 'hack', find: 'find', events: 'log', security: 'shield', system: 'computer', stream: 'capture', virus: 'bug' };
   var wins = [];
   var apps = {};
   var z = 10;
@@ -406,6 +406,7 @@
     var app = appFor(u.pathname);
     if (!app) { window.location.href = u.href; return; }
     closeMenus();
+    if (app === 'terminal' && gameIn(u.href)) { openGame(gameIn(u.href), opts.from); return; }
     if (app === 'terminal') { openTerminal({ from: opts.from, url: rel(u) }); if (opts.push !== false && rel(u) !== rel(location)) history.pushState(null, '', rel(u)); return; }
     var existing = find(app);
     if (existing && app === 'browser' && existing.browser) {
@@ -801,8 +802,28 @@
       } catch (e) {}
     });
   }
+  /* games on the desktop: each opens in its own window, running in the terminal */
+  var GAMES = { snake: 'Snake', pong: 'Pong', hack: 'Hack' };
+  function openGame(name, from) {
+    var w = find(name);
+    if (w) { restore(w); return; }
+    var url = '/terminal/?game=' + name;
+    w = makeWindow(name, GAMES[name], '<iframe class="term-frame" src="' + esc(url) + '" title="' + GAMES[name] + '"></iframe>', { url: url, from: from, noMax: true });
+    w.docTitle = GAMES[name] + ' · ' + siteName;
+    var f = $('iframe', w.el);
+    f.addEventListener('load', function () {
+      try {
+        f.contentWindow.postMessage({ type: 'os-audio', on: soundOn(), vol: effectiveVolume() }, location.origin);
+        f.contentWindow.focus();
+      } catch (e) {}
+    });
+  }
+  Object.keys(GAMES).forEach(function (g) { apps[g] = function (from) { openGame(g, from); }; });
+  function gameIn(url) {
+    try { var g = new URL(url, location.href).searchParams.get('game'); return GAMES[g] ? g : ''; } catch (e) { return ''; }
+  }
   on('focus', function (w) {
-    if (w.app !== 'terminal') return;
+    if (w.app !== 'terminal' && !GAMES[w.app]) return;
     var f = $('iframe', w.el);
     setTimeout(function () { try { f.contentWindow.focus(); } catch (e) {} }, 0);
   });
@@ -811,6 +832,10 @@
     var t = find('terminal');
     if (e.data.type === 'os-open' && typeof e.data.url === 'string') open(e.data.url);
     if (e.data.type === 'os-close' && t) close(t);
+    // a game window's game was exited: close that window
+    if (e.data.type === 'os-close-game') {
+      wins.slice().forEach(function (x) { var gf = $('iframe', x.el); if (gf && gf.contentWindow === e.source) close(x); });
+    }
     if (e.data.type === 'os-focus' && t && top() !== t) focus(t);
     if (e.data.type === 'os-discover' && typeof e.data.id === 'string') emit('discover', e.data.id);
   });
@@ -819,6 +844,7 @@
   var binIcon = $('.dicon[data-app="bin"]');
   function binChanged() {
     if (binIcon) $('use', binIcon).setAttribute('href', binned.length ? '#i-bin-full' : '#i-bin');
+    if (typeof dockIcons === 'function') dockIcons();
     var w = find('bin');
     if (w) fillBin(w);
   }
@@ -1039,12 +1065,23 @@
     if (iconBox.classList.contains('free')) return;
     var pos = icons.map(function (o) { return [o.offsetLeft, o.offsetTop]; });
     iconBox.classList.add('free');
+    desktop.style.removeProperty('--dock');
     icons.forEach(function (o, i) { if (o !== binIcon) { o.style.left = pos[i][0] + 'px'; o.style.top = pos[i][1] + 'px'; } });
   }
   function arrange() {
     iconBox.classList.remove('free');
     icons.forEach(function (o) { o.style.left = ''; o.style.top = ''; });
+    dockIcons();
   }
+  // windows open to the right of the desktop icons, however many columns they fill
+  function dockIcons() {
+    if (phone.matches || iconBox.classList.contains('free')) { desktop.style.removeProperty('--dock'); return; }
+    var right = 0;
+    icons.forEach(function (o) { if (!o.hidden && o !== binIcon) right = Math.max(right, o.offsetLeft + o.offsetWidth); });
+    desktop.style.setProperty('--dock', Math.max(104, right + 12) + 'px');
+  }
+  setTimeout(dockIcons, 0);
+  window.addEventListener('resize', dockIcons);
   function hit(r, x, y) { return r && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; }
   icons.forEach(function (ic) {
     if (ic.tagName === 'BUTTON') ic.hidden = false;
@@ -1251,10 +1288,12 @@
   var soundBtn = document.getElementById('sound-toggle');
   var volPop = null;
   function pushTermAudio() {
-    var tw = find('terminal');
-    if (!tw) return;
-    var f = $('iframe', tw.el);
-    try { if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'os-audio', on: soundOn(), vol: effectiveVolume() }, location.origin); } catch (e) {}
+    ['terminal'].concat(Object.keys(GAMES)).forEach(function (a) {
+      var tw = find(a);
+      if (!tw) return;
+      var f = $('iframe', tw.el);
+      try { if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'os-audio', on: soundOn(), vol: effectiveVolume() }, location.origin); } catch (e) {}
+    });
   }
   function soundLabel() {
     var on = soundOn() && volume() > 0;

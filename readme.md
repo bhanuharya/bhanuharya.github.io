@@ -34,6 +34,8 @@ text: |
                      discoveries to find around the desktop.
     Security Center  what this computer sends where.
     Firewall         a game.
+    Snake, Pong,     games, each in its own window. On a touch
+    Hack             screen, use the buttons under the game.
 
   Settings > System Properties shows this device's hardware.
   Settings > Setup changes the display, sounds and boot.
