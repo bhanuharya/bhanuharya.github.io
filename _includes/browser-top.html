@@ -1,17 +1,30 @@
-{%- comment -%} Browser chrome: title bar, toolbar, address bar. include.title, include.url, include.article {%- endcomment -%}
+{%- comment -%} Browser chrome: title bar, toolbar, address bar, tab strip, in-page find bar. include.title, include.url, include.article {%- endcomment -%}
 {% include titlebar.html icon="browser" title=include.title %}
 <div class="toolbar browser-bar">
-  <button class="btn tool" type="button" data-act="back" aria-label="Back" hidden>◀<span class="lbl"> Back</span></button>
-  <button class="btn tool" type="button" data-act="fwd" aria-label="Forward" hidden><span class="lbl">Forward </span>▶</button>
+  <button class="btn tool" type="button" data-act="back" aria-label="Back" disabled hidden>◀<span class="lbl"> Back</span></button>
+  <button class="btn tool" type="button" data-act="fwd" aria-label="Forward" disabled hidden><span class="lbl">Forward </span>▶</button>
   <button class="btn tool" type="button" data-act="reload" hidden>Reload</button>
   <a class="btn tool" href="{{ '/web/' | relative_url }}">Home</a>
   <button class="btn tool" type="button" data-act="fav" aria-haspopup="true" hidden>Favorites</button>
-  {% if include.article %}<button class="btn tool" type="button" data-act="toc" aria-pressed="false" hidden>Contents</button>{% endif %}
+  <button class="btn tool" type="button" data-act="infind" title="Find in page (Ctrl+F)" hidden>Find</button>
+  <button class="btn tool" type="button" data-act="toc" aria-pressed="false" hidden>Contents</button>
   <button class="btn tool" type="button" data-act="source" hidden>Source</button>
   <button class="btn tool" type="button" data-act="text" title="Text size" hidden><span aria-hidden="true">A<small>A</small></span><span class="visually-hidden">Text size</span></button>
+  <span class="throbber" aria-hidden="true" hidden><svg><use href="#i-browser"/></svg></span>
 </div>
 <form class="address" action="{{ '/' | relative_url }}" method="get" autocomplete="off">
   <label for="addr">A<u>d</u>dress</label>
-  <input class="sunken" id="addr" name="go" type="text" accesskey="d" spellcheck="false" value="{{ include.url | absolute_url }}">
+  <input class="sunken" id="addr" name="go" type="text" accesskey="d" spellcheck="false" list="addr-list" value="{{ include.url | absolute_url }}">
+  <button class="btn small star-btn" type="button" data-act="star" aria-pressed="false" title="Add to Favorites" hidden><svg aria-hidden="true"><use href="#i-star"/></svg><span class="visually-hidden">Bookmark page</span></button>
   <button class="btn small" type="submit">Go</button>
+  <datalist id="addr-list"></datalist>
 </form>
+<div class="browser-tabs" role="tablist" aria-label="Open tabs" hidden></div>
+<div class="findbar" hidden role="search" aria-label="Find in page">
+  <label for="infind-q">Find:</label>
+  <input class="field sunken" id="infind-q" type="search" autocomplete="off" spellcheck="false" placeholder="Find in this page">
+  <button class="btn small" type="button" data-fb="prev" aria-label="Previous match">▲</button>
+  <button class="btn small" type="button" data-fb="next" aria-label="Next match">▼</button>
+  <span class="fb-count dim" aria-live="polite"></span>
+  <button class="tbtn" type="button" data-fb="close" aria-label="Close find bar"><i class="g-close"></i></button>
+</div>

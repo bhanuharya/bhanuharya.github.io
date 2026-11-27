@@ -30,7 +30,8 @@
     history: [],
     hIndex: 0,
     alive: true,
-    busy: false
+    busy: false,
+    gameActive: false
   };
 
   function promptText() {
@@ -87,7 +88,7 @@
   /* ---- input handling -------------------------------------------------- */
 
   function insertText(text) {
-    if (!state.alive || state.busy) return;
+    if (!state.alive || state.busy || state.gameActive) return;
     state.buffer += text.replace(/[\r\n\t]/g, '');
     renderPrompt();
   }
@@ -123,7 +124,7 @@
   });
 
   function onKey(e) {
-    if (!state.alive) return;
+    if (!state.alive || state.gameActive) return;
     var k = e.key;
 
     if (e.ctrlKey && (k === 'c' || k === 'C')) {
@@ -302,8 +303,8 @@
       return r.text();
     }).then(function (html) {
       var doc = new DOMParser().parseFromString(html, 'text/html');
-      var main = doc.querySelector('.page-content, .post-content, article, main') || doc.body;
-      var junk = main.querySelectorAll('nav, .page-prompt, .post-nav, .post-meta, .post-tags, .post-card-cta, .tag-filter-bar, script, style');
+      var main = doc.querySelector('article.profile, .post-content, .page-content, article, main') || doc.body;
+      var junk = main.querySelectorAll('nav, .site-head, .page-prompt, .post-nav, .post-meta, .post-tags, .post-card-cta, .tag-filter-bar, script, style');
       Array.prototype.forEach.call(junk, function (n) { n.remove(); });
       Array.prototype.forEach.call(main.querySelectorAll('br'), function (b) { b.replaceWith('\n'); });
       var text = (main.textContent || '').replace(/\n{3,}/g, '\n\n').replace(/[ \t]+\n/g, '\n').trim();
@@ -321,7 +322,7 @@
     if (path === '~/about.txt') { fetchText('/about/', cb); return; }
     if (path === '~/notes.txt') { cb(notesText); return; }
     if (path === '~/links.txt') { cb(linksText); return; }
-    if (path === '~/.plan') { cb(planText); return; }
+    if (path === '~/.plan') { if (EMBED) tellOS({ type: 'os-discover', id: 'terminal' }); cb(planText); return; }
     if (path.indexOf(ROOT_POSTS + '/') === 0) {
       var name = path.split('/').pop();
       var post = DATA.posts.filter(function (p) { return slug(p.url) + '.md' === name; })[0];
@@ -396,7 +397,7 @@
       '  pwd               print working directory',
       '  posts             list notes with numbers',
       '  read <n>          open note n in the browser',
-      '  tags              list tags',
+      '  tags [tag]        list tags, or open a tag in the browser',
       '  links             contact and feeds',
       '  whoami            who runs this shell',
       '  uname             system info',
@@ -404,10 +405,12 @@
       '  date              current date and time',
       '  theme [color]     green | amber | white',
       '  crt on|off        scanline texture',
-      '  history           previous commands',
-      '  clear             clear the screen (or ctrl+l)',
+      '  sound on|off      8-bit terminal game sound',
+      '  snake / pong / hack  play retro games right here',
       '  pulsar            play the pulsar',
       '  banner / art      the ascii art again',
+      '  history           previous commands',
+      '  clear             clear the screen (or ctrl+l)',
       '  exit              leave the terminal (or esc)',
       '',
       'tab completes, up and down walk history, ctrl+c cancels a line.'
@@ -420,6 +423,7 @@
       '',
       '  ls           list files',
       '  posts        list the posts on this site, then read 1',
+      '  snake / pong / hack   play a retro game',
       '  neofetch     this system',
       '  exit         close the terminal',
       '',
@@ -549,16 +553,23 @@
     setTimeout(function () { go(post.url); }, 550);
   }
 
-  function cmdTags() {
+  function cmdTags(args) {
     var counts = {};
     DATA.posts.forEach(function (p) {
       (p.tags || []).forEach(function (t) { counts[t] = (counts[t] || 0) + 1; });
     });
     var names = Object.keys(counts).sort();
+    if (args && args[0]) {
+      var want = args[0].replace(/^#/, '');
+      if (!counts[want]) { addLine('tags: unknown tag "' + want + '"', 'err'); return; }
+      addLine('opening posts tagged #' + want + ' in the browser...', 'dim');
+      setTimeout(function () { go('/?tag=' + encodeURIComponent(want)); }, 350);
+      return;
+    }
     if (!names.length) { addLine('no tags yet.', 'dim'); return; }
     addLine(names.map(function (t) { return '#' + t + '(' + counts[t] + ')'; }).join('  '));
     addLine('');
-    addLine('Packet Capture filters by tag, e.g. tag == "' + names[0] + '"', 'dim');
+    addLine('type tags ' + names[0] + ' to open those posts in the browser.', 'dim');
   }
 
   function cmdLinks() {
@@ -620,6 +631,38 @@
     addLine('crt ' + v);
   }
 
+  function cmdSound(args) {
+    var g = window.TerminalGames;
+    if (!g || !g.Sound) { addLine('sound: unavailable', 'err'); return; }
+    var v = (args[0] || '').toLowerCase();
+    if (v !== 'on' && v !== 'off') { addLine('sound is ' + (g.Sound.isEnabled() ? 'on' : 'off') + ' (use: sound on|off)', 'dim'); return; }
+    g.Sound.setEnabled(v === 'on');
+    if (v === 'on') g.Sound.score();
+    addLine('sound ' + v);
+  }
+
+  function runGame(name) {
+    var g = window.TerminalGames;
+    var starter = g && (name === 'snake' ? g.startSnake : name === 'pong' ? g.startPong : name === 'hack' ? g.startHack : null);
+    if (!starter) { addLine(name + ': game module unavailable', 'err'); return; }
+    if (EMBED) tellOS({ type: 'os-discover', id: 'terminal' });
+    var host = document.createElement('div');
+    screen.appendChild(host);
+    state.gameActive = true;
+    var il = document.getElementById('inputline');
+    if (il) il.hidden = true;
+    starter(host, function (score) {
+      state.gameActive = false;
+      if (il) il.hidden = false;
+      if (typeof score === 'number') addLine(name + ' finished · score ' + score, 'dim');
+      else addLine(name + ' closed.', 'dim');
+      renderPrompt();
+      focusCatcher();
+      scrollDown();
+    });
+    scrollDown();
+  }
+
   function cmdSudo(args) {
     addLine(USER + ' is not in the sudoers file. this incident has been reported :-)', 'err');
     if (args.length) addLine('(it has not, there is nowhere to report it, this is a static page)', 'dim');
@@ -675,7 +718,9 @@
     var f = parseFlags(args);
     var rest = f.args.slice();
     var n = 10;
-    if (rest.length > 1 && /^\d+$/.test(rest[rest.length - 1])) n = parseInt(rest.pop(), 10);
+    var numFlag = /^(\d+)$/.exec(f.flags);
+    if (numFlag) n = parseInt(numFlag[1], 10);
+    else if (rest.length > 1 && /^\d+$/.test(rest[rest.length - 1])) n = parseInt(rest.pop(), 10);
     else if (rest.length > 1 && /^\d+$/.test(rest[0])) n = parseInt(rest.shift(), 10);
     var target = rest[0];
     if (!target) { addLine(mode + ': usage: ' + mode + ' [-n N] <file>', 'err'); return; }
@@ -764,6 +809,10 @@
     date: function () { addLine(nowStamp()); },
     theme: cmdTheme,
     crt: cmdCrt,
+    sound: cmdSound,
+    snake: function () { runGame('snake'); },
+    pong: function () { runGame('pong'); },
+    hack: function () { runGame('hack'); },
     sudo: cmdSudo,
     pulsar: cmdPulsar,
     clear: function () { clearScreen(); },
@@ -809,6 +858,15 @@
 
   /* ---- tab completion -------------------------------------------------- */
 
+  function lcp(list) {
+    if (!list.length) return '';
+    var p = list[0];
+    for (var i = 1; i < list.length; i++) {
+      while (p && list[i].indexOf(p) !== 0) p = p.slice(0, -1);
+    }
+    return p;
+  }
+
   function complete() {
     var buf = state.buffer;
     var trailingSpace = /\s$/.test(buf);
@@ -816,26 +874,35 @@
 
     if (parts.length <= 1 && !trailingSpace) {
       var prefix = parts[0] || '';
-      var hits = Object.keys(CMDS).filter(function (k) { return k.indexOf(prefix) === 0; });
+      var allCmds = Object.keys(CMDS).concat(['cat', 'less', 'more']);
+      var hits = allCmds.filter(function (k) { return k.indexOf(prefix) === 0; });
       if (hits.length === 1) state.buffer = hits[0] + ' ';
-      else if (hits.length > 1) { addLine(promptText() + buf); addLine(hits.join('   ')); }
+      else if (hits.length > 1) {
+        var cp = lcp(hits);
+        if (cp.length > prefix.length) state.buffer = cp;
+        else { addLine(promptText() + buf); addLine(hits.join('   ')); }
+      }
       renderPrompt();
       return;
     }
 
     var last = trailingSpace ? '' : parts[parts.length - 1];
-    var parent = resolve(parts.length > 1 ? parts.slice(1, -1).join('/') : '');
+    var slash = last.lastIndexOf('/');
+    var dirPrefix = slash !== -1 ? last.slice(0, slash + 1) : '';
+    var frag = slash !== -1 ? last.slice(slash + 1) : last;
+    var parent = dirPrefix ? resolve(dirPrefix) : state.cwd;
     var map = dirs();
     var entries = map[parent] || [];
-    var hits2 = entries.filter(function (e) { return e.indexOf(last) === 0; });
+    var hits2 = entries.filter(function (e) { return e.indexOf(frag) === 0; });
+    var head = trailingSpace ? buf : buf.slice(0, buf.length - last.length);
     if (hits2.length === 1) {
-      var head = parts.slice(0, -1).join(' ') + (parts.length > 1 ? ' ' : '');
-      state.buffer = head + hits2[0];
+      state.buffer = head + dirPrefix + hits2[0];
       if (/\/$/.test(hits2[0])) state.buffer = state.buffer.replace(/\/$/, '');
       renderPrompt();
     } else if (hits2.length > 1) {
-      addLine(promptText() + buf);
-      addLine(hits2.join('   '));
+      var cp2 = lcp(hits2);
+      if (cp2.length > frag.length) state.buffer = head + dirPrefix + cp2;
+      else { addLine(promptText() + buf); addLine(hits2.join('   ')); }
       renderPrompt();
     }
   }
@@ -872,6 +939,13 @@
     renderPrompt();
     focusCatcher();
   }
+
+  window.addEventListener('message', function (e) {
+    if (e.origin !== location.origin || !e.data || e.data.type !== 'os-audio') return;
+    if (window.TermGames && window.TermGames.Sound && window.TermGames.Sound.setMaster) {
+      window.TermGames.Sound.setMaster(!!e.data.on, e.data.vol);
+    }
+  });
 
   boot();
 

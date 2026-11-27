@@ -7,7 +7,16 @@
 
   // --- Web Audio Synthesizer for Retro Clicks, Beeps, and Degauss ---
   var audioCtx = null;
-  var soundEnabled = localStorage.getItem('term-sound') === '1';
+  var soundEnabled = false;
+  var osMasterVol = 0.8;
+  try {
+    soundEnabled = localStorage.getItem('term-sound') === '1';
+    if (localStorage.getItem('sound') === 'off') osMasterVol = 0;
+    else {
+      var rv = parseFloat(localStorage.getItem('volume'));
+      if (isFinite(rv)) osMasterVol = Math.max(0, Math.min(1, rv));
+    }
+  } catch (e) {}
 
   function getAudioContext() {
     if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) {
@@ -21,14 +30,17 @@
 
   var Sound = {
     isEnabled: function() {
-      return soundEnabled;
+      return soundEnabled && osMasterVol > 0;
     },
     setEnabled: function(val) {
       soundEnabled = !!val;
-      localStorage.setItem('term-sound', soundEnabled ? '1' : '0');
+      try { localStorage.setItem('term-sound', soundEnabled ? '1' : '0'); } catch (e) {}
+    },
+    setMaster: function(on, vol) {
+      osMasterVol = on ? Math.max(0, Math.min(1, Number(vol) || 0)) : 0;
     },
     click: function() {
-      if (!soundEnabled) return;
+      if (!soundEnabled || !osMasterVol) return;
       try {
         var ctx = getAudioContext();
         if (!ctx) return;
@@ -37,7 +49,7 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(1400, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.02);
-        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.setValueAtTime(Math.max(0.002, 0.06 * osMasterVol), ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.02);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -46,7 +58,7 @@
       } catch (e) {}
     },
     beep: function(freq, duration, type) {
-      if (!soundEnabled) return;
+      if (!soundEnabled || !osMasterVol) return;
       try {
         var ctx = getAudioContext();
         if (!ctx) return;
@@ -57,7 +69,7 @@
         var gain = ctx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.setValueAtTime(Math.max(0.002, 0.08 * osMasterVol), ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -66,7 +78,7 @@
       } catch (e) {}
     },
     degauss: function() {
-      if (!soundEnabled) return;
+      if (!soundEnabled || !osMasterVol) return;
       try {
         var ctx = getAudioContext();
         if (!ctx) return;
@@ -75,7 +87,7 @@
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(80, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.35);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.setValueAtTime(Math.max(0.002, 0.15 * osMasterVol), ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -152,7 +164,8 @@
     var nextDir = { x: 1, y: 0 };
     var food = { x: 18, y: 10 };
     var score = 0;
-    var highScore = parseInt(localStorage.getItem('term-snake-hi') || '0', 10);
+    var highScore = 0;
+    try { highScore = parseInt(localStorage.getItem('term-snake-hi') || '0', 10) || 0; } catch (e) {}
     var isGameOver = false;
     var intervalId = null;
 
@@ -170,12 +183,10 @@
     }
 
     function getThemeColor() {
-      var theme = document.documentElement.getAttribute('data-theme') || 'default';
-      if (theme === 'matrix') return '#50fa7b';
+      var theme = document.documentElement.getAttribute('data-term') || 'green';
       if (theme === 'amber') return '#ffb000';
-      if (theme === 'cyber') return '#00f0ff';
-      if (theme === 'solaris') return '#38bdf8';
-      return '#e6e6e6';
+      if (theme === 'white') return '#e6e6e6';
+      return '#62f2a0';
     }
 
     function draw() {
@@ -194,7 +205,7 @@
       }
 
       // Draw Food
-      ctx.fillStyle = (document.documentElement.getAttribute('data-theme') === 'amber') ? '#ff4444' : '#ff5555';
+      ctx.fillStyle = '#ff6b6b';
       ctx.fillRect(food.x * gridSize + 1, food.y * gridSize + 1, gridSize - 2, gridSize - 2);
 
       // Draw Snake
@@ -250,7 +261,7 @@
         if (scoreEl) scoreEl.textContent = score;
         if (score > highScore) {
           highScore = score;
-          localStorage.setItem('term-snake-hi', highScore);
+          try { localStorage.setItem('term-snake-hi', String(highScore)); } catch (e) {}
           if (hiEl) hiEl.textContent = highScore;
         }
         Sound.score();
@@ -289,6 +300,7 @@
     function handleKey(e) {
       if (e.key === 'Escape' || e.key === 'q' || e.key === 'Q') {
         e.preventDefault();
+        e.stopPropagation();
         exit();
         return;
       }
@@ -399,12 +411,10 @@
     }
 
     function getThemeColor() {
-      var theme = document.documentElement.getAttribute('data-theme') || 'default';
-      if (theme === 'matrix') return '#50fa7b';
+      var theme = document.documentElement.getAttribute('data-term') || 'green';
       if (theme === 'amber') return '#ffb000';
-      if (theme === 'cyber') return '#00f0ff';
-      if (theme === 'solaris') return '#38bdf8';
-      return '#ffffff';
+      if (theme === 'white') return '#e6e6e6';
+      return '#62f2a0';
     }
 
     function loop() {
@@ -489,6 +499,7 @@
     function handleKeyDown(e) {
       if (e.key === 'Escape' || e.key === 'q' || e.key === 'Q') {
         e.preventDefault();
+        e.stopPropagation();
         exit();
         return;
       }
@@ -560,7 +571,7 @@
 
     var logView = document.createElement('div');
     logView.className = 'hack-log-view';
-    logView.innerHTML = '<p class="dim">&gt; ENTER CIPHER KEY OR CLICK A MEMORY BLOCK TO TEST LIKENESS:</p>';
+    logView.innerHTML = '<p class="dim">&gt; CLICK A MEMORY BLOCK TO TEST LIKENESS:</p>';
     gameBox.appendChild(logView);
 
     var memGrid = document.createElement('div');
@@ -573,7 +584,7 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'hack-word-btn';
-      btn.innerHTML = `<span class="dim">${addr}</span> [<b>${w}</b>]`;
+      btn.innerHTML = '<span class="dim">' + addr + '</span> [<b>' + w + '</b>]';
       btn.addEventListener('click', function() { testGuess(w, btn); });
       memGrid.appendChild(btn);
     });
@@ -608,7 +619,7 @@
       p.className = 'hack-log-line';
 
       if (match) {
-        p.innerHTML = `<span style="color:#50fa7b">&gt; [OK] PASSWORD ACCEPTED! ACCESS GRANTED.</span>`;
+        p.innerHTML = '<span class="ok">&gt; [OK] PASSWORD ACCEPTED! ACCESS GRANTED.</span>';
         logView.appendChild(p);
         Sound.score();
         attemptsLeft = 0;
@@ -618,14 +629,14 @@
         var attEl = gameBox.querySelector('#hack-attempts');
         if (attEl) attEl.textContent = attemptsLeft;
 
-        p.innerHTML = `<span style="color:#ff5555">&gt; [DENIED] "${word}" - Likeness = ${likeness}/${secret.length}</span>`;
+        p.innerHTML = '<span class="err">&gt; [DENIED] "' + word + '" - Likeness = ' + likeness + '/' + secret.length + '</span>';
         logView.appendChild(p);
         Sound.hit();
         if (btnEl) btnEl.disabled = true;
 
         if (attemptsLeft <= 0) {
           var overP = document.createElement('p');
-          overP.innerHTML = `<span style="color:#ff5555">&gt; [LOCKOUT] SYSTEM TERMINATED. Correct key was: ${secret}</span>`;
+          overP.innerHTML = '<span class="err">&gt; [LOCKOUT] SYSTEM TERMINATED. Correct key was: ' + secret + '</span>';
           logView.appendChild(overP);
           Sound.over();
         }
@@ -636,6 +647,7 @@
     function handleKey(e) {
       if (e.key === 'Escape' || e.key === 'q' || e.key === 'Q') {
         e.preventDefault();
+        e.stopPropagation();
         exit();
       }
     }

@@ -15,14 +15,17 @@ sitemap: false
         <h1>The Web</h1>
         <p>Harya's site, and popular websites from around 2000 as the <a href="https://web.archive.org/" data-ext>Internet Archive</a> saved them. They open here, and their links still work wherever the archive kept a copy. Plug-ins like Flash are gone, so anything that needed one stays blank.</p>
       </header>
+      <form class="wb-go" hidden autocomplete="off">
+        <input class="field sunken wb-url" type="text" spellcheck="false" autocapitalize="off" placeholder="Open any site from the past (e.g. apple.com, nintendo.com) or filter below…" aria-label="Website address or filter">
+        <select class="field sunken wb-year" aria-label="Year">{% for y in (1996..2010) %}<option{% if y == 2001 %} selected{% endif %}>{{ y }}</option>{% endfor %}</select>
+        <button class="btn small" type="submit">Time Travel</button>
+      </form>
       <ul class="wb-list">
         <li class="wb-home"><a href="{{ '/' | relative_url }}"><b>Harya</b><span class="wb-y">today</span></a><span class="dim">{{ site.description | strip | escape }}</span></li>
         {% for s in site.data.oldweb %}<li><a href="{{ '/web/' | relative_url }}?u={{ s.url | uri_escape }}&amp;y={{ s.year }}"><b>{{ s.name | escape }}</b><span class="wb-y">{{ s.year }}</span></a><span class="dim">{{ s.note | escape }}</span></li>
         {% endfor %}
       </ul>
-      <p class="wb-type" hidden>Or type any address into the address bar. It opens as it looked in
-        <select class="field sunken wb-year" aria-label="Year">{% for y in (1996..2010) %}<option{% if y == 2001 %} selected{% endif %}>{{ y }}</option>{% endfor %}</select>.</p>
-      <p class="dim small">Opening one of these connects to web.archive.org; the Browser asks first. The archive sees your IP address, the same as visiting it directly.</p>
+      <p class="dim small">Opening an old site connects to web.archive.org; the Browser asks first. The archive sees your IP address, the same as visiting it directly. You can also type <code>site.com 1999</code> straight into the address bar.</p>
     </div>
   </div>
   <div class="statusline"><span class="seg grow" data-status>Done</span><span class="seg">Internet</span></div>

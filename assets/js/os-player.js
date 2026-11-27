@@ -121,7 +121,7 @@
     ctx = OS.audio();
     if (!ctx) return null;
     master = ctx.createGain();
-    master.gain.value = vol;
+    master.gain.value = effVol();
     analyser = ctx.createAnalyser();
     analyser.fftSize = 1024;
     master.connect(analyser);
@@ -223,7 +223,7 @@
     if (!d || typeof d !== 'object') return;
     var item = list[cur];
     if (d.event === 'onReady' || d.event === 'initialDelivery') {
-      if (!yt.ready) { yt.ready = true; ytCmd('setVolume', [Math.round(vol * 100)]); }
+      if (!yt.ready) { yt.ready = true; applyOutputVol(); }
     }
     var info = d.info;
     if (d.event === 'onStateChange' && typeof info === 'number') ytState(info);
@@ -303,7 +303,8 @@
       vid.setAttribute('playsinline', '');
       vid.src = s.vid;
       vid._u = s.vid;
-      vid.volume = vol;
+      vid.volume = effVol();
+      vid.muted = effVol() === 0;
       vid.title = s.t;
       vid.addEventListener('loadedmetadata', function () { var it = list[cur]; if (it.vid === this._u && isFinite(this.duration)) { it.dur = this.duration; draw(); } });
       vid.addEventListener('ended', function () { if (list[cur].vid === this._u) { playing = false; ended(); } });
@@ -355,7 +356,8 @@
       if (!v) return;
       pos = Math.max(0, at || 0);
       if (Math.abs(v.currentTime - pos) > 0.5) { try { v.currentTime = pos; } catch (e) {} }
-      v.volume = vol;
+      v.volume = effVol();
+      v.muted = effVol() === 0;
       playing = true;
       var pr = v.play();
       if (pr && pr.catch) pr.catch(function (err) { playing = false; setStatus(err && err.name === 'NotAllowedError' ? 'Press Play to start.' : 'Could not play ' + s.t + '.'); draw(); });
@@ -419,8 +421,10 @@
     if (s.yt && yt.frame) { ytCmd('pauseVideo'); pos = yt.time; playing = false; setStatus('Paused'); draw(); return; }
     pos = now(); playing = false; stopAll(); setStatus('Paused'); draw();
   }
-  function stop() { playing = false; pos = 0; stopAll(); if (vid) { try { vid.currentTime = 0; } catch (e) {} } setStatus('Stopped'); if (win) screenFor(list[cur]); draw(); }
+  var pickTimer = null;
+  function stop() { clearTimeout(pickTimer); playing = false; pos = 0; stopAll(); if (vid) { try { vid.currentTime = 0; } catch (e) {} } setStatus('Stopped'); if (win) screenFor(list[cur]); draw(); }
   function go(i, autoplay) {
+    clearTimeout(pickTimer);
     cur = (i + list.length) % list.length;
     pos = 0;
     stopAll();
@@ -444,6 +448,27 @@
         '<span class="n">' + (i + 1) + '.</span><span class="tt">' + esc(s.t) + '</span><span class="by">' + esc(s.by) + '</span><span class="du">' + (s.dur ? fmt(s.dur) : '--:--') + '</span></li>';
     }).join('');
   }
+  var renderedKey = '';
+  function listKey() {
+    return list.map(function (s, i) { return i + ':' + s.t + ':' + (s.yt ? 1 : 0); }).join('|');
+  }
+  function syncList() {
+    if (!ui.list) return;
+    var k = listKey();
+    if (k !== renderedKey) {
+      ui.list.innerHTML = rows();
+      renderedKey = k;
+      return;
+    }
+    var lis = ui.list.querySelectorAll('li[data-i]');
+    for (var i = 0; i < lis.length; i++) {
+      var li = lis[i], s = list[i];
+      li.setAttribute('aria-selected', String(i === cur));
+      li.tabIndex = i === cur ? 0 : -1;
+      var du = li.querySelector('.du');
+      if (du && s) du.textContent = s.dur ? fmt(s.dur) : '--:--';
+    }
+  }
   function draw() {
     if (!win) return;
     var s = list[cur];
@@ -452,8 +477,8 @@
     ui.play.setAttribute('aria-label', playing ? 'Pause' : 'Play');
     ui.shuffle.setAttribute('aria-pressed', String(shuffle));
     ui.repeat.setAttribute('aria-pressed', String(repeat));
-    ui.list.innerHTML = rows();
-    ui.count.textContent = list.length + ' songs';
+    syncList();
+    ui.count.textContent = list.length + ' tracks';
     OS.setTitle(win, (playing ? s.t + ' - ' : '') + 'Media Player');
     tickUI();
   }
@@ -517,6 +542,36 @@
     });
   }
 
+  var lastVol = vol;
+  function effVol() {
+    var sys = OS.effectiveVolume ? OS.effectiveVolume() : (OS.soundOn() ? 1 : 0);
+    return Math.max(0, Math.min(1, vol * sys));
+  }
+  function applyOutputVol() {
+    var g = effVol();
+    if (master) master.gain.value = g;
+    if (vid) { vid.volume = g; vid.muted = g === 0; }
+    if (yt.frame) {
+      ytCmd(g === 0 ? 'mute' : 'unMute');
+      ytCmd('setVolume', [Math.round(g * 100)]);
+    }
+    if (ui.mute) {
+      var muted = g === 0;
+      ui.mute.setAttribute('aria-pressed', String(muted));
+      ui.mute.title = vol === 0 ? 'Unmute player' : muted ? 'System muted in taskbar tray' : 'Mute player';
+      var u = ui.mute.querySelector('use');
+      if (u) u.setAttribute('href', muted ? '#i-mute' : '#i-speaker');
+    }
+  }
+  function setVol(v) {
+    vol = Math.max(0, Math.min(1, v));
+    if (vol > 0) lastVol = vol;
+    if (ui.vol) ui.vol.value = String(Math.round(vol * 100));
+    applyOutputVol();
+  }
+  OS.on('volume', applyOutputVol);
+  OS.on('sound', applyOutputVol);
+
   OS.player = { playing: function () { return playing; }, pause: function () { if (playing) pause(); } };
   // right after log on, Media Player opens on the default track. Your own
   // video starts playing (the log-on click lets the browser allow sound);
@@ -531,6 +586,7 @@
   });
   OS.apps.player = function (from) {
     if (win) { OS.restore(win); return; }
+    renderedKey = '';
     win = OS.makeWindow('player', 'Media Player',
       '<div class="win-body player-body">' +
         '<div class="player-screen"><canvas aria-hidden="true" title="Click to change the view"></canvas><div class="lcd"><span data-title></span><span data-time>0:00</span></div><div class="player-video"></div></div>' +
@@ -543,7 +599,7 @@
           '<span class="yt-time" data-ytime></span><span class="sp"></span>' +
           '<button type="button" class="btn tool" data-p="shuffle" aria-pressed="false">Shuffle</button>' +
           '<button type="button" class="btn tool" data-p="repeat" aria-pressed="true">Repeat</button>' +
-          '<label class="vol">' + OS.svg('speaker') + '<input class="slider" type="range" min="0" max="100" value="' + Math.round(vol * 100) + '" aria-label="Volume" data-vol></label>' +
+          '<span class="vol"><button type="button" class="tray-btn" data-p="mute" aria-label="Mute player" title="Mute player">' + OS.svg(effVol() === 0 ? 'mute' : 'speaker') + '</button><input class="slider" type="range" min="0" max="100" value="' + Math.round(vol * 100) + '" aria-label="Volume" data-vol></span>' +
         '</div>' +
         '<ul class="playlist sunken" role="listbox" aria-label="Playlist"></ul>' +
         '<div class="player-foot"><button type="button" class="btn small" data-p="open">Open…</button><button type="button" class="btn small" data-p="url">Open URL…</button><input type="file" accept="audio/*" multiple hidden data-file>' +
@@ -554,7 +610,9 @@
     ui = { canvas: $('canvas', el), title: $('[data-title]', el), time: $('[data-time]', el), seek: $('[data-seek]', el),
       play: $('[data-p="play"]', el), shuffle: $('[data-p="shuffle"]', el), repeat: $('[data-p="repeat"]', el),
       list: $('.playlist', el), status: $('[data-status]', el), file: $('[data-file]', el), count: $('[data-count]', el),
-      screen: $('.player-screen', el), video: $('.player-video', el), ytime: $('[data-ytime]', el) };
+      screen: $('.player-screen', el), video: $('.player-video', el), ytime: $('[data-ytime]', el),
+      vol: $('[data-vol]', el), mute: $('[data-p="mute"]', el) };
+    applyOutputVol();
     el.addEventListener('click', function (e) {
       var b = e.target.closest('[data-p]');
       if (!b) return;
@@ -565,12 +623,51 @@
       else if (p === 'prev') { if (now() > 3) play(0); else go(cur - 1, playing); }
       else if (p === 'shuffle') { shuffle = !shuffle; draw(); }
       else if (p === 'repeat') { repeat = !repeat; draw(); }
+      else if (p === 'mute') {
+        if (effVol() > 0) setVol(0);
+        else {
+          if (vol === 0) setVol(lastVol || 0.8);
+          if (OS.effectiveVolume && OS.effectiveVolume() === 0) OS.setSound(true);
+        }
+      }
       else if (p === 'open') ui.file.click();
       else if (p === 'url') openUrl();
     });
+    el.addEventListener('keydown', function (e) {
+      if (e.target.closest('input, button, [role="option"]')) return;
+      if (e.key === ' ') { e.preventDefault(); if (playing) pause(); else play(pos); }
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        var s = list[cur], d = s.dur || (mediaEl && mediaEl.duration) || 0;
+        if (!d) return;
+        e.preventDefault();
+        var at = Math.max(0, Math.min(d, now() + (e.key === 'ArrowRight' ? 5 : -5)));
+        if (s.yt) { if (yt.frame) { ytCmd('seekTo', [at, true]); yt.time = at; } else pos = at; }
+        else if (s.vid) { var v = vidFor(s); if (v) { try { v.currentTime = at; } catch (x) {} } pos = at; }
+        else if (playing) play(at); else pos = at;
+        tickUI();
+      }
+    });
     ui.canvas.addEventListener('click', function () { mode = (mode + 1) % 2; });
-    ui.list.addEventListener('click', function (e) { var r = e.target.closest('[data-i]'); if (r && +r.getAttribute('data-i') !== cur) go(+r.getAttribute('data-i'), playing); });
-    ui.list.addEventListener('dblclick', function (e) { var r = e.target.closest('[data-i]'); if (r) go(+r.getAttribute('data-i'), true); });
+    ui.list.addEventListener('click', function (e) {
+      var r = e.target.closest('[data-i]');
+      if (!r) return;
+      var i = +r.getAttribute('data-i');
+      if (i === cur) return;
+      clearTimeout(pickTimer);
+      var wasVid = !!(list[cur] && (list[cur].vid || list[cur].yt));
+      var nowVid = !!(list[i] && (list[i].vid || list[i].yt));
+      if (!playing && wasVid !== nowVid) {
+        cur = i; pos = 0; stopAll(); draw();
+        pickTimer = setTimeout(function () { if (win) { screenFor(list[cur]); draw(); } }, 260);
+      } else {
+        go(i, playing);
+      }
+    });
+    ui.list.addEventListener('dblclick', function (e) {
+      clearTimeout(pickTimer);
+      var r = e.target.closest('[data-i]');
+      if (r) go(+r.getAttribute('data-i'), true);
+    });
     ui.list.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); go(cur + (e.key === 'ArrowDown' ? 1 : -1), false); var r = $('[aria-selected="true"]', ui.list); if (r) r.focus(); }
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(0); }
@@ -584,12 +681,7 @@
       if (s.vid) { var v = vidFor(s); if (v) { try { v.currentTime = at; } catch (x) {} } pos = at; tickUI(); return; }
       if (playing) play(at); else { pos = at; tickUI(); }
     });
-    $('[data-vol]', el).addEventListener('input', function (e) {
-      vol = +e.target.value / 100;
-      if (master) master.gain.value = vol;
-      if (yt.frame) ytCmd('setVolume', [Math.round(vol * 100)]);
-      if (vid) vid.volume = vol;
-    });
+    ui.vol.addEventListener('input', function (e) { setVol(+e.target.value / 100); });
     ui.file.addEventListener('change', function () {
       var first = list.length;
       Array.prototype.forEach.call(ui.file.files, function (f) {

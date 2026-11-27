@@ -40,39 +40,66 @@
     'Thank you for choosing notavirus.exe!'
   ];
 
-  /* ---------------- characters (drawn for this site) ---------------- */
+  /* ---------------- characters (drawn for this site; dancing on beat!) ---------------- */
   var EYES = function (x1, x2, y, r) {
     return '<g class="eyes"><circle cx="' + x1 + '" cy="' + y + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="1.5"/><circle cx="' + x2 + '" cy="' + y + '" r="' + r + '" fill="#fff" stroke="#000" stroke-width="1.5"/>' +
       '<circle class="pupil" cx="' + (x1 + 1.5) + '" cy="' + (y + 1) + '" r="' + (r * 0.45) + '"/><circle class="pupil" cx="' + (x2 + 1.5) + '" cy="' + (y + 1) + '" r="' + (r * 0.45) + '"/></g>';
   };
   var ARMS = function (lx, rx, y) {
-    return '<g class="arm arm-l"><path d="M' + lx + ' ' + y + 'l-14 -10" stroke="#000" stroke-width="3" stroke-linecap="round"/><circle cx="' + (lx - 15) + '" cy="' + (y - 11) + '" r="5" fill="#fff" stroke="#000" stroke-width="1.5"/></g>' +
-      '<g class="arm arm-r"><path d="M' + rx + ' ' + y + 'l14 -10" stroke="#000" stroke-width="3" stroke-linecap="round"/><circle cx="' + (rx + 15) + '" cy="' + (y - 11) + '" r="5" fill="#fff" stroke="#000" stroke-width="1.5"/></g>';
+    return '<g class="arm arm-l"><path d="M' + lx + ' ' + y + 'q-10 -2 -16 -14" stroke="#000" stroke-width="3.2" fill="none" stroke-linecap="round"/><circle cx="' + (lx - 17) + '" cy="' + (y - 15) + '" r="5.2" fill="#fff" stroke="#000" stroke-width="1.5"/></g>' +
+      '<g class="arm arm-r"><path d="M' + rx + ' ' + y + 'q10 -2 16 -14" stroke="#000" stroke-width="3.2" fill="none" stroke-linecap="round"/><circle cx="' + (rx + 17) + '" cy="' + (y - 15) + '" r="5.2" fill="#fff" stroke="#000" stroke-width="1.5"/></g>';
   };
   var LEGS = function (x1, x2, y) {
-    return '<g class="legs"><path d="M' + x1 + ' ' + y + 'v14M' + x2 + ' ' + y + 'v14" stroke="#000" stroke-width="3"/><ellipse cx="' + (x1 - 4) + '" cy="' + (y + 15) + '" rx="7" ry="3.5" fill="#c02020" stroke="#000"/><ellipse cx="' + (x2 + 4) + '" cy="' + (y + 15) + '" rx="7" ry="3.5" fill="#c02020" stroke="#000"/></g>';
+    return '<g class="legs">' +
+      '<g class="leg leg-l"><path d="M' + x1 + ' ' + y + 'v15" stroke="#000" stroke-width="3.2" stroke-linecap="round"/><ellipse cx="' + (x1 - 4) + '" cy="' + (y + 16) + '" rx="7.5" ry="3.8" fill="#c02020" stroke="#000" stroke-width="1.4"/></g>' +
+      '<g class="leg leg-r"><path d="M' + x2 + ' ' + y + 'v15" stroke="#000" stroke-width="3.2" stroke-linecap="round"/><ellipse cx="' + (x2 + 4) + '" cy="' + (y + 16) + '" rx="7.5" ry="3.8" fill="#c02020" stroke="#000" stroke-width="1.4"/></g>' +
+    '</g>';
   };
   var CHARS = {
-    toasty: '<svg viewBox="-20 -10 140 120" class="vx-svg">' +
-      '<rect x="20" y="8" width="16" height="22" rx="3" fill="#e8b062" stroke="#7a4a1a" stroke-width="2"/><rect x="62" y="8" width="16" height="22" rx="3" fill="#e8b062" stroke="#7a4a1a" stroke-width="2"/>' +
+    toasty: '<svg viewBox="-26 -18 152 132" class="vx-svg">' +
+      '<ellipse class="vx-floor" cx="50" cy="103" rx="34" ry="7"/>' +
+      '<g class="vx-body"><g class="toast"><rect x="20" y="6" width="16" height="24" rx="3" fill="#e8b062" stroke="#7a4a1a" stroke-width="2"/><rect x="62" y="6" width="16" height="24" rx="3" fill="#e8b062" stroke="#7a4a1a" stroke-width="2"/></g>' +
       '<rect x="6" y="20" width="88" height="64" rx="18" fill="#c8ccd2" stroke="#000" stroke-width="2.5"/><rect x="12" y="24" width="76" height="10" rx="5" fill="#fff" opacity=".5"/>' +
       '<rect x="94" y="42" width="10" height="6" rx="2" fill="#222"/>' + EYES(36, 62, 50, 9) +
-      '<path d="M36 68q14 12 28 0" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round"/>' + ARMS(8, 92, 62) + LEGS(32, 68, 84) + '</svg>',
-    floppy: '<svg viewBox="-20 -10 120 120" class="vx-svg">' +
-      '<path d="M6 4h62l12 12v66H6z" fill="#2a3a8a" stroke="#000" stroke-width="2.5"/><rect x="22" y="4" width="34" height="22" fill="#c8ccd2" stroke="#000" stroke-width="1.5"/><rect x="42" y="8" width="8" height="14" fill="#2a3a8a"/>' +
+      '<path d="M36 67q14 13 28 0" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round"/>' + ARMS(8, 92, 60) + '</g>' + LEGS(32, 68, 84) + '</svg>',
+    floppy: '<svg viewBox="-24 -16 132 130" class="vx-svg">' +
+      '<ellipse class="vx-floor" cx="43" cy="101" rx="30" ry="6.5"/>' +
+      '<g class="vx-body"><path d="M6 4h62l12 12v66H6z" fill="#2a3a8a" stroke="#000" stroke-width="2.5"/><rect x="22" y="4" width="34" height="22" fill="#c8ccd2" stroke="#000" stroke-width="1.5"/><rect x="42" y="8" width="8" height="14" fill="#2a3a8a"/>' +
       '<rect x="14" y="40" width="58" height="38" fill="#fff" stroke="#000" stroke-width="1.5"/>' + EYES(32, 54, 52, 7) +
-      '<path d="M34 66q9 8 18 0" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>' + ARMS(6, 80, 50) + LEGS(26, 60, 82) + '</svg>',
-    cd: '<svg viewBox="-20 -10 120 120" class="vx-svg">' +
-      '<circle cx="40" cy="42" r="38" fill="#dcdfe6" stroke="#000" stroke-width="2.5"/><path d="M40 4a38 38 0 0 1 33 19L40 42z" fill="#b7dcff" opacity=".8"/><path d="M73 61a38 38 0 0 1-33 19V42z" fill="#e7c9ff" opacity=".8"/><path d="M7 61A38 38 0 0 1 7 23l33 19z" fill="#c9f2b0" opacity=".8"/>' +
+      '<path d="M34 66q9 8 18 0" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>' + ARMS(6, 80, 50) + '</g>' + LEGS(26, 60, 82) + '</svg>',
+    cd: '<svg viewBox="-24 -16 128 130" class="vx-svg">' +
+      '<ellipse class="vx-floor" cx="40" cy="99" rx="29" ry="6.5"/>' +
+      '<g class="vx-body"><circle cx="40" cy="42" r="38" fill="#dcdfe6" stroke="#000" stroke-width="2.5"/><path d="M40 4a38 38 0 0 1 33 19L40 42z" fill="#b7dcff" opacity=".8"/><path d="M73 61a38 38 0 0 1-33 19V42z" fill="#e7c9ff" opacity=".8"/><path d="M7 61A38 38 0 0 1 7 23l33 19z" fill="#c9f2b0" opacity=".8"/>' +
       '<circle cx="40" cy="42" r="9" fill="#fff" stroke="#000" stroke-width="1.5"/>' +
       '<g class="shades"><rect x="14" y="22" width="22" height="12" rx="4" fill="#000"/><rect x="44" y="22" width="22" height="12" rx="4" fill="#000"/><path d="M36 27h8" stroke="#000" stroke-width="3"/><path d="M17 25h8" stroke="#fff" stroke-width="2" opacity=".6"/></g>' +
-      '<path d="M26 58q14 10 28 0" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round"/>' + ARMS(4, 76, 46) + LEGS(28, 52, 80) + '</svg>',
-    bug: '<svg viewBox="0 0 32 32" class="vx-svg">' + '<use href="#i-bug"/></svg>'
+      '<path d="M26 58q14 10 28 0" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round"/>' + ARMS(4, 76, 46) + '</g>' + LEGS(28, 52, 80) + '</svg>',
+    bug: '<svg viewBox="-24 -22 128 136" class="vx-svg">' +
+      '<ellipse class="vx-floor" cx="40" cy="99" rx="28" ry="6.5"/>' +
+      '<g class="vx-body">' +
+      '<g class="ant ant-l"><path d="M32 18q-8 -16 -18 -18" stroke="#000" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="13" cy="0" r="4" fill="#ffd34d" stroke="#000" stroke-width="1.4"/></g>' +
+      '<g class="ant ant-r"><path d="M48 18q8 -16 18 -18" stroke="#000" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="67" cy="0" r="4" fill="#ffd34d" stroke="#000" stroke-width="1.4"/></g>' +
+      '<ellipse cx="40" cy="52" rx="28" ry="30" fill="#d42020" stroke="#000" stroke-width="2.5"/>' +
+      '<path d="M40 24v56" stroke="#000" stroke-width="2" opacity=".55"/>' +
+      '<circle cx="24" cy="46" r="4.5" fill="#1a1a1a"/><circle cx="56" cy="46" r="4.5" fill="#1a1a1a"/>' +
+      '<circle cx="27" cy="64" r="3.8" fill="#1a1a1a"/><circle cx="53" cy="64" r="3.8" fill="#1a1a1a"/>' +
+      '<ellipse cx="40" cy="24" rx="18" ry="13" fill="#222" stroke="#000" stroke-width="2"/>' +
+      EYES(32, 48, 24, 6.2) +
+      '<path d="M32 33q8 6 16 0" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+      ARMS(12, 68, 50) + '</g>' + LEGS(28, 52, 80) + '</svg>'
   };
+  var STYLES = ['dance-disco', 'dance-boogie', 'dance-groove'];
   function character(kind, cls) {
     var d = document.createElement('div');
-    d.className = 'vx-char ' + kind + (cls ? ' ' + cls : '');
-    d.innerHTML = CHARS[kind];
+    var style = STYLES[Math.floor(Math.random() * STYLES.length)];
+    d.className = 'vx-char ' + kind + ' ' + style + (cls ? ' ' + cls : '');
+    d.innerHTML = CHARS[kind] + '<span class="vx-notes" aria-hidden="true"><i>♪</i><i>♫</i></span>';
+    d.addEventListener('click', function () {
+      if (d.classList.contains('vx-spin')) return;
+      d.classList.add('vx-spin');
+      OS.sound('pop');
+      say(d, ['woo!', '♪ boogie! ♪', 'disco!', 'can\'t stop!'][Math.floor(Math.random() * 4)], 1600);
+      setTimeout(function () { d.classList.remove('vx-spin'); }, 700);
+    });
     document.body.appendChild(d);
     return d;
   }
@@ -103,12 +130,14 @@
     o.start(t); o.stop(t + len + 0.02);
   }
   function hz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+  function effGain() { return OS.effectiveVolume ? OS.effectiveVolume() : (OS.soundOn() ? 0.8 : 0); }
   function startMusic() {
-    if (!OS.soundOn()) return;
+    var eg = effGain();
+    if (!eg) return;
     var ctx = OS.audio();
     if (!ctx) return;
     var out = ctx.createGain(), lp = ctx.createBiquadFilter();
-    out.gain.value = 0.5;
+    out.gain.value = 0.5 * eg;
     lp.type = 'lowpass'; lp.frequency.value = 3200;
     out.connect(lp); lp.connect(ctx.destination);
     var t0 = ctx.currentTime + 0.1, step = 0;
@@ -136,12 +165,21 @@
       }
     }, 30);
   }
+  function syncAudio() {
+    var eg = effGain();
+    if (music && music.out) {
+      try { music.out.gain.setTargetAtTime(eg ? 0.5 * eg : 0.0001, music.ctx.currentTime, 0.03); } catch (e) {}
+    }
+    if (!eg) { try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {} }
+  }
+  OS.on('sound', syncAudio);
+  OS.on('volume', syncAudio);
   function stopMusic(sad) {
     if (!music) return;
     clearInterval(music.timer);
     var m = music, ctx = m.ctx, t = ctx.currentTime + 0.05;
     music = null;
-    if (sad) { // wah wah wah waaah
+    if (sad && effGain()) { // wah wah wah waaah
       [[62, 0, 0.45], [61, 0.5, 0.45], [60, 1.0, 0.45], [59, 1.5, 1.4]].forEach(function (n) {
         note(ctx, m.out, hz(n[0]), t + n[1], n[2], 'sawtooth', 0.09, n[0] === 59 ? 0.94 : 0.97);
       });
@@ -161,16 +199,17 @@
   }
   function speak(text) {
     if (!voice) voice = pickVoice();
-    if (!OS.soundOn() || !voice) return;
+    var eg = effGain();
+    if (!eg || !voice) return;
     try {
       var u = new SpeechSynthesisUtterance(text);
-      u.voice = voice; u.pitch = 1.7; u.rate = 1.15; u.volume = 0.9;
+      u.voice = voice; u.pitch = 1.7; u.rate = 1.15; u.volume = Math.min(1, 0.9 * eg);
       speechSynthesis.speak(u);
     } catch (e) {}
   }
 
   /* ---------------- the run ---------------- */
-  var on = false, timers = [], raf = 0, errs = 0, startLabel = '', clockTimer = 0, cast = [];
+  var on = false, timers = [], raf = 0, errs = 0, startLabel = '', clockTimer = 0, cast = [], installWin = null;
   function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
 
   OS.apps.virus = function () {
@@ -189,9 +228,16 @@
     try { who = sessionStorage.getItem('os-user') || 'guest'; } catch (e) {}
     OS.log('warn', 'Antivirus', 1337, 'notavirus.exe was run by ' + who + '.');
     if (OS.player && OS.player.pause) OS.player.pause();
-    var w = OS.makeWindow('virus', 'notavirus.exe', '<div class="win-body vx-install">' +
+    var w = installWin = OS.makeWindow('virus', 'notavirus.exe', '<div class="win-body vx-install">' +
       '<p><b>Installing notavirus.exe</b><br>Please do not turn off your computer.</p>' +
       '<div class="vx-bar sunken"><i></i></div><p class="vx-file dim"></p></div>', { noMax: true });
+    var onCloseInstall = function (o) {
+      if (o === w) {
+        OS.off('close', onCloseInstall);
+        if (installWin === w && on) { installWin = null; stop(false); OS.log('info', 'Antivirus', 1339, 'notavirus.exe installation cancelled.'); }
+      }
+    };
+    OS.on('close', onCloseInstall);
     var bar = $('.vx-bar i', w.el), file = $('.vx-file', w.el), n = 0, steps = FILES.length + 1;
     var step = function () {
       if (!on) return;
@@ -199,7 +245,7 @@
       bar.style.width = Math.min(100, n / steps * 100) + '%';
       file.textContent = n <= FILES.length ? FILES[n - 1] : 'Done. Enjoy your new computer.';
       if (n < steps) later(step, calm() ? 260 : 360 + Math.random() * 220);
-      else later(function () { OS.close(w); chaos(); }, 800);
+      else later(function () { installWin = null; OS.off('close', onCloseInstall); OS.close(w, true); chaos(); }, 800);
     };
     later(step, 400);
   }
@@ -228,17 +274,23 @@
       later(cascade, 130);
     };
     cascade();
-    // Toasty, the helpful toaster
+    // Toasty, the helpful toaster + a dancing Bug mascot right away
     var toasty = character('toasty', 'vx-toasty');
     cast.push(toasty);
     later(function () { say(toasty, TOASTY[0]); speak(TOASTY[0]); askToasty(toasty); }, 900);
     later(marquee, 1500);
-    later(conga, 3200);
+    later(conga, 2400);
     later(function () { ad(); later(ad, 1400); }, 5200);
     if (!calm()) {
+      later(bug, 1200);
       later(function () { document.addEventListener('pointermove', glitter, true); document.addEventListener('pointermove', flee, true); }, 4000);
       later(melt, 9000);
-      later(bug, 6000);
+    } else {
+      var staticBug = character('bug', 'vx-bug');
+      staticBug.style.left = '28px';
+      staticBug.style.bottom = 'calc(var(--tb-h) + 18px)';
+      staticBug.style.top = 'auto';
+      cast.push(staticBug);
     }
     var line = 1;
     var chatter = function () { if (!on || line >= TOASTY.length - 1) return; say(toasty, TOASTY[line]); speak(TOASTY[line]); line++; later(chatter, 3600); };
@@ -385,14 +437,16 @@
     if (start && startLabel) start.textContent = startLabel;
     var clock = $('#clock'), d = new Date();
     if (clock) clock.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    installWin = null;
     var w = OS.find('virus');
-    if (w) OS.close(w);
+    if (w) OS.close(w, true);
   }
   function finish(sadDone) {
     var shown = errs;
     stop(sadDone);
     errs = 0;
     OS.log('info', 'Antivirus', 1338, 'notavirus.exe finished after ' + shown + ' error boxes. Nothing was deleted, stored or sent.');
+    OS.emit('discover', 'virus');
     OS.msg({
       title: 'notavirus.exe', icon: 'bug',
       text: 'Just kidding. That was not a virus.\n\nNothing was deleted, nothing was stored, nothing was sent anywhere. Security Center will tell you the same.'

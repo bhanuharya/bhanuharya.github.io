@@ -21,7 +21,7 @@ Every page is still a real page: without JavaScript each URL renders as the desk
 
 3. Write the body in Markdown below the front matter, then commit and push to `main`. GitHub Actions builds and deploys automatically.
 
-The homepage is the whole archive: every post is a row in a packet list, coloured by topic. Its protocol comes from its tags via `_data/protocols.yml`; set `proto:` (and `family:`) in front matter to override. `/terminal/` is a separate interactive view. Drafts live in `_drafts/` and are not published.
+The homepage lists every post in the Browser, grouped by year with topic chips and tag filters. Its topic comes from its tags via `_data/protocols.yml`; set `proto:` (and `family:`) in front matter to override. `/terminal/` is a separate interactive shell with built-in games (`snake`, `pong`, `hack`). Drafts live in `_drafts/` and are not published.
 
 ## Add songs to the Media Player
 
@@ -45,20 +45,21 @@ Titles come from the file name, or from `_data/videos.yml` (`file`, `title`, `by
 
 YouTube videos play inside the player's screen. List them in `_data/youtube.yml` (a title and the 11-character video id), or paste any YouTube link with **Open URL…** in the player (that one lasts until the tab closes).
 
-Nothing loads from YouTube until a visitor presses Play on a YouTube track and agrees (they can tick "don't ask again until I close this tab"). It loads from `youtube-nocookie.com`, the only site the Content Security Policy lets the page frame. Stop, or moving to another track, removes YouTube's player again. The player's own buttons drive it through YouTube's postMessage interface, so no YouTube script runs in the page itself. Once loaded, YouTube (Google) can see the visitor's IP address and may store data in their browser; the Security Center and Event Viewer say so when it happens.
+Nothing loads from YouTube until a visitor presses Play on a YouTube track and agrees (they can tick "don't ask again until I close this tab"). It loads from `youtube-nocookie.com` (the Content Security Policy allows only `youtube-nocookie.com` and `web.archive.org` for opt-in frames). Stop, or moving to another track, removes YouTube's player again. The player's own buttons drive it through YouTube's postMessage interface, so no YouTube script runs in the page itself. Once loaded, YouTube (Google) can see the visitor's IP address and may store data in their browser; the Security Center and Event Viewer say so when it happens.
 
 ## Structure
 
 - `_posts/` — published posts; `_drafts/` — unpublished template
 - `_layouts/default.html` — the OS: desktop icons, taskbar, Start menu, security policy, the JSON the scripts read
 - `_layouts/home.html`, `post.html`, `profile.html`, `page.html` — the website, each inside a Browser window; `_includes/site-header.html` is its header (name, Posts, About, RSS)
+- `web.html` + `_data/oldweb.yml` — The Web portal and Internet Archive Wayback Machine viewer (`/web/`)
 - `about.md` — your profile (`person`, the intro text, `background`); links are in `_layouts/profile.html`
 - `_layouts/notepad.html` + `readme.md` — the OS help file; `_layouts/terminal.html` — the terminal
 - `_includes/` — `icons.svg`, `titlebar.html`, `browser-top.html`, `packet-vars.html` (topic and reading time of a post)
 - `_data/protocols.yml` — which tags put a post under Security, AI or Games on the home page
 - `_data/youtube.yml` — YouTube tracks for Media Player; `assets/music/` and `assets/video/` — your own audio and video files for it
 - `search.json` — full text of the posts, for Find
-- `assets/js/boot.js` (first, in `<head>`), `os.js` (window manager), `os-apps.js` (boot, log on, Run, calendar, screen saver, Notepad, Firewall), `os-extras.js` (Setup, System Properties, Security Center, Find, Event Viewer, Browser extras), `os-capture.js` (Packet Capture), `os-player.js` (Media Player), `pages.js` (the website's own behaviour)
+- `assets/js/boot.js` (first, in `<head>`), `os.js` (window manager + tabbed Browser), `os-apps.js` (boot, log on, Run, calendar, screen saver, Notepad, Firewall), `os-extras.js` (Setup, System Properties, Security Center, Find, Event Viewer + Discoveries, Browser bookmarks/in-page Find/Wayback/Contents), `os-capture.js` (Packet Capture), `os-player.js` (Media Player), `os-virus.js` (`notavirus.exe` joke), `pages.js` (the website's own behaviour), `terminal.js` + `terminal-games.js` (the Terminal shell and games)
 - `assets/css/style.css` — the OS and the website, Day and Night
 - `.github/workflows/jekyll-gh-pages.yml` — Pages deployment workflow (do not modify)
 
@@ -91,9 +92,9 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 ## Privacy
 
 - Everything runs in the browser; no input is sent to a server. No analytics, no cookies.
-- Every page carries a strict Content Security Policy (with one opt-in exception, YouTube's no-cookie player, see above) (a `<meta>` tag in `_layouts/default.html` and `_layouts/terminal.html`): scripts, styles, images, audio and requests only from this site, no inline scripts, no plugins. The browser refuses anything else before it is sent. The Security Center (the shield in the tray) shows the policy, every request the page made, and a button that tries to load example.com so you can watch it get blocked.
+- Every page carries a strict Content Security Policy (with two opt-in frame exceptions: YouTube's no-cookie player and the Internet Archive's Wayback Machine) as a `<meta>` tag in `_layouts/default.html` and `_layouts/terminal.html`: scripts, styles, images, audio and requests only from this site, no inline scripts, no plugins. The browser refuses anything else before it is sent. The Security Center (the shield in the tray) shows the policy, every request the page made, and a button that tries to load example.com so you can watch it get blocked.
 - Because of that policy, keep JavaScript in files under `assets/js/` (no `<script>` blocks with code, no `onclick=`), and keep images and other media in this repository. JSON data blocks (`<script type="application/json">`) are fine. If a post ever needs something from another site, the policy has to be loosened for it on purpose.
-- Saved in the visitor's browser: Day or Night, sounds on or off, Setup choices, the terminal's colours (localStorage), and the name typed at log on, the event log and discoveries (sessionStorage, gone when the tab closes). Security Center lists all of it and has a Forget everything button.
+- Saved in the visitor's browser: Day or Night, sounds on or off, Setup choices, Browser Favorites, and the terminal's colours (`localStorage`), plus the name typed at log on, the event log, archive year, and discoveries (`sessionStorage`, gone when the tab closes). Security Center lists all of it and has a Forget everything button.
 - Songs opened from the visitor's own computer are played from memory and not uploaded.
 - Hosting/CDN access logs may still exist outside this page's control.
 - This repository is sanitized: no secrets, credentials, IP addresses, hostnames, or network identifiers.
@@ -101,25 +102,23 @@ docker run --rm -v "$PWD:/srv/jekyll" -p 4000:4000 jekyll/jekyll:pages jekyll se
 ## Design notes
 
 - The OS doesn't talk about the site's author. Your profile lives on the About web page; the desktop, Start menu, boot screen and System Properties are about the computer.
-- Packet Capture is real: it lists every HTTP request the page makes, live, from the browser's Resource Timing records (time, address, protocol, size, status, DNS/connect/TLS/first-byte timing). Selecting a packet reads it again from the browser cache to show its real response headers and bytes; Follow Stream shows the response; Save writes a `.har` file; the display filter takes `type == script`, `status >= 400`, `host contains youtube`, `len > 10000`, `cached`, `third`, joined with `&&`, `||`, `!`.
+- Browser features: multi-tab browsing (`+`, `Alt+T`, right-click links/tabs), per-tab Back/Forward history, smart address bar (`site.com 1999`, shortcuts, autocomplete, bare-word search fallback), persistent Favorites + bookmark star, `Ctrl+F` in-page Find bar with match stepper, Contents outline panel, reading time remaining, clearable tag filter pills, heading `#` copy links, Picture Viewer image lightbox, `Aa` reading size toggle, View Source, and `/web/` Internet Archive Wayback Machine portal with inline year switching.
+- Packet Capture is real: it lists every HTTP request the page makes, live, from the browser's Resource Timing records (time, method, address, protocol, size, status, DNS/connect/TLS/first-byte timing). Selecting a packet reads it again from the browser cache to show its real response headers and bytes; Follow Stream shows the response; Save writes a `.har` file; the display filter takes `type == script`, `status >= 400`, `host contains youtube`, `len > 10000`, `cached`, `third`, joined with `&&`, `||`, `!`.
 - System Properties and the boot screen show the device's real hardware as the browser reports it (processors, memory, display, graphics, network), live performance (frame rate, memory, elements, requests, storage) and a ping to the server.
-
-- Start > Settings (or DEL / F2 while booting, or the Setup button on touch screens) opens a text-mode BIOS Setup that changes real settings: Day/Night, wallpaper (blue, teal, packets, graph paper, hex dump, black), color depth (true color, 256, 16, green screen), CRT effect, interface font, reading text size, sounds, quick boot, screen saver delay, mouse trails. Arrow keys, Enter, F9, F10, Esc, or click/tap.
-- Find (Start > Find, Run `find word`, or press `/`) searches the full text of every post from `search.json`, which is built with the site and fetched only when someone searches. Opening a result highlights the matches in the post.
-- Posts with three or more headings get a Contents panel in the Browser (open by default for long posts on wide screens); the Aa button changes the reading text size.
+- Start > Settings (or DEL / F2 while booting, or Desktop → Properties, or the Setup button on touch screens) opens a text-mode BIOS Setup that changes real settings: Day/Night, wallpaper (blue, teal, packets, graph paper, hex dump, black), color depth (true color, 256, 16, green screen), CRT effect, interface font, reading text size, sounds, quick boot, screen saver delay, mouse trails. Arrow keys, Enter, F9, F10, Esc, or click/tap.
+- Find (Start > Find, Run `find word`, or press `/`) searches the full text of every post from `search.json`, which is built with the site and fetched only when someone searches. Opening a result highlights the matches in the post and opens the in-page Find bar to step through them.
+- Posts with three or more headings get a Contents panel in the Browser (open by default for long posts on wide screens); the `Aa` button changes the reading text size.
 - Drag a window to the top edge to maximize it, or to the left or right edge to fill that half; drag it away to restore.
-- Event Viewer (Start > Programs) is a log of this visit: log on, windows opened, Run commands, Firewall breaches, blocked requests. It also counts discoveries: twelve things to find around the desktop.
+- Event Viewer (Start > Programs) is a log of this visit: log on, windows opened, Run commands, Firewall breaches, blocked requests, and discoveries (`Discoveries (X/12)` checklist).
 - The not-found page suggests the closest post and offers to search for the words in the address.
 - Search engines and link previews skip the boot screen.
-
-- First visit in a tab: a short BIOS-style screen (any key skips), a splash, then Log On. There is no password. `root` and `admin` get a joke and become guest. Later page loads in the same tab go straight to the desktop.
-- Double-click icons to open them (tap on a phone). Drag windows by the title bar, resize from the edges, double-click a title bar to maximize. Right-click the desktop, icons, title bars and taskbar buttons for menus. Drag icons onto the Recycle Bin, and restore them from it.
-- Start > Run takes commands: program names, a post number, words from a title, a display filter, or a web address. `help` lists them.
-- The clock opens a calendar; days with posts are coloured and link to them.
-- Phones and tablets: on phones (and phones turned sideways) every window fills the screen. Tap to open, press and hold for the right-click menus, and the button next to Start shows the desktop. In Packet Capture, tap a row for details and tap it again to read. Touch screens get bigger buttons, the browser toolbar and filter bar shrink to one row, windows stay above the on-screen keyboard, and the taskbar keeps clear of the iPhone home bar. Tablets keep draggable, resizable windows.
-- After two minutes without input a screen saver runs (packets drifting past). Not on touch screens, not while a post is open, not while music plays.
-- Sounds are made with the Web Audio API, nothing is downloaded. The speaker in the tray mutes them.
-- The Packet Capture display filter is real: `tag == "sast"`, `proto == AI`, `len > 1500`, `year == 2026`, `frame contains "sonar"`, joined with `&&` / `||`, negated with `!`, or just type a word. Filters are kept in the URL as `?filter=`.
-- Day (classic grey) is the default. Night is only used when picked from the tray.
+- First visit in a tab: a short BIOS-style screen (any key skips), a splash, then Log On. There is no password. `root` and `admin` show a hint and get a joke, logging on as guest. Later page loads in the same tab go straight to the desktop.
+- Double-click icons to open them (tap on a phone). Drag windows by the title bar, resize from the edges, double-click a title bar to maximize. Right-click the desktop, icons, title bars, Browser links/tabs and taskbar buttons for menus. Drag icons onto the Recycle Bin, and restore them from it.
+- Start > Run takes commands: program names (`browser`, `capture`, `terminal`, `snake`, `pong`, `hack`, `player`, `firewall`, `security`, `events`, `setup`, `notepad`, `system`, `web <site>`), a post number, words from a title, theme/sound toggles, or a web address. `?` lists them.
+- The clock opens a calendar; days with posts are coloured, link to them, and show a month list or a shortcut to the latest post.
+- Phones and tablets: on phones (and phones turned sideways) every window fills the screen. Tap to open, press and hold for the right-click menus, and the button next to Start shows the desktop. Touch screens get bigger buttons, windows stay above the on-screen keyboard, and the taskbar keeps clear of the iPhone home bar. Tablets keep draggable, resizable windows.
+- After the configured idle delay (default two minutes) without input, a screen saver runs (packets drifting past). Not on touch screens, not while the Browser is open on top, not while music plays.
+- Sounds are made with the Web Audio API, nothing is downloaded. Clicking the speaker in the tray opens a Master Volume slider and Mute control (right-click for quick mute) that controls Media Player (video, audio, synth, YouTube), OS chimes, Terminal games, and `notavirus.exe`.
+- Day (classic grey) is the default. Night is only used when picked from the tray or Setup.
 - No web fonts: period system fonts (Tahoma for the interface, Verdana for reading, Lucida Console for packets) with DejaVu fallbacks.
 - `prefers-reduced-motion` turns off the opening animations and the screen saver.

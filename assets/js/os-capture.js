@@ -27,8 +27,9 @@
   }
   function toPacket(e) {
     var u = new URL(e.name);
+    var method = (OS._methods && OS._methods[e.name]) || (/\/search\.json\?ping=/.test(e.name) ? 'HEAD' : 'GET');
     var p = {
-      e: e, t: e.startTime, url: e.name, host: u.host, path: u.pathname + u.search,
+      e: e, t: e.startTime, url: e.name, host: u.host, path: u.pathname + u.search, method: method,
       third: u.origin !== location.origin, type: kind(e),
       proto: PROTO[e.nextHopProtocol] || (e.nextHopProtocol ? e.nextHopProtocol.toUpperCase() : 'HTTP'),
       status: e.responseStatus || 0, len: e.transferSize || 0, size: e.decodedBodySize || e.encodedBodySize || 0,
@@ -38,7 +39,7 @@
     return p;
   }
   function info(p) {
-    var s = 'GET ' + p.path;
+    var s = (p.method || 'GET') + ' ' + p.path;
     if (p.status) s += '  →  ' + p.status + ' ' + (REASON[p.status] || '');
     if (p.cached) s += '  (from cache)';
     return s;
@@ -218,7 +219,7 @@
       (e.connectStart === e.connectEnd ? kv('Connection', 'reused') : '') :
       '<div class="kv">' + (p.third ? 'Hidden by the other site (no Timing-Allow-Origin header).' : p.cached ? 'Served from cache: no network timing.' : 'Not available.') + '</div>') + '</details>';
     html += '<details open><summary>' + esc(p.proto) + ', ' + (p.third ? 'other site' : 'this site') + ': ' + esc(p.host) + '</summary>' +
-      kv('Request', 'GET ' + p.path) + kv('Initiator', p.type + (e.renderBlockingStatus === 'blocking' ? ' (blocked rendering)' : '')) +
+      kv('Request', (p.method || 'GET') + ' ' + p.path) + kv('Initiator', p.type + (e.renderBlockingStatus === 'blocking' ? ' (blocked rendering)' : '')) +
       (p.status ? kv('Status', p.status + ' ' + (REASON[p.status] || '')) : '') + '<div class="hdrs"></div></details>';
     if (!p.third && p.type === 'document') html += '<div class="follow"><a href="' + esc(p.path) + '">Open in Browser →</a></div>';
     ui.tree.innerHTML = html;
@@ -239,8 +240,9 @@
     if (!w) w = OS.makeWindow('stream', 'Follow HTTP Stream', body);
     else OS.restore(w);
     OS.setTitle(w, 'Follow HTTP Stream (' + p.path.slice(0, 40) + ')');
+    OS.emit('discover', 'capture');
     var pre = $('.stream', w.el), st = $('[data-st]', w.el);
-    pre.innerHTML = '<span class="req">GET ' + esc(p.path) + ' ' + esc(p.proto) + '\nHost: ' + esc(p.host) + '\n(the browser does not let pages read the other request headers)\n\n</span><span class="dim">Reading...</span>';
+    pre.innerHTML = '<span class="req">' + esc(p.method || 'GET') + ' ' + esc(p.path) + ' ' + esc(p.proto) + '\nHost: ' + esc(p.host) + '\n(the browser does not let pages read the other request headers)\n\n</span><span class="dim">Reading...</span>';
     inspect(p).then(function (r) {
       if (!r) { pre.lastChild.textContent = p.third ? 'The response came from another site and is not readable from this page.' : 'Could not read the response again.'; return; }
       var textual = /text|json|javascript|xml|svg|css/.test(r.type);

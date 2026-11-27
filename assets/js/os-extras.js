@@ -84,7 +84,45 @@
   /* =================================================================
      DISCOVERIES + EVENT LOG GLUE
      ================================================================= */
-  var found = [], KEYS = [];
+  var DISCOVERIES = {
+    setup: ['BIOS Setup', 'Entered the BIOS Setup Utility'],
+    depth: ['Retro Colors', 'Changed Color Depth in Setup'],
+    csp: ['Policy Proof', 'Watched the CSP block example.com'],
+    find: ['Full-Text Search', 'Searched posts with Find'],
+    bin: ['Empty Trash', 'Emptied the Recycle Bin'],
+    music: ['Audiophile', 'Played music or a YouTube track in Media Player'],
+    fw5: ['Packet Defender', 'Reached Level 5 in Firewall'],
+    wayback: ['Time Traveler', 'Opened a site from ~2000 in The Web'],
+    capture: ['Wiretapper', 'Followed an HTTP stream in Packet Capture'],
+    virus: ['Survived notavirus.exe', 'Ran notavirus.exe and lived to tell the tale'],
+    terminal: ['Shell Dweller', 'Found .plan or played a game in Terminal'],
+    fav: ['Bookmarked', 'Saved a page to Browser Favorites']
+  };
+  var KEYS = Object.keys(DISCOVERIES);
+  var found = [];
+  try {
+    var savedFound = JSON.parse(sessionStorage.getItem('os-found') || '[]');
+    if (Array.isArray(savedFound)) found = savedFound.filter(function (k) { return !!DISCOVERIES[k]; });
+  } catch (e) {}
+  OS.on('discover', function (id) {
+    if (!DISCOVERIES[id] || found.indexOf(id) !== -1) return;
+    found.push(id);
+    try { sessionStorage.setItem('os-found', JSON.stringify(found)); } catch (e) {}
+    var d = DISCOVERIES[id];
+    OS.log('audit', 'Discoveries', 7001, 'Unlocked (' + found.length + '/' + KEYS.length + '): ' + d[0] + ' — ' + d[1] + '.');
+    if (OS.balloon) OS.balloon('Discovery ' + found.length + '/' + KEYS.length, d[0] + ': ' + d[1] + '.');
+  });
+  function showDiscoveries() {
+    var items = KEYS.map(function (k) {
+      var ok = found.indexOf(k) !== -1, d = DISCOVERIES[k];
+      return '<li class="' + (ok ? 'disc-ok' : 'disc-no') + '">' + (ok ? '✓ <b>' + esc(d[0]) + '</b> — ' + esc(d[1]) : '☐ <span class="dim">Undiscovered</span>') + '</li>';
+    }).join('');
+    OS.msg({
+      title: 'Discoveries (' + found.length + ' / ' + KEYS.length + ')', icon: 'key',
+      text: found.length === KEYS.length ? 'You found all ' + KEYS.length + ' things around obscuraOS!' : 'Things to find around the desktop during this visit:',
+      html: '<ul class="disc-list">' + items + '</ul>'
+    });
+  }
   OS.on('register', function (w) {
     var t = w.el.getAttribute('data-title') || w.app;
     OS.log('info', 'Shell', 4100, 'Opened ' + t + (w.url ? ' (' + w.url + ')' : '') + '.');
@@ -123,14 +161,14 @@
     ] },
     { name: 'Boot', items: [
       { k: 'boot', label: 'Boot Screen', opts: [['full', 'Full'], ['quick', 'Quick']], help: 'Quick skips the memory test and the logo. You still log on. There is still no password.' },
-      { k: 'saver', label: 'Screen Saver', opts: [[0, 'Disabled'], [1, 'After 1 min'], [2, 'After 2 min'], [5, 'After 5 min']], help: 'Never on touch screens, never while a post is open, never while music plays.' },
+      { k: 'saver', label: 'Screen Saver', opts: [[0, 'Disabled'], [1, 'After 1 min'], [2, 'After 2 min'], [5, 'After 5 min']], help: 'Pulsar ridge lines when idle. Stays off on touch screens and while Media Player is playing.' },
       { k: 'trails', label: 'Mouse Trails', opts: [[false, 'Disabled'], [true, 'Enabled']], help: 'For when the pointer was hard to find on a slow screen. Mouse only.' }
     ] },
     { name: 'Security', items: [
       { label: 'Supervisor Password', fixed: 'Not Installed', help: 'No password is set.' },
       { label: 'Content Security Policy', fixed: 'Enforced', help: 'The browser only lets this system load files from its own address. Security Center shows the policy and what it has blocked.' },
       { label: 'Cookies', fixed: 'None', help: 'This system sets no cookies.' },
-      { label: 'Third-Party Frames', fixed: 'Ask First', help: 'Only YouTube, and only after you press Play on a video in Media Player and agree.' }
+      { label: 'Third-Party Frames', fixed: 'Ask First', help: 'Only YouTube (Media Player) and the Internet Archive (The Web), and only after you agree.' }
     ] },
     { name: 'Exit', items: [
       { label: 'Save Changes and Exit', act: 'save', help: 'Keep these settings in this browser and continue.' },
@@ -151,7 +189,7 @@
     OS.closeMenus();
     OS.emit('discover', 'setup');
     OS.log('info', 'Setup', 1, 'BIOS Setup opened' + (opts.boot ? ' during boot.' : '.'));
-    var start = current(), cur = current(), tab = 0, row = 0, dlg = null;
+    var start = current(), cur = current(), tab = (typeof opts.tab === 'number' && opts.tab >= 0 && opts.tab < MENUS.length) ? opts.tab : 0, row = 0, dlg = null;
     var el = document.createElement('div');
     el.className = 'bios';
     el.setAttribute('role', 'dialog');
@@ -274,7 +312,6 @@
   /* =================================================================
      SECURITY CENTER
      ================================================================= */
-  try { if (performance.setResourceTimingBufferSize) performance.setResourceTimingBufferSize(1000); } catch (e) {}
   function kb(n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB'; }
   function cspText() { var m = $('meta[http-equiv="Content-Security-Policy"]'); return m ? m.getAttribute('content') : ''; }
   OS.apps.security = function (from) {
@@ -365,7 +402,14 @@
     try { obs = new PerformanceObserver(function () { setTimeout(refresh, 50); }); obs.observe({ type: 'resource' }); } catch (e) {}
     var onBlock = function () { setTimeout(refresh, 20); };
     document.addEventListener('securitypolicyviolation', onBlock);
-    OS.on('close', function (o) { if (o === w) { if (obs) obs.disconnect(); document.removeEventListener('securitypolicyviolation', onBlock); } });
+    var onClose = function (o) {
+      if (o === w) {
+        if (obs) obs.disconnect();
+        document.removeEventListener('securitypolicyviolation', onBlock);
+        OS.off('close', onClose);
+      }
+    };
+    OS.on('close', onClose);
     el.addEventListener('click', function (e) {
       if (e.target.closest('[data-sc-test]')) {
         var out = $('[data-sc-result]', el);
@@ -434,16 +478,30 @@
   }
   var pending = null;
   function openAt(u, q) { pending = { u: u, q: q }; OS.open(u); }
-  function highlight(w, q) {
-    var content = $('.post-content', w.el), view = $('.page-view', w.el);
-    if (!content || !q) return;
+  function clearMarks(scope) {
+    if (!scope) return;
+    $$('mark.find-hit', scope).forEach(function (mk) {
+      var p = mk.parentNode;
+      if (!p) return;
+      p.replaceChild(document.createTextNode(mk.textContent), mk);
+      p.normalize();
+    });
+  }
+  function markMatches(scope, q) {
+    clearMarks(scope);
+    var target = $('.post-content', scope) || $('.page-doc', scope) || $('.page-view', scope);
+    if (!target || !q) return [];
     var ts = terms(q);
-    if (!ts.length) return;
+    if (!ts.length) return [];
     var re = new RegExp(ts.map(reEsc).sort(function (a, b) { return b.length - a.length; }).join('|'), 'gi');
-    var walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, null), nodes = [], marks = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
+    var walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, null), nodes = [], marks = [];
+    while (walker.nextNode()) {
+      var pn = walker.currentNode.parentNode;
+      if (pn && /^(SCRIPT|STYLE|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(pn.tagName)) continue;
+      nodes.push(walker.currentNode);
+    }
     nodes.forEach(function (n) {
-      if (marks.length > 80) return;
+      if (marks.length >= 200) return;
       var t = n.nodeValue;
       re.lastIndex = 0;
       if (!re.test(t)) return;
@@ -457,16 +515,12 @@
         frag.appendChild(mk);
         marks.push(mk);
         last = m.index + m[0].length;
+        if (marks.length >= 200) break;
       }
       frag.appendChild(document.createTextNode(t.slice(last)));
       n.parentNode.replaceChild(frag, n);
     });
-    if (!marks.length) return;
-    marks[0].classList.add('cur');
-    var vr = view.getBoundingClientRect(), mr = marks[0].getBoundingClientRect();
-    view.scrollTop += mr.top - vr.top - vr.height / 3;
-    var st = $('[data-status]', w.el);
-    if (st) st.textContent = marks.length + (marks.length > 80 ? '+' : '') + ' match' + (marks.length === 1 ? '' : 'es') + ' for "' + q + '"';
+    return marks;
   }
   OS.apps.find = function (q, from) {
     if (typeof q !== 'string') { from = q; q = ''; }
@@ -537,6 +591,7 @@
     if (w) { OS.restore(w); return; }
     w = OS.makeWindow('events', 'Event Viewer',
       '<div class="toolbar ev-bar"><button type="button" class="btn tool" data-ev="clear">Clear Log</button>' +
+        '<button type="button" class="btn tool" data-ev="disc">Discoveries (' + found.length + '/' + KEYS.length + ')</button>' +
         '<label class="ev-show">Show <select class="field sunken" data-ev-filter><option value="">All events</option><option value="warn">Warnings</option><option value="audit">Audit</option><option value="info">Information</option></select></label></div>' +
       '<div class="win-body ev-body"><div class="ev-list sunken"><table class="packets ev-table"><thead><tr><th scope="col">Type</th><th scope="col" class="ev-date">Date and Time</th><th scope="col">Source</th><th scope="col" class="num">Event</th><th scope="col">Description</th></tr></thead><tbody data-ev-rows></tbody></table></div>' +
         '<div class="ev-detail sunken" data-ev-detail><p class="dim">Select an event to read it here.</p></div></div>' +
@@ -561,7 +616,9 @@
       });
       if (!list.length) rows.innerHTML = '<tr><td colspan="5" class="dim">No events.</td></tr>';
       $('[data-ev-count]', el).textContent = OS.events.length + ' event(s) in this tab';
-      $('[data-ev-found]', el).textContent = 'User: ' + user();
+      $('[data-ev-found]', el).textContent = 'User: ' + user() + ' · Discoveries: ' + found.length + '/' + KEYS.length;
+      var db = $('[data-ev="disc"]', el);
+      if (db) db.textContent = 'Discoveries (' + found.length + '/' + KEYS.length + ')';
       if (sel && OS.events.indexOf(sel) !== -1) show(sel); else show(null);
     };
     rows.addEventListener('click', function (e) { var tr = e.target.closest('tr'); if (tr && tr._ev) show(tr._ev); });
@@ -575,16 +632,22 @@
     filter.addEventListener('change', draw);
     el.addEventListener('click', function (e) {
       var b = e.target.closest('[data-ev]');
-      if (b && b.getAttribute('data-ev') === 'clear') {
+      if (!b) return;
+      var act = b.getAttribute('data-ev');
+      if (act === 'clear') {
         OS.msg({ title: 'Event Viewer', icon: 'warn', text: 'Clear every event in this log?', buttons: ['Clear', 'Cancel'] }).then(function (i) {
           if (i !== 0) return;
           OS.clearLog();
           OS.log('warn', 'Event Log', 1102, 'The log was cleared by ' + user() + '.');
         });
+      } else if (act === 'disc') {
+        showDiscoveries();
       }
     });
     var onLog = function () { if (document.contains(el)) draw(); };
+    var onClose = function (o) { if (o === w) { OS.off('log', onLog); OS.off('close', onClose); } };
     OS.on('log', onLog);
+    OS.on('close', onClose);
     draw();
   };
 
@@ -718,39 +781,97 @@
     });
   };
 
-  /* Browser: The Web, old sites from the Internet Archive (asks first) */
+  /* =================================================================
+     BROWSER: The Web (Wayback), Bookmarks, In-page Find, Autocomplete,
+     Contents, Text size, View Source, 404 help
+     ================================================================= */
   function wbYear() { try { return +sessionStorage.getItem('wb-year') || 2001; } catch (e) { return 2001; } }
-  function wayback(w) {
-    var view = $('.wb-view', w.el);
+  function wayback(w, tab) {
+    var pane = tab ? tab.pane : w.el;
+    var view = $('.wb-view', pane);
     if (!view) return;
-    var sel = $('.wb-year', w.el);
-    if (sel) {
-      $('.wb-type', w.el).hidden = false;
-      sel.value = String(wbYear());
-      sel.addEventListener('change', function () { try { sessionStorage.setItem('wb-year', sel.value); } catch (e) {} });
-    }
     var q;
-    try { q = new URL(w.url || location.href, location.href).searchParams; } catch (e) { return; }
+    try { q = new URL((tab ? tab.url : w.url) || location.href, location.href).searchParams; } catch (e) { return; }
     var target = q.get('u'), year = parseInt(q.get('y'), 10) || wbYear();
-    if (!target) return;
+    if (!target) {
+      // Portal page (/web/): enable live search/filter + direct time-travel form (works on mobile too)
+      var goForm = $('.wb-go', pane), sel = $('.wb-year', pane), urlIn = $('.wb-url', pane);
+      if (goForm && sel) {
+        goForm.hidden = false;
+        sel.value = String(wbYear());
+        sel.addEventListener('change', function () { try { sessionStorage.setItem('wb-year', sel.value); } catch (e) {} });
+        var items = $$('.wb-list li', pane);
+        if (urlIn) {
+          urlIn.addEventListener('input', function () {
+            var f = urlIn.value.trim().toLowerCase();
+            items.forEach(function (li) { li.hidden = !!(f && li.textContent.toLowerCase().indexOf(f) === -1); });
+          });
+        }
+        goForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var raw = urlIn ? urlIn.value.trim() : '';
+          var y = parseInt(sel.value, 10) || 2001;
+          try { sessionStorage.setItem('wb-year', String(y)); } catch (x) {}
+          if (!raw) return;
+          // If it looks like a domain or URL, time-travel directly; otherwise open the first visible filtered site
+          if (/\./.test(raw.split('/')[0]) || /^https?:\/\//i.test(raw)) {
+            var dest = /^https?:\/\//i.test(raw) ? raw : 'http://' + raw;
+            OS.open('/web/?u=' + encodeURIComponent(dest) + '&y=' + y);
+          } else {
+            var firstA = $('.wb-list li:not([hidden]) a', pane);
+            if (firstA) OS.open(firstA.getAttribute('href'));
+          }
+        });
+      }
+      return;
+    }
     if (!/^https?:\/\//i.test(target)) target = 'http://' + target;
     var host = target;
     try { host = new URL(target).hostname.replace(/^www\./, ''); } catch (e) { return; }
     year = Math.max(1996, Math.min(new Date().getFullYear(), year));
     var src = 'https://web.archive.org/web/' + year + '0601000000if_/' + target;
     var full = 'https://web.archive.org/web/' + year + '0601000000/' + target;
-    var addr = $('.address input', w.el), status = $('[data-status]', w.el);
-    if (addr) addr.value = target;
-    OS.setTitle(w, host + ' (' + year + ') - Browser');
-    w.docTitle = host + ' (' + year + ') · ' + OS.siteName;
+    var status = $('[data-status]', w.el);
+    if (w.browser && tab) {
+      tab.docTitle = host + ' (' + year + ') · ' + OS.siteName;
+      w.browser.setTabMeta(tab, host + ' (' + year + ')', host + ' (' + year + ') - Browser', target, 'oldweb');
+    } else {
+      var addr = $('.address input', w.el);
+      if (addr) addr.value = target;
+      OS.setTitle(w, host + ' (' + year + ') - Browser');
+      w.docTitle = host + ' (' + year + ') · ' + OS.siteName;
+    }
+    var yearOpts = '';
+    for (var yOpt = 1996; yOpt <= 2010; yOpt++) yearOpts += '<option value="' + yOpt + '"' + (yOpt === year ? ' selected' : '') + '>' + yOpt + '</option>';
+    if (year > 2010) yearOpts += '<option value="' + year + '" selected>' + year + '</option>';
     var load = function () {
       view.classList.add('wb-framed');
-      view.innerHTML = '<div class="wb-bar"><span>' + OS.svg('oldweb') + ' <b>' + esc(host) + '</b> as saved around ' + year + ' by the Internet Archive</span>' +
-        '<a href="' + esc(full) + '" target="_blank" rel="noopener noreferrer">open in a new tab</a></div>' +
+      view.innerHTML =
+        '<div class="wb-bar">' +
+          '<span class="wb-bar-id">' + OS.svg('oldweb') + ' <b>' + esc(host) + '</b> around ' +
+            '<select class="field sunken wb-jump" aria-label="Change archive year">' + yearOpts + '</select></span>' +
+          '<span class="wb-bar-acts"><a href="/web/">Back to The Web</a> · <a href="' + esc(full) + '" target="_blank" rel="noopener noreferrer">Open in new tab</a></span>' +
+        '</div>' +
         '<iframe class="wb-frame" title="' + esc(host) + ' in ' + year + '" src="' + esc(src) + '" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerpolicy="no-referrer"></iframe>';
-      if (status) status.textContent = 'Opening ' + host + ' from the Internet Archive...';
-      $('iframe', view).addEventListener('load', function () { if (status) status.textContent = 'Done (web.archive.org)'; });
+      var jump = $('.wb-jump', view);
+      if (jump) {
+        jump.addEventListener('change', function () {
+          try { sessionStorage.setItem('wb-year', jump.value); } catch (x) {}
+          OS.open('/web/?u=' + encodeURIComponent(target) + '&y=' + jump.value);
+        });
+      }
+      if (status) status.textContent = 'Opening ' + host + ' (' + year + ') from the Internet Archive...';
+      if (tab) { tab.loading = true; if (w.browser && w.browser.active === tab) w.el.classList.add('loading'); }
+      $('iframe', view).addEventListener('load', function () {
+        if (tab) { tab.loading = false; tab.status = 'Done (web.archive.org)'; }
+        if (w.browser && w.browser.active === tab) {
+          w.el.classList.remove('loading');
+          if (status) status.textContent = 'Done (web.archive.org)';
+        }
+        if (w.browser) w.browser.renderTabs();
+      });
       OS.log('warn', 'Browser', 3, 'Opened ' + target + ' as of ' + year + ' from web.archive.org at your request.');
+      OS.emit('discover', 'wayback');
     };
     var ok = false;
     try { ok = sessionStorage.getItem('wb-ok') === '1'; } catch (e) {}
@@ -766,39 +887,204 @@
     });
   }
 
-  /* Browser: Favorites and View Source */
+  /* Browser: Address Bar Autocomplete */
+  function addressHints(w) {
+    var dl = $('#addr-list', w.el);
+    if (!dl || dl.children.length) return;
+    var opts = [
+      ['/web/', 'The Web (Home)'],
+      ['/', 'Harya — Posts'],
+      ['/about/', 'About Harya']
+    ];
+    posts.forEach(function (p) { opts.push([p.u, p.t]); });
+    (OS.data.web || []).forEach(function (s) {
+      var clean = String(s.u || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '');
+      if (clean) opts.push([clean + ' ' + s.y, s.n + ' (' + s.y + ')']);
+    });
+    dl.innerHTML = opts.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>'; }).join('');
+  }
+
+  /* Browser: Persistent Bookmarks (Favorites + Star Button) */
+  function loadFavs() {
+    try {
+      var list = JSON.parse(localStorage.getItem('os-favs') || '[]');
+      return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
+  }
+  function saveFavs(list) {
+    try {
+      if (list.length) localStorage.setItem('os-favs', JSON.stringify(list));
+      else localStorage.removeItem('os-favs');
+    } catch (e) {}
+  }
+  function activeTabOf(w) { return w.browser ? w.browser.active : { url: w.url || '/', title: (w.el.getAttribute('data-title') || '').replace(/\s*-\s*Browser$/, '') }; }
+  function isFav(url) { return loadFavs().some(function (f) { return f.u === url; }); }
+  function syncStar(w) {
+    var sb = $('[data-act="star"]', w.el);
+    if (!sb) return;
+    var t = activeTabOf(w);
+    var on = isFav(t.url);
+    sb.setAttribute('aria-pressed', String(on));
+    sb.title = on ? 'Remove from Favorites' : 'Add to Favorites';
+    var u = $('use', sb);
+    if (u) u.setAttribute('href', on ? '#i-star-on' : '#i-star');
+  }
+  function toggleFav(w) {
+    var t = activeTabOf(w);
+    var list = loadFavs();
+    var idx = -1;
+    list.forEach(function (f, i) { if (f.u === t.url) idx = i; });
+    var st = $('[data-status]', w.el);
+    if (idx !== -1) {
+      list.splice(idx, 1);
+      saveFavs(list);
+      if (st) st.textContent = 'Removed from Favorites';
+    } else {
+      list.unshift({ t: t.title || t.url, u: t.url });
+      if (list.length > 30) list.length = 30;
+      saveFavs(list);
+      OS.sound('pop');
+      OS.emit('discover', 'fav');
+      if (st) st.textContent = 'Added “' + (t.title || t.url) + '” to Favorites';
+    }
+    syncStar(w);
+  }
   function favorites(w) {
-    var b = $('[data-act="fav"]', w.el);
+    var b = $('[data-act="fav"]', w.el), sb = $('[data-act="star"]', w.el);
+    if (sb) sb.addEventListener('click', function () { toggleFav(w); });
     if (!b) return;
     b.addEventListener('click', function () {
       var r = b.getBoundingClientRect();
+      var t = activeTabOf(w), saved = isFav(t.url), custom = loadFavs();
       var items = [
+        { label: saved ? '★ Remove this page from Favorites' : '☆ Add this page to Favorites', bold: !saved, act: function () { toggleFav(w); } },
+        { sep: true },
         { label: 'Home (The Web)', act: function () { OS.open('/web/'); } },
         { label: 'Harya', act: function () { OS.open('/'); } },
-        { label: 'About', act: function () { OS.open('/about/'); } },
-        { sep: true }
-      ].concat(posts.slice(0, 12).map(function (p) { return { label: p.t, act: function () { OS.open(p.u); } }; }))
-        .concat([{ sep: true }, { label: 'RSS feed', act: function () { window.open('/feed.xml', '_blank', 'noopener'); } }]);
+        { label: 'About', act: function () { OS.open('/about/'); } }
+      ];
+      if (custom.length) {
+        items.push({ sep: true });
+        custom.forEach(function (f) { items.push({ label: '★ ' + f.t, act: function () { OS.open(f.u); } }); });
+      }
+      items.push({ sep: true });
+      items = items.concat(posts.slice(0, 12).map(function (p) { return { label: p.t, act: function () { OS.open(p.u); } }; }));
+      items.push({ sep: true }, { label: 'RSS feed', act: function () { window.open('/feed.xml', '_blank', 'noopener'); } });
       OS.menu(items, r.left, r.bottom, { returnFocus: b });
     });
   }
+
+  /* Browser: View Source (Wayback-aware) */
   function viewSource(w) {
     var b = $('[data-act="source"]', w.el);
     if (!b) return;
-    b.addEventListener('click', function () {
-      var url = w.url || location.pathname;
+    var openSource = function (url) {
       fetch(url, { cache: 'force-cache', credentials: 'same-origin' }).then(function (r) { return r.text(); }).then(function (html) {
         var name = (url.replace(/[?#].*$/, '').replace(/\/$/, '/index.html').split('/').pop()) || 'index.html';
         OS.makeWindow('untitled', name + ' - Notepad', '<div class="menubar" aria-hidden="true"></div><div class="win-body notepad-body sunken"><pre class="notepad-text">' + esc(html) + '</pre></div>');
         var ta = $('.win-app[data-app="untitled"]:last-of-type textarea');
         if (ta) { ta.classList.add('nowrap'); ta.scrollTop = 0; }
       }).catch(function () { OS.msg({ title: 'Source', icon: 'warn', text: 'Could not read the source of this page.' }); });
+    };
+    b.addEventListener('click', function () {
+      var t = activeTabOf(w), url = t.url || location.pathname;
+      if (/^\/web\/\?/.test(url) && /[?&]u=/.test(url)) {
+        var q = new URL(url, location.href).searchParams;
+        var target = q.get('u') || '', yr = parseInt(q.get('y'), 10) || wbYear();
+        var full = 'https://web.archive.org/web/' + yr + '0601000000/' + (/^https?:\/\//i.test(target) ? target : 'http://' + target);
+        OS.msg({
+          title: 'View Source', icon: 'oldweb',
+          text: 'This archived page is loaded from web.archive.org in a sandboxed frame, so the browser will not let obscuraOS read its HTML.\n\nYou can inspect the local /web/ frame page or open the archive directly.',
+          buttons: ['View /web/ HTML', 'Open Archive', 'Cancel']
+        }).then(function (i) {
+          if (i === 0) openSource('/web/');
+          else if (i === 1) window.open(full, '_blank', 'noopener');
+        });
+        return;
+      }
+      openSource(url);
     });
   }
 
-  /* =================================================================
-     BROWSER: contents, text size, find highlights, 404 help
-     ================================================================= */
+  /* Browser: In-Page Find Bar (Ctrl+F, toolbar Find, and global Find match stepper) */
+  function inPageFind(w) {
+    var bar = $('.findbar', w.el), inp = $('#infind-q', w.el), cnt = $('.fb-count', w.el);
+    var btn = $('[data-act="infind"]', w.el);
+    if (!bar || !inp) return;
+    var marks = [], idx = -1;
+    function paneOf() { return w.browser && w.browser.active ? w.browser.active.pane : w.el; }
+    function jump(i) {
+      if (!marks.length) return;
+      idx = (i + marks.length) % marks.length;
+      marks.forEach(function (m, j) { m.classList.toggle('cur', j === idx); });
+      var view = $('.page-view', paneOf());
+      if (view && marks[idx]) {
+        var vr = view.getBoundingClientRect(), mr = marks[idx].getBoundingClientRect();
+        view.scrollTo({ top: view.scrollTop + mr.top - vr.top - vr.height / 3, behavior: OS.reduce.matches ? 'auto' : 'smooth' });
+      }
+      if (cnt) cnt.textContent = (idx + 1) + ' of ' + marks.length + (marks.length >= 200 ? '+' : '');
+    }
+    function run(q) {
+      var p = paneOf();
+      marks = markMatches(p, q);
+      idx = -1;
+      if (!q.trim()) { if (cnt) cnt.textContent = ''; return; }
+      if (!marks.length) {
+        if (cnt) cnt.textContent = 'No matches';
+        return;
+      }
+      jump(0);
+      var st = $('[data-status]', w.el);
+      if (st) st.textContent = marks.length + (marks.length >= 200 ? '+' : '') + ' match' + (marks.length === 1 ? '' : 'es') + ' for "' + q.trim() + '"';
+    }
+    function openBar(initialQ) {
+      bar.hidden = false;
+      if (btn) btn.setAttribute('aria-pressed', 'true');
+      if (typeof initialQ === 'string') inp.value = initialQ;
+      run(inp.value);
+      inp.focus();
+      inp.select();
+    }
+    function closeBar() {
+      if (bar.hidden) return;
+      bar.hidden = true;
+      if (btn) btn.setAttribute('aria-pressed', 'false');
+      if (w.browser) w.browser.tabs.forEach(function (t) { clearMarks(t.pane); });
+      else clearMarks(w.el);
+      marks = []; idx = -1;
+      if (cnt) cnt.textContent = '';
+    }
+    w._openFind = openBar;
+    w._syncFind = function () { if (!bar.hidden) run(inp.value); };
+    if (btn) btn.addEventListener('click', function () { if (bar.hidden) openBar(); else closeBar(); });
+    var timer = null;
+    inp.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(function () { run(inp.value); }, 90); });
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); if (!marks.length) run(inp.value); else jump(idx + (e.shiftKey ? -1 : 1)); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeBar(); }
+    });
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-fb]');
+      if (!b) return;
+      var a = b.getAttribute('data-fb');
+      if (a === 'next') jump(idx + 1);
+      else if (a === 'prev') jump(idx - 1);
+      else if (a === 'close') closeBar();
+    });
+    var onKey = function (e) {
+      if (OS.top() !== w || !document.contains(w.el)) return;
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+        if ($('.bios, .modal-bg, #bootscreen, .saver')) return;
+        e.preventDefault();
+        openBar();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    var onClose = function (o) { if (o === w) { document.removeEventListener('keydown', onKey); OS.off('close', onClose); } };
+    OS.on('close', onClose);
+  }
+
+  /* Browser: Text size, Contents (per-tab), 404 help */
   var SIZES = [['s', 'Small'], ['m', 'Medium'], ['l', 'Large'], ['xl', 'Extra Large']];
   function textButton(w) {
     var b = $('[data-act="text"]', w.el);
@@ -816,20 +1102,20 @@
       if (st) st.textContent = 'Text size: ' + SIZES[(i + 1) % SIZES.length][1];
     });
   }
-  function contents(w) {
-    var content = $('.post-content', w.el), view = $('.page-view', w.el), btn = $('[data-act="toc"]', w.el);
-    if (!content || !view || !btn) return;
+  function syncTocButton(w, tab) {
+    var btn = $('[data-act="toc"]', w.el);
+    if (!btn) return;
+    var has = !!(tab && tab._hasToc);
+    btn.hidden = !has;
+    btn.setAttribute('aria-pressed', String(!!(has && tab._tocOpen)));
+  }
+  function contents(w, tab) {
+    var pane = tab ? tab.pane : w.el;
+    var content = $('.post-content', pane), view = $('.page-view', pane);
+    if (!content || !view) return;
     var hs = $$('h2, h3', content).filter(function (h) { return h.textContent.trim(); });
     if (hs.length < 3) return;
-    btn.hidden = false;
     var panel = null;
-    var toggle = function (on) {
-      if (on === undefined) on = !w.el.classList.contains('toc-open');
-      if (on && !panel) build();
-      w.el.classList.toggle('toc-open', on);
-      btn.setAttribute('aria-pressed', String(on));
-      if (on) mark();
-    };
     var go = function (h) {
       var vr = view.getBoundingClientRect(), hr = h.getBoundingClientRect();
       view.scrollTo({ top: view.scrollTop + hr.top - vr.top - 10, behavior: OS.reduce.matches ? 'auto' : 'smooth' });
@@ -848,7 +1134,7 @@
       panel.className = 'toc sunken';
       panel.setAttribute('aria-label', 'Contents');
       panel.innerHTML = '<div class="toc-head"><b>Contents</b><button type="button" class="tbtn" data-toc-x aria-label="Close contents"><i class="g-close"></i></button></div><ul>' +
-        hs.map(function (h, i) { return '<li class="' + h.tagName.toLowerCase() + '"><a href="#' + esc(h.id || '') + '" data-i="' + i + '">' + esc(h.textContent.trim()) + '</a></li>'; }).join('') + '</ul>';
+        hs.map(function (h, i) { return '<li class="' + h.tagName.toLowerCase() + '"><a href="#' + esc(h.id || '') + '" data-i="' + i + '">' + esc(h.textContent.trim().replace(/#$/, '').trim()) + '</a></li>'; }).join('') + '</ul>';
       wrap.appendChild(panel);
       wrap.appendChild(view);
       panel.addEventListener('click', function (e) {
@@ -859,7 +1145,15 @@
       var t = null;
       view.addEventListener('scroll', function () { if (!t) t = setTimeout(function () { t = null; mark(); }, 80); }, { passive: true });
     };
-    btn.addEventListener('click', function () { toggle(); });
+    var toggle = function (on) {
+      if (on === undefined) on = !pane.classList.contains('toc-open');
+      if (on && !panel) build();
+      pane.classList.toggle('toc-open', on);
+      if (tab) tab._tocOpen = on;
+      if (!w.browser || w.browser.active === tab) syncTocButton(w, tab);
+      if (on) mark();
+    };
+    if (tab) { tab._hasToc = true; tab._tocOpen = false; tab._tocToggle = toggle; }
     // long posts on wide screens open with their contents showing
     if (hs.length >= 6 && !OS.phone.matches && window.innerWidth >= 1200) toggle(true);
   }
@@ -870,23 +1164,29 @@
     for (k in B) tb += B[k];
     return ta + tb ? 2 * n / (ta + tb) : 0;
   }
-  function notFound(w) {
-    var page = $('.errorpage', w.el);
+  function notFound(w, tab) {
+    var pane = tab ? tab.pane : w.el;
+    var page = $('.errorpage', pane);
     if (!page) return;
-    var path = w.url || location.pathname;
+    var path = (tab ? tab.url : w.url) || location.pathname;
     try { path = decodeURIComponent(new URL(path, location.href).pathname); } catch (e) {}
-    $$('.nf-path', w.el).forEach(function (c) { c.textContent = path; });
-    var addr = $('.address input', w.el);
-    if (addr) addr.value = location.origin + path;
+    $$('.nf-path', pane).forEach(function (c) { c.textContent = path; });
+    if (w.browser && tab) w.browser.setTabMeta(tab, 'Not found', 'Cannot find page - Browser', location.origin + path);
+    else { var addr = $('.address input', w.el); if (addr) addr.value = location.origin + path; }
     var slug = path.replace(/\/$/, '').split('/').pop().toLowerCase();
+    var slugWords = slug.split(/[^a-z0-9]+/).filter(function (w) { return w.length >= 3; });
     var best = null, bestScore = 0;
     posts.forEach(function (p) {
       var ps = p.u.replace(/\/$/, '').split('/').pop();
-      var sc = Math.max(similar(slug, ps), similar(slug, p.t.toLowerCase().replace(/[^a-z0-9]+/g, '-')));
+      var pt = p.t.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      var sc = Math.max(similar(slug, ps), similar(slug, pt));
+      var hay = (' ' + ps + ' ' + pt + ' ' + (p.tags || []).join(' ') + ' ').toLowerCase();
+      var hits = slugWords.filter(function (w) { return hay.indexOf(w) !== -1; }).length;
+      if (hits) sc = Math.max(sc, 0.32 + Math.min(0.4, hits * 0.15));
       if (sc > bestScore) { bestScore = sc; best = p; }
     });
     var words = slug.replace(/\.[a-z]+$/, '').replace(/[-_]+/g, ' ').trim();
-    var more = $('.nf-more', w.el);
+    var more = $('.nf-more', pane);
     if (!more) return;
     var html = '';
     if (best && bestScore > 0.3) html += '<p class="nf-guess">Did you mean <a href="' + esc(best.u) + '">' + esc(best.t) + '</a>?</p>';
@@ -896,19 +1196,41 @@
     if (b) b.addEventListener('click', function () { OS.apps.find(words.slice(0, 40)); });
     OS.log('warn', 'Browser', 404, 'Page not found: ' + path);
   }
+
   OS.on('register', function (w) {
     if (w.app !== 'browser') return;
+    addressHints(w);
     textButton(w);
     favorites(w);
     viewSource(w);
-    wayback(w);
-    contents(w);
-    notFound(w);
-    if (pending && w.url && w.url.indexOf(pending.u) === 0) {
+    inPageFind(w);
+    var tocBtn = $('[data-act="toc"]', w.el);
+    if (tocBtn) tocBtn.addEventListener('click', function () {
+      var t = w.browser && w.browser.active;
+      if (t && t._tocToggle) t._tocToggle();
+    });
+  });
+  OS.on('browser-page', function (w, tab) {
+    if (w._pageSeen) OS.log('info', 'Browser', 4101, 'Navigated to ' + (tab.title || tab.url) + ' (' + tab.url + ').');
+    w._pageSeen = true;
+    wayback(w, tab);
+    contents(w, tab);
+    notFound(w, tab);
+    if (!w.browser || w.browser.active === tab) {
+      syncTocButton(w, tab);
+      syncStar(w);
+      if (w._syncFind) w._syncFind();
+    }
+    if (pending && tab.url && tab.url.indexOf(pending.u) === 0) {
       var q = pending.q;
       pending = null;
-      setTimeout(function () { highlight(w, q); }, 30);
+      setTimeout(function () { if (w._openFind) w._openFind(q); }, 30);
     }
+  });
+  OS.on('browser-tab', function (w, tab) {
+    syncTocButton(w, tab);
+    syncStar(w);
+    if (w._syncFind) w._syncFind();
   });
 
   OS.on('ready', function () {

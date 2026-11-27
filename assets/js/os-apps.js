@@ -129,7 +129,7 @@
     input.addEventListener('input', function () {
       var v = input.value.trim().toLowerCase();
       $$('[data-u]', b).forEach(function (t) { t.setAttribute('aria-checked', String(t.getAttribute('data-u') === v)); });
-      note.textContent = '';
+      note.textContent = v === 'root' ? 'root? Bold. Still no password required.' : v === 'admin' ? 'Administrator privileges are purely ceremonial here.' : '';
     });
     $('[data-cancel]', b).addEventListener('click', function () { pick('guest'); note.textContent = ''; input.focus(); });
     $('[data-off]', b).addEventListener('click', function () { offScreen(); });
@@ -139,11 +139,17 @@
     return new Promise(function (resolve) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        var name = input.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 16) || 'guest';
+        var raw = input.value.trim().toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 16) || 'guest';
+        var joked = raw === 'root' || raw === 'admin';
+        var name = joked ? 'guest' : raw;
+        if (joked) {
+          note.textContent = raw === 'root' ? 'Nice try. Logging you on as guest.' : 'Administrator privileges revoked. Logging on as guest.';
+          OS.sound('error');
+        }
         setUser(name);
         try { sessionStorage.setItem('os-logon', String(Date.now())); } catch (x) {}
         $$('button, input', form).forEach(function (x) { x.disabled = true; });
-        wait(200).then(function () { return loggingOn(name); }).then(resolve);
+        wait(joked ? 750 : 200).then(function () { return loggingOn(name); }).then(resolve);
       });
     });
   }
@@ -263,20 +269,32 @@
   });
 
   /* ---------------- Run ---------------- */
-  var RUN_HELP = 'Things to type: browser, capture, terminal, player, notepad, system, setup, events, security, find (or find some words), calendar, firewall, screensaver, shutdown, logoff, a page like /about/, or a web address.';
+  var RUN_HELP = 'Things to type: browser, capture, terminal, snake, pong, hack, player, notepad, system, setup, events, security, find (or find some words), web <site>, calendar, firewall, screensaver, night/day, mute, shutdown, logoff, a page like /about/, or a web address.';
   function run(cmd) {
     var c = cmd.trim(), l = c.toLowerCase();
     if (!c) return true;
     OS.log('info', 'Shell', 4688, 'Run: ' + c.slice(0, 120));
-    var map = { home: '/web/', browser: '/web/', web: '/web/', harya: '/', posts: '/', about: '/about/', help: '/readme/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/' };
+    var map = { home: '/web/', browser: '/web/', web: '/web/', harya: '/', posts: '/', about: '/about/', help: '/readme/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/', snake: '/terminal/?cmd=snake', pong: '/terminal/?cmd=pong', hack: '/terminal/?cmd=hack' };
     if (map[l]) { OS.open(map[l]); return true; }
     var appAlias = { virus: 'virus', notavirus: 'virus', 'notavirus.exe': 'virus', capture: 'capture', pcap: 'capture', packets: 'capture', system: 'system', winver: 'system', ver: 'system', sysinfo: 'system', find: 'find', search: 'find', grep: 'find', events: 'events', eventvwr: 'events', log: 'events', logs: 'events', security: 'security', wscui: 'security', csp: 'security', setup: 'setup', bios: 'setup', settings: 'setup', notepad: 'newtext', 'notepad.exe': 'newtext', edit: 'newtext', player: 'player', music: 'player', mplayer: 'player', firewall: 'firewall', game: 'firewall', bin: 'bin', trash: 'bin', calendar: 'calendar', date: 'calendar', screensaver: 'screensaver' };
     if (appAlias[l] && OS.apps[appAlias[l]]) { OS.apps[appAlias[l]](); return true; }
+    if (l === 'night' && !OS.isDark()) { OS.toggleTheme(); return true; }
+    if (l === 'day' && OS.isDark()) { OS.toggleTheme(); return true; }
+    if (l === 'theme') { OS.toggleTheme(); return true; }
+    if (l === 'mute') { OS.setSound(!OS.soundOn()); return true; }
     if (l === 'shutdown') { offScreen(); return true; }
     if (l === 'logoff' || l === 'logout' || l === 'exit') { logoff(false); return true; }
-    if (l === '?') { OS.msg({ title: 'Run', icon: 'help', text: RUN_HELP }); return true; }
+    if (l === '?' || l === 'commands') { OS.msg({ title: 'Run', icon: 'help', text: RUN_HELP }); return true; }
     if (l === 'whoami') { OS.msg({ title: 'whoami', icon: 'user', text: user() }); return true; }
     if (/^(find|grep|search)\s+\S/.test(l) && OS.apps.find) { OS.apps.find(c.replace(/^\S+\s+/, '')); return true; }
+    if (/^web\s+\S/.test(l)) {
+      var target = c.replace(/^web\s+/i, '').trim();
+      if (!/^https?:\/\//i.test(target)) target = 'http://' + target;
+      var y = 2001;
+      try { y = +sessionStorage.getItem('wb-year') || 2001; } catch (x) {}
+      OS.open('/web/?u=' + encodeURIComponent(target) + '&y=' + y);
+      return true;
+    }
     if (/^sudo\b/.test(l)) { OS.msg({ title: 'sudo', icon: 'warn', text: user() + ' is not in the sudoers file. This incident will be reported.\n\n(To the Event Viewer on this computer. Nobody else.)' }); OS.log('warn', 'Security', 4673, user() + ' asked for sudo. Refused.'); return true; }
     if (/^rm\s+-rf/.test(l) || l === 'format c:' || l === 'del *.*') { OS.msg({ title: 'Run', icon: 'warn', text: 'Let\'s not.' }); return true; }
     if (/^(https?:\/\/|www\.)/i.test(c) || /^[a-z0-9-]+\.[a-z]{2,}(\/|$)/i.test(c)) { OS.open(/^https?:/i.test(c) ? c : 'https://' + c); return true; }
@@ -286,7 +304,7 @@
     return false;
   }
   OS.apps.run = function () {
-    var list = ['browser', 'capture', 'terminal', 'player', 'notepad', 'system', 'setup', 'events', 'security', 'find', 'calendar', 'firewall', 'screensaver', 'about', 'help'];
+    var list = ['browser', 'capture', 'terminal', 'snake', 'pong', 'hack', 'player', 'notepad', 'system', 'setup', 'events', 'security', 'find', 'calendar', 'firewall', 'screensaver', 'notavirus.exe', 'about', 'help', '?'];
     var again = function (start) {
       OS.msg({
         title: 'Run', icon: 'run',
@@ -315,6 +333,7 @@
     if (calEl) { closeCal(); return; }
     var now = new Date(), view = new Date(now.getFullYear(), now.getMonth(), 1);
     var byDay = {};
+    posts.forEach(function (p) { if (p.d) (byDay[p.d] = byDay[p.d] || []).push(p); });
     calEl = document.createElement('div');
     calEl.className = 'cal raised';
     calEl.setAttribute('role', 'dialog');
@@ -336,9 +355,13 @@
           cells.push('<a class="d has ' + esc(ps[0].f) + (today ? ' today' : '') + '" href="' + esc(ps[0].u) + '" title="' + esc(ps.map(function (p) { return p.t; }).join(' / ')) + '">' + d + '</a>');
         } else cells.push('<span class="d' + (today ? ' today' : '') + '">' + d + '</span>');
       }
+      var listHtml = inMonth.length
+        ? '<ul>' + inMonth.map(function (p) { return '<li><a href="' + esc(p.u) + '">' + esc(p.t) + '</a> <span class="dim">' + esc(p.d.slice(5)) + '</span></li>'; }).join('') + '</ul>'
+        : '<p class="dim">No posts in ' + month + ' ' + y + '.' + (posts[0] ? ' <button type="button" class="linkish" data-latest>Latest post →</button>' : '') + '</p>';
       calEl.innerHTML = '<header class="titlebar"><span class="tt">Date/Time</span><span class="tbtns"><button type="button" class="tbtn" data-x aria-label="Close"><i class="g-close"></i></button></span></header>' +
         '<div class="cal-head"><button type="button" class="btn small" data-m="-1" aria-label="Previous month">◂</button><b>' + month + ' ' + y + '</b><button type="button" class="btn small" data-m="1" aria-label="Next month">▸</button></div>' +
         '<div class="cal-grid sunken">' + cells.join('') + '</div>' +
+        '<div class="cal-list">' + listHtml + '</div>' +
         '<div class="cal-foot"><span class="dim">' + now.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) + ', ' + now.toDateString() + '</span></div>';
     };
     calEl.addEventListener('click', function (e) {
@@ -383,7 +406,7 @@
         { label: 'Save', act: save },
         { label: 'Save As…', act: save },
         { sep: true },
-        { label: 'Exit', act: function () { closeNp(); } }
+        { label: 'Exit', act: function () { OS.close(w); } }
       ],
       Edit: [
         { label: 'Select All', act: function () { ta.focus(); ta.select(); } },
@@ -410,12 +433,14 @@
     });
     ta.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); } });
     var closeNp = function () {
-      if (!dirty()) { OS.close(w); return; }
       OS.msg({ title: 'Notepad', icon: 'warn', text: 'The text in ' + file + ' has changed.\n\nIt can\'t be saved here anyway. Close it?', buttons: ['Close', 'Cancel'] })
-        .then(function (i) { if (i === 0) OS.close(w); });
+        .then(function (i) { if (i === 0) OS.close(w, true); });
     };
-    var x = $('.titlebar [data-act="close"]', w.el);
-    if (x) x.addEventListener('click', function (e) { if (dirty()) { e.preventDefault(); e.stopImmediatePropagation(); closeNp(); } }, true);
+    w.beforeClose = function () {
+      if (!dirty()) return true;
+      closeNp();
+      return false;
+    };
   }
   OS.on('register', function (w) { if (w.app === 'notepad' || w.app === 'untitled') notepadize(w); });
   OS.apps.newtext = function (from) {
@@ -510,13 +535,12 @@
   };
   function poke() {
     clearTimeout(idleTimer);
-    // not on phones (they sleep on their own), not mid-read, not while music plays
+    // not on phones (they sleep on their own), not while Media Player is playing
     if (OS.coarse.matches) return;
     var mins = +setting('saver', 2);
     if (!mins) return;
     IDLE = mins * 60000;
     idleTimer = setTimeout(function () {
-      var t = OS.top();
       if (!document.getElementById('bootscreen') && !document.hidden && !$('.modal-bg') && !(OS.player && OS.player.playing())) OS.apps.screensaver();
     }, IDLE);
   }
@@ -662,9 +686,19 @@
         if (low) drop(low);
       }
     });
-    OS.on('focus', function (o) { if (S.run) { S.paused = o !== w; if (S.paused) setMsg('Paused. Click the game to go on.'); } });
-    OS.on('minimize', function (o) { if (o === w && S.run) { S.paused = true; setMsg('Paused.'); } });
-    OS.on('close', function (o) { if (o === w) { S.run = false; cancelAnimationFrame(S.raf); } });
+    var onFocus = function (o) { if (S.run) { S.paused = o !== w; if (S.paused) setMsg('Paused. Click the game to go on.'); } };
+    var onMin = function (o) { if (o === w && S.run) { S.paused = true; setMsg('Paused.'); } };
+    var onClose = function (o) {
+      if (o !== w) return;
+      S.run = false;
+      cancelAnimationFrame(S.raf);
+      OS.off('focus', onFocus);
+      OS.off('minimize', onMin);
+      OS.off('close', onClose);
+    };
+    OS.on('focus', onFocus);
+    OS.on('minimize', onMin);
+    OS.on('close', onClose);
     hud();
   };
 

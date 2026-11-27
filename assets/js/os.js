@@ -38,12 +38,18 @@
 
   var handlers = {};
   function on(evt, fn) { (handlers[evt] = handlers[evt] || []).push(fn); }
+  function off(evt, fn) {
+    var list = handlers[evt];
+    if (!list) return;
+    var i = list.indexOf(fn);
+    if (i !== -1) list.splice(i, 1);
+  }
   function emit(evt, a, b) { (handlers[evt] || []).forEach(function (fn) { try { fn(a, b); } catch (e) { if (window.console) console.error(e); } }); }
 
   function appFor(path) {
     path = path.replace(/index\.html$/, '');
     if (path === '/') return 'browser';
-    if (path === '/about/') return 'about';
+    if (path === '/about/') return 'browser';
     if (path === '/readme/') return 'notepad';
     if (path === '/terminal/') return 'terminal';
     if (/^\/blog\/[^\/]+\/?$/.test(path)) return 'browser';
@@ -64,6 +70,15 @@
     return actx;
   }
   function soundOn() { try { return localStorage.getItem('sound') !== 'off'; } catch (e) { return true; } }
+  function volume() {
+    try {
+      var raw = localStorage.getItem('volume');
+      if (raw !== null) { var n = parseFloat(raw); if (isFinite(n)) return Math.max(0, Math.min(1, n)); }
+    } catch (e) {}
+    return 0.8;
+  }
+  var lastVol = volume() || 0.8;
+  function effectiveVolume() { return soundOn() ? volume() : 0; }
   function tone(ctx, out, f, t, len, type, vol) {
     var o = ctx.createOscillator(), g = ctx.createGain();
     o.type = type || 'sine';
@@ -75,11 +90,12 @@
     o.start(t); o.stop(t + len + 0.05);
   }
   function sound(name) {
-    if (!soundOn()) return;
+    var ev = effectiveVolume();
+    if (!ev) return;
     var ctx = audio();
     if (!ctx) return;
     var t = ctx.currentTime + 0.02, out = ctx.createGain();
-    out.gain.value = 0.5;
+    out.gain.value = 0.5 * ev;
     out.connect(ctx.destination);
     if (name === 'startup') {
       [[196, 0, 2.2, 'sine', 0.12], [392, 0, 0.9, 'triangle', 0.16], [587.33, 0.14, 0.9, 'triangle', 0.16],
@@ -160,9 +176,10 @@
     var b = $('[data-act="max"]', w.el);
     if (b) b.setAttribute('aria-label', on ? 'Restore' : 'Maximize');
   }
-  function close(w) {
+  function close(w, force) {
     var i = wins.indexOf(w);
     if (i === -1) return;
+    if (!force && w.beforeClose && w.beforeClose() === false) return;
     wins.splice(i, 1);
     emit('close', w);
     w.el.remove();
@@ -171,7 +188,7 @@
     if (t) focus(t);
     else { document.title = siteName; if (location.pathname !== '/' || location.search) history.replaceState(null, '', '/'); }
   }
-  function closeAll() { wins.slice().forEach(close); }
+  function closeAll() { wins.slice().forEach(function (w) { close(w, true); }); }
   function taskClick(w) {
     if (w.el.classList.contains('minimized')) restore(w);
     else if (top() === w) minimize(w);
@@ -191,7 +208,7 @@
   function register(el, url, docTitle) {
     var app = el.getAttribute('data-app');
     var w = { el: el, app: app, url: url, docTitle: docTitle || document.title };
-    $$('.tbtn[hidden], .browser-bar [hidden]', el).forEach(function (b) { var a = b.getAttribute('data-act'); if (a !== 'hex' && a !== 'toc') b.hidden = false; });
+    $$('.tbtn[hidden], .browser-bar [hidden], .address [hidden]', el).forEach(function (b) { var a = b.getAttribute('data-act'); if (a !== 'hex' && a !== 'toc') b.hidden = false; });
     var tt = $('.titlebar .tt', el);
     if (tt && !tt.textContent) tt.textContent = el.getAttribute('data-title') || app;
     ['e', 's', 'se'].forEach(function (d) { var g = document.createElement('i'); g.className = 'grip g-' + d; g.setAttribute('data-grip', d); el.appendChild(g); });
@@ -206,10 +223,10 @@
     tasks.appendChild(btn);
     wins.push(w);
     wire(w);
-    if (window.Pages) window.Pages.init(el, url);
-    if (app === 'about') tabs(el);
     if (app === 'browser') browserChrome(w);
+    if (window.Pages) window.Pages.init(w.browser ? w.browser.active.pane : el, url, el);
     emit('register', w);
+    if (w.browser) emit('browser-page', w, w.browser.active);
     return w;
   }
   function setTitle(w, title) {
@@ -378,6 +395,9 @@
       });
     });
   }
+  function shortTitle(t) {
+    return String(t || 'Browser').replace(/\s*-\s*Browser$/, '').trim() || 'Browser';
+  }
   function open(href, opts) {
     opts = opts || {};
     var u;
@@ -386,8 +406,14 @@
     var app = appFor(u.pathname);
     if (!app) { window.location.href = u.href; return; }
     closeMenus();
-    if (app === 'terminal') { openTerminal(opts); if (opts.push !== false && rel(u) !== rel(location)) history.pushState(null, '', rel(u)); return; }
+    if (app === 'terminal') { openTerminal({ from: opts.from, url: rel(u) }); if (opts.push !== false && rel(u) !== rel(location)) history.pushState(null, '', rel(u)); return; }
     var existing = find(app);
+    if (existing && app === 'browser' && existing.browser) {
+      restore(existing);
+      if (opts.newTab) existing.browser.openTab(rel(u), opts);
+      else existing.browser.navigate(rel(u), opts);
+      return;
+    }
     if (existing && app !== 'browser' && !opts.reload) {
       existing.url = rel(u);
       restore(existing);
@@ -426,46 +452,354 @@
     }).catch(function () { root.classList.remove('busy'); window.location.href = u.href; });
   }
 
-  /* ---------------- browser chrome ---------------- */
+  /* ---------------- browser chrome (tabbed) ---------------- */
   function browserChrome(w) {
     var el = w.el;
     var form = $('.address', el), input = $('.address input', el);
+    var tabBar = $('.browser-tabs', el), statusLine = $('.statusline', el);
+    var backBtn = $('.browser-bar [data-act="back"]', el), fwdBtn = $('.browser-bar [data-act="fwd"]', el);
+    var initView = $('.page-view', el);
+    if (!initView) return;
+
+    // ensure reading meter exists even if the Browser first loaded on /web/ or /about/
+    if (statusLine && !$('[data-meter]', statusLine)) {
+      var mSeg = document.createElement('span');
+      mSeg.className = 'seg meter';
+      mSeg.setAttribute('aria-hidden', 'true');
+      mSeg.innerHTML = '<i data-meter></i>';
+      statusLine.insertBefore(mSeg, statusLine.lastElementChild);
+    }
+
+    var stage = document.createElement('div');
+    stage.className = 'browser-stage';
+    initView.parentNode.insertBefore(stage, initView);
+
+    var nextId = 1, tabs = [], active = null;
+    function makePane(viewEl) {
+      var p = document.createElement('div');
+      p.className = 'browser-pane';
+      if (viewEl) p.appendChild(viewEl);
+      stage.appendChild(p);
+      return p;
+    }
+
+    var firstTitle = el.getAttribute('data-title') || (siteName + ' - Browser');
+    var t0 = {
+      id: nextId++, url: w.url || '/', fullTitle: firstTitle, title: shortTitle(firstTitle),
+      docTitle: w.docTitle || document.title, pane: makePane(initView),
+      stack: [w.url || '/'], idx: 0, scroll: 0, icon: 'browser', addr: null
+    };
+    tabs.push(t0);
+    active = t0;
+
+    function syncChrome(pushUrl) {
+      if (!active) return;
+      w.url = active.url;
+      w.docTitle = active.docTitle;
+      setTitle(w, active.fullTitle);
+      if (top() === w) document.title = w.docTitle || siteName;
+      if (input) {
+        try { input.value = active.addr || new URL(active.url, location.href).href; }
+        catch (x) { input.value = active.addr || active.url; }
+      }
+      if (backBtn) backBtn.disabled = active.idx <= 0;
+      if (fwdBtn) fwdBtn.disabled = active.idx >= active.stack.length - 1;
+      var view = $('.page-view', active.pane);
+      if (view && view._syncMeter) view._syncMeter();
+      else {
+        var m = $('[data-meter]', el);
+        if (m) m.style.width = '0%';
+      }
+      var st = $('[data-status]', el);
+      if (st && !el.classList.contains('loading')) st.textContent = active.status || 'Done';
+      if (pushUrl && rel(new URL(active.url, location.href)) !== rel(location)) {
+        history.pushState(null, '', active.url);
+      } else if (pushUrl === false && top() === w && rel(new URL(active.url, location.href)) !== rel(location)) {
+        history.replaceState(null, '', active.url);
+      }
+    }
+
+    function renderTabs() {
+      if (!tabBar) return;
+      tabBar.hidden = false;
+      tabBar.innerHTML = '';
+      tabs.forEach(function (t) {
+        var item = document.createElement('div');
+        item.className = 'btab' + (t === active ? ' on' : '') + (t.loading ? ' is-loading' : '');
+        item.setAttribute('data-tid', String(t.id));
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btab-btn';
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', String(t === active));
+        btn.title = t.title + (t.addr ? ' — ' + t.addr : '');
+        btn.innerHTML = svg(t.icon || 'browser') + '<span></span>';
+        $('span', btn).textContent = t.title;
+        btn.addEventListener('click', function () { selectTab(t); });
+        item.appendChild(btn);
+        if (tabs.length > 1) {
+          var xb = document.createElement('button');
+          xb.type = 'button';
+          xb.className = 'btab-x';
+          xb.setAttribute('aria-label', 'Close tab ' + t.title);
+          xb.textContent = '×';
+          xb.addEventListener('click', function (e) { e.stopPropagation(); closeTab(t); });
+          item.appendChild(xb);
+        }
+        item.addEventListener('contextmenu', function (e) {
+          e.preventDefault();
+          menu([
+            { label: 'New Tab', act: function () { openTab('/web/'); } },
+            { label: 'Duplicate Tab', act: function () { openTab(t.url); } },
+            { label: 'Reload Tab', act: function () { selectTab(t); loadInto(t, t.url, { reload: true, fromStack: true, push: false }); } },
+            { sep: true },
+            { label: 'Close Other Tabs', disabled: tabs.length <= 1, act: function () { tabs.slice().forEach(function (o) { if (o !== t) closeTab(o); }); } },
+            { label: 'Close Tab', disabled: tabs.length <= 1, act: function () { closeTab(t); } }
+          ], e.clientX, e.clientY);
+        });
+        tabBar.appendChild(item);
+      });
+      var plus = document.createElement('button');
+      plus.type = 'button';
+      plus.className = 'btab-new';
+      plus.setAttribute('aria-label', 'New tab');
+      plus.title = 'New tab (Alt+T)';
+      plus.textContent = '+';
+      plus.addEventListener('click', function () { openTab('/web/'); });
+      tabBar.appendChild(plus);
+      var activeEl = $('.btab.on', tabBar);
+      if (activeEl && activeEl.scrollIntoView) { try { activeEl.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (x) {} }
+    }
+
+    function selectTab(t) {
+      if (!t || tabs.indexOf(t) === -1) return;
+      if (active && active !== t) {
+        var oldV = $('.page-view', active.pane);
+        if (oldV) active.scroll = oldV.scrollTop;
+        active.pane.hidden = true;
+      }
+      active = t;
+      w.browser.active = active;
+      active.pane.hidden = false;
+      el.classList.toggle('loading', !!active.loading);
+      var v = $('.page-view', active.pane);
+      if (v && active.scroll) v.scrollTop = active.scroll;
+      syncChrome(false);
+      renderTabs();
+      emit('browser-tab', w, active);
+    }
+
+    function closeTab(t) {
+      if (tabs.length <= 1) return;
+      var i = tabs.indexOf(t);
+      if (i === -1) return;
+      t.pane.remove();
+      tabs.splice(i, 1);
+      if (active === t) selectTab(tabs[Math.min(i, tabs.length - 1)]);
+      else renderTabs();
+    }
+
+    function loadInto(t, href, opts) {
+      opts = opts || {};
+      var u;
+      try { u = new URL(href, location.href); } catch (x) { return; }
+      var targetRel = rel(u);
+      var tok = t.token = {};
+      t.loading = true;
+      t.status = 'Opening ' + u.href + '...';
+      if (t === active) {
+        el.classList.add('loading');
+        root.classList.add('busy');
+        var st = $('[data-status]', el);
+        if (st) st.textContent = t.status;
+      }
+      renderTabs();
+      fetchWindow(u).then(function (res) {
+        if (t.token !== tok || tabs.indexOf(t) === -1) return;
+        t.loading = false;
+        t.status = 'Done';
+        if (t === active) { el.classList.remove('loading'); root.classList.remove('busy'); }
+        var fetchedView = $('.page-view', res.el);
+        if (!fetchedView) { window.location.href = u.href; return; }
+        t.pane.innerHTML = '';
+        t.pane.appendChild(fetchedView);
+        t.url = targetRel;
+        t.fullTitle = res.el.getAttribute('data-title') || (res.title + ' - Browser');
+        t.title = shortTitle(t.fullTitle);
+        t.docTitle = res.title;
+        t.icon = 'browser';
+        t.addr = null;
+        t.scroll = 0;
+        t._hasToc = false;
+        t._tocOpen = false;
+        t._tocToggle = null;
+        if (!opts.fromStack) {
+          if (t.stack[t.idx] !== targetRel) {
+            t.stack = t.stack.slice(0, t.idx + 1);
+            t.stack.push(targetRel);
+            t.idx = t.stack.length - 1;
+          }
+        } else if (opts.syncStack) {
+          if (t.idx > 0 && t.stack[t.idx - 1] === targetRel) t.idx--;
+          else if (t.idx < t.stack.length - 1 && t.stack[t.idx + 1] === targetRel) t.idx++;
+        }
+        if (t === active) syncChrome(opts.push !== false);
+        if (window.Pages) window.Pages.init(t.pane, targetRel, el);
+        emit('browser-page', w, t);
+        if (t === active) {
+          fetchedView.scrollTop = 0;
+          if (u.hash) { try { var h = t.pane.querySelector(decodeURIComponent(u.hash)); if (h) h.scrollIntoView(); } catch (x) {} }
+        }
+        renderTabs();
+      }).catch(function () {
+        if (t.token !== tok) return;
+        t.loading = false;
+        if (t === active) { el.classList.remove('loading'); root.classList.remove('busy'); }
+        window.location.href = u.href;
+      });
+    }
+
+    function openTab(href, opts) {
+      var pane = makePane(null);
+      pane.hidden = true;
+      var t = {
+        id: nextId++, url: href || '/web/', fullTitle: 'Loading… - Browser', title: 'Loading…',
+        docTitle: siteName, pane: pane, stack: [href || '/web/'], idx: 0, scroll: 0, icon: 'browser', addr: null
+      };
+      tabs.push(t);
+      selectTab(t);
+      loadInto(t, t.url, { push: opts && opts.push, fromStack: true });
+      return t;
+    }
+
+    function setTabMeta(t, label, fullTitle, addrVal, icon) {
+      if (!t) return;
+      if (label) t.title = label;
+      if (fullTitle) t.fullTitle = fullTitle;
+      if (addrVal !== undefined) t.addr = addrVal;
+      if (icon) t.icon = icon;
+      if (t === active) syncChrome();
+      renderTabs();
+    }
+
+    w.browser = {
+      tabs: tabs, active: active, stage: stage,
+      openTab: openTab, selectTab: selectTab, closeTab: closeTab,
+      navigate: function (href, opts) { loadInto(active, href, opts); },
+      setTabMeta: setTabMeta, syncChrome: syncChrome, renderTabs: renderTabs
+    };
+
     $$('.browser-bar [data-act]', el).forEach(function (b) {
       b.addEventListener('click', function () {
         var act = b.getAttribute('data-act');
-        if (act === 'back') history.back();
-        else if (act === 'fwd') history.forward();
-        else if (act === 'reload') open(w.url, { reload: true, push: false });
+        if (act === 'back' && active.idx > 0) {
+          active.idx--;
+          loadInto(active, active.stack[active.idx], { fromStack: true, push: false });
+        } else if (act === 'fwd' && active.idx < active.stack.length - 1) {
+          active.idx++;
+          loadInto(active, active.stack[active.idx], { fromStack: true, push: false });
+        } else if (act === 'reload') {
+          loadInto(active, active.url, { reload: true, fromStack: true, push: false });
+        }
       });
     });
+
     if (form && input) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        var v = input.value.trim();
-        if (!v) return;
-        if (!/^[a-z]+:\/\//i.test(v) && v.charAt(0) !== '/') v = (/\./.test(v.split('/')[0]) ? 'http://' : '/') + v;
+        var raw = input.value.trim();
+        if (!raw) return;
+        var low = raw.toLowerCase();
+        var shortcuts = { home: '/web/', web: '/web/', harya: '/', posts: '/', blog: '/', about: '/about/' };
+        if (shortcuts[low]) { open(shortcuts[low]); return; }
+        // allow "google.com 1999" shorthand for Wayback time travel
+        var explicitYear = 0;
+        var ym = raw.match(/^(\S+)\s+(199[6-9]|20[0-2]\d)$/);
+        if (ym && /\./.test(ym[1])) { raw = ym[1]; explicitYear = +ym[2]; }
+        var v = raw;
+        if (!/^[a-z]+:\/\//i.test(v) && v.charAt(0) !== '/') {
+          if (/\./.test(v.split('/')[0])) v = 'http://' + v;
+          else if (apps.find) { apps.find(raw); return; }
+          else v = '/' + v;
+        }
         var dest;
         try { dest = new URL(v, location.href); } catch (x) { return; }
         if (dest.origin !== location.origin && /^https?:$/.test(dest.protocol)) {
           // another website: show it as the Internet Archive saved it (see /web/)
-          var y = 2001;
-          try { y = +sessionStorage.getItem('wb-year') || 2001; } catch (x) {}
+          var y = explicitYear || 2001;
+          if (!explicitYear) { try { y = +sessionStorage.getItem('wb-year') || 2001; } catch (x) {} }
           open('/web/?u=' + encodeURIComponent(dest.href) + '&y=' + y);
           return;
         }
         open(v);
       });
     }
+
+    // right-click context menu on links inside Browser pages
+    stage.addEventListener('contextmenu', function (e) {
+      var a = e.target.closest('a[href]');
+      if (!a) return;
+      var href = a.getAttribute('href');
+      if (!href || href.charAt(0) === '#') return;
+      var u;
+      try { u = new URL(a.href, location.href); } catch (x) { return; }
+      e.preventDefault();
+      var same = u.origin === location.origin && !a.hasAttribute('data-ext') && appFor(u.pathname) === 'browser';
+      var extHttp = u.origin !== location.origin && /^https?:$/.test(u.protocol);
+      var items = [];
+      if (same) {
+        items.push({ label: 'Open Link', bold: true, act: function () { open(u.href); } });
+        items.push({ label: 'Open Link in New Tab', act: function () { openTab(rel(u)); } });
+      } else if (extHttp) {
+        var y = 2001;
+        try { y = +sessionStorage.getItem('wb-year') || 2001; } catch (x) {}
+        items.push({ label: 'Open in New Tab (Wayback ' + y + ')', bold: true, act: function () { openTab('/web/?u=' + encodeURIComponent(u.href) + '&y=' + y); } });
+      }
+      items.push({ label: 'Open in Real Browser Tab', act: function () { window.open(u.href, '_blank', 'noopener'); } });
+      if (navigator.clipboard) items.push({ sep: true }, { label: 'Copy Link Address', act: function () { navigator.clipboard.writeText(u.href).catch(function () {}); } });
+      menu(items, e.clientX, e.clientY);
+    });
+
+    // Alt+T opens a new Browser tab when Browser is active
+    var onKey = function (e) {
+      if (top() !== w || !document.contains(el)) return;
+      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 't' || e.key === 'T')) {
+        e.preventDefault();
+        openTab('/web/');
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    var onClose = function (o) { if (o === w) { document.removeEventListener('keydown', onKey); off('close', onClose); } };
+    on('close', onClose);
+
+    syncChrome();
+    renderTabs();
   }
 
   /* ---------------- terminal, recycle bin ---------------- */
   function openTerminal(opts) {
+    opts = opts || {};
+    var url = opts.url || '/terminal/';
+    var cmd = '';
+    try { cmd = new URL(url, location.href).searchParams.get('cmd') || ''; } catch (x) {}
     var w = find('terminal');
-    if (w) { restore(w); return; }
-    w = makeWindow('terminal', 'Terminal', '<iframe class="term-frame" src="/terminal/" title="Terminal"></iframe>', { url: '/terminal/', from: opts && opts.from });
+    if (w) {
+      restore(w);
+      if (cmd) {
+        var ef = $('iframe', w.el);
+        try { if (ef && ef.contentWindow && ef.contentWindow.__term) ef.contentWindow.__term.run(cmd); } catch (x) {}
+      }
+      return;
+    }
+    w = makeWindow('terminal', 'Terminal', '<iframe class="term-frame" src="' + esc(url) + '" title="Terminal"></iframe>', { url: '/terminal/', from: opts.from });
     w.docTitle = 'terminal · ' + siteName;
     var f = $('iframe', w.el);
-    f.addEventListener('load', function () { try { f.contentWindow.focus(); } catch (e) {} });
+    f.addEventListener('load', function () {
+      try {
+        f.contentWindow.postMessage({ type: 'os-audio', on: soundOn(), vol: effectiveVolume() }, location.origin);
+        f.contentWindow.focus();
+      } catch (e) {}
+    });
   }
   on('focus', function (w) {
     if (w.app !== 'terminal') return;
@@ -478,6 +812,7 @@
     if (e.data.type === 'os-open' && typeof e.data.url === 'string') open(e.data.url);
     if (e.data.type === 'os-close' && t) close(t);
     if (e.data.type === 'os-focus' && t && top() !== t) focus(t);
+    if (e.data.type === 'os-discover' && typeof e.data.id === 'string') emit('discover', e.data.id);
   });
 
   var binned = [];
@@ -677,6 +1012,8 @@
     if (!a || !plainClick(e) || e.defaultPrevented || a.target) return;
     if (a.closest('.icons')) return; // desktop icons are handled below
     if (!a.closest('.windows, .start-menu, .menu, .modal, .balloon, .cal')) return;
+    var launchApp = a.getAttribute('data-launch');
+    if (launchApp && apps[launchApp]) { e.preventDefault(); closeMenus(); apps[launchApp](rectOf(a)); return; }
     var href = a.getAttribute('href');
     if (!href || href.charAt(0) === '#') return;
     var u = new URL(a.href, location.href);
@@ -819,7 +1156,7 @@
       { label: 'Sounds', checked: soundOn(), act: toggleSound },
       { label: 'Screen Saver', disabled: !apps.screensaver, act: function () { apps.screensaver(); } },
       { sep: true },
-      { label: 'Properties', act: function () { open('/about/', { from: at }); } }
+      { label: 'Properties', act: function () { if (apps.setup) apps.setup({ tab: 1 }); else if (apps.system) apps.system(at); } }
     ], x, y);
   });
 
@@ -886,6 +1223,7 @@
   var clock = document.getElementById('clock');
   if (clock) {
     var tick = function () {
+      if (root.classList.contains('infected')) return;
       var d = new Date();
       clock.textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
       clock.title = d.toDateString();
@@ -911,23 +1249,118 @@
   }
   if (themeBtn) { themeBtn.hidden = false; themeLabel(); themeBtn.addEventListener('click', toggleTheme); }
   var soundBtn = document.getElementById('sound-toggle');
+  var volPop = null;
+  function pushTermAudio() {
+    var tw = find('terminal');
+    if (!tw) return;
+    var f = $('iframe', tw.el);
+    try { if (f && f.contentWindow) f.contentWindow.postMessage({ type: 'os-audio', on: soundOn(), vol: effectiveVolume() }, location.origin); } catch (e) {}
+  }
   function soundLabel() {
-    if (!soundBtn) return;
-    var s = soundOn();
-    soundBtn.setAttribute('aria-label', s ? 'Mute sounds' : 'Turn sounds on');
-    soundBtn.title = s ? 'Sounds on' : 'Sounds off';
-    $('use', soundBtn).setAttribute('href', s ? '#i-speaker' : '#i-mute');
+    var on = soundOn() && volume() > 0;
+    var pct = Math.round(volume() * 100);
+    if (soundBtn) {
+      soundBtn.setAttribute('aria-label', on ? 'Volume: ' + pct + '%' : 'Volume: Muted');
+      soundBtn.title = on ? 'Volume: ' + pct + '% (click for slider, right-click to mute)' : 'Muted (click for slider, right-click to unmute)';
+      $('use', soundBtn).setAttribute('href', on ? '#i-speaker' : '#i-mute');
+    }
+    if (volPop) {
+      var r = $('[data-vrange]', volPop), m = $('[data-vmute]', volPop), p = $('[data-vpct]', volPop);
+      if (r) r.value = String(on ? pct : 0);
+      if (m) m.checked = !on;
+      if (p) p.textContent = on ? pct + '%' : 'Muted';
+    }
   }
   function setSound(s) {
-    try { if (s) localStorage.removeItem('sound'); else localStorage.setItem('sound', 'off'); } catch (e) {}
+    s = !!s;
+    try {
+      if (s) {
+        localStorage.removeItem('sound');
+        if (volume() === 0) localStorage.setItem('volume', String(lastVol || 0.8));
+      } else {
+        localStorage.setItem('sound', 'off');
+      }
+    } catch (e) {}
     soundLabel();
+    pushTermAudio();
+    emit('sound', soundOn() && volume() > 0);
+    emit('volume', volume(), soundOn() && volume() > 0);
+  }
+  function setVolume(v) {
+    v = Math.max(0, Math.min(1, Number(v) || 0));
+    if (v > 0) lastVol = v;
+    try {
+      localStorage.setItem('volume', String(Math.round(v * 100) / 100));
+      if (v === 0) localStorage.setItem('sound', 'off');
+      else localStorage.removeItem('sound');
+    } catch (e) {}
+    soundLabel();
+    pushTermAudio();
+    var on = soundOn() && v > 0;
+    emit('sound', on);
+    emit('volume', v, on);
   }
   function toggleSound() {
-    var s = !soundOn();
+    var s = !(soundOn() && volume() > 0);
     setSound(s);
     if (s) sound('pop');
   }
-  if (soundBtn) { soundBtn.hidden = false; soundLabel(); soundBtn.addEventListener('click', toggleSound); }
+  function closeVolume() {
+    if (volPop) { volPop.remove(); volPop = null; }
+    if (soundBtn) soundBtn.setAttribute('aria-expanded', 'false');
+  }
+  function openVolume() {
+    if (volPop) { closeVolume(); return; }
+    closeMenus();
+    volPop = document.createElement('div');
+    volPop.className = 'volpop raised';
+    volPop.setAttribute('role', 'dialog');
+    volPop.setAttribute('aria-label', 'Volume Control');
+    volPop.innerHTML =
+      '<header class="titlebar"><span class="tt">Volume</span><span class="tbtns"><button type="button" class="tbtn" data-vx aria-label="Close"><i class="g-close"></i></button></span></header>' +
+      '<div class="volpop-body">' +
+        '<div class="volpop-head"><span>Master</span><b data-vpct></b></div>' +
+        '<div class="volpop-track"><input class="slider" type="range" min="0" max="100" value="80" aria-label="Master volume" data-vrange></div>' +
+        '<label class="volpop-mute"><input type="checkbox" data-vmute> Mute all</label>' +
+        '<div class="volpop-foot"><button type="button" class="linkish" data-vmp>Media Player…</button></div>' +
+      '</div>';
+    document.body.appendChild(volPop);
+    if (soundBtn) soundBtn.setAttribute('aria-expanded', 'true');
+    soundLabel();
+    var rng = $('[data-vrange]', volPop), muteBox = $('[data-vmute]', volPop);
+    rng.addEventListener('input', function () { setVolume(+rng.value / 100); });
+    rng.addEventListener('change', function () { if (effectiveVolume() > 0) sound('pop'); });
+    muteBox.addEventListener('change', function () { setSound(!muteBox.checked); if (!muteBox.checked) sound('pop'); });
+    volPop.addEventListener('click', function (e) {
+      if (e.target.closest('[data-vx]')) { closeVolume(); if (soundBtn) soundBtn.focus(); }
+      else if (e.target.closest('[data-vmp]')) { closeVolume(); if (apps.player) apps.player(rectOf(soundBtn)); }
+    });
+    volPop.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); closeVolume(); if (soundBtn) soundBtn.focus(); }
+    });
+    rng.focus();
+  }
+  document.addEventListener('pointerdown', function (e) {
+    if (volPop && !volPop.contains(e.target) && !e.target.closest('#sound-toggle')) closeVolume();
+  });
+  if (soundBtn) {
+    soundBtn.hidden = false;
+    soundBtn.setAttribute('aria-haspopup', 'dialog');
+    soundBtn.setAttribute('aria-expanded', 'false');
+    soundLabel();
+    soundBtn.addEventListener('click', openVolume);
+    soundBtn.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      closeVolume();
+      var on = soundOn() && volume() > 0;
+      menu([
+        { label: on ? 'Mute All' : 'Unmute', bold: true, act: toggleSound },
+        { label: 'Volume Control…', act: openVolume },
+        { sep: true },
+        { label: 'Media Player…', act: function () { if (apps.player) apps.player(rectOf(soundBtn)); } }
+      ], e.clientX, e.clientY, { returnFocus: soundBtn });
+    });
+  }
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && openMenus.length) closeMenus();
@@ -1026,16 +1459,17 @@
 
   /* ---------------- start ---------------- */
   window.OS = {
-    top: top, coarse: coarse, showDesktop: showDesktop, log: log, events: events, clearLog: clearLog, setSound: setSound,
+    top: top, coarse: coarse, showDesktop: showDesktop, log: log, events: events, clearLog: clearLog,
+    setSound: setSound, volume: volume, setVolume: setVolume, effectiveVolume: effectiveVolume, openVolume: openVolume,
     open: open, makeWindow: makeWindow, focus: focus, restore: restore, close: close, closeAll: closeAll,
     minimize: minimize, find: find, setTitle: setTitle, wins: wins, apps: apps, data: data,
-    menu: menu, closeMenus: closeMenus, msg: msg, sound: sound, audio: audio, soundOn: soundOn, on: on, emit: emit,
+    menu: menu, closeMenus: closeMenus, msg: msg, sound: sound, audio: audio, soundOn: soundOn, on: on, off: off, emit: emit,
     zoom: zoom, rect: rectOf, svg: svg, esc: esc, phone: phone, reduce: reduce, siteName: siteName, isDark: isDark, toggleTheme: toggleTheme
   };
   // deferred scripts (os-apps.js, os-player.js) run before this fires, so their hooks see the first window
   document.addEventListener('DOMContentLoaded', function () {
     $$('.win-app', layer).forEach(function (el) { focus(register(el, rel(location)), true); });
-    window.addEventListener('popstate', function () { open(location.href, { push: false }); });
+    window.addEventListener('popstate', function () { open(location.href, { push: false, fromStack: true, syncStack: true }); });
     emit('ready');
   });
 })();
