@@ -221,7 +221,7 @@ a.btn:visited { color: var(--text); }
 .sm-banner { width: 26px; flex: none; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; background: linear-gradient(0deg, var(--title-a), var(--title-b)); }
 .sm-banner span { writing-mode: vertical-rl; transform: rotate(180deg); color: #fff; font-family: var(--read); font-size: 17px; font-weight: bold; letter-spacing: 0.5px; }
 .sm-banner b { color: #d4d0c8; font-weight: normal; }
-.sm-items { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 0; overflow-y: auto; }
+.sm-items { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 0; }
 .sm-items li { position: relative; margin: 0; }
 .sm-items a, .sm-items button {
   display: flex; align-items: center; gap: 8px; width: 100%; min-height: 32px; padding: 2px 18px 2px 6px;
@@ -832,6 +832,30 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .small { font-size: 12px; }
 
 /* ===============================================================
+   CLASSIC SCROLL BARS (mouse and trackpad; touch keeps its own)
+   =============================================================== */
+@media (pointer: fine) {
+  ::-webkit-scrollbar { width: 16px; height: 16px; }
+  ::-webkit-scrollbar-track { background: repeating-conic-gradient(var(--face) 0% 25%, var(--hilite) 0% 50%) 0 0 / 2px 2px; }
+  ::-webkit-scrollbar-thumb { background: var(--face); box-shadow: inset -1px -1px var(--dkshadow), inset 1px 1px var(--hilite), inset -2px -2px var(--shadow), inset 2px 2px var(--light); }
+  ::-webkit-scrollbar-corner { background: var(--face); }
+  ::-webkit-scrollbar-button:single-button { display: block; width: 16px; height: 16px; background-color: var(--face); background-repeat: no-repeat; background-position: center; box-shadow: inset -1px -1px var(--dkshadow), inset 1px 1px var(--hilite), inset -2px -2px var(--shadow), inset 2px 2px var(--light); }
+  ::-webkit-scrollbar-button:single-button:active { box-shadow: inset 1px 1px var(--shadow), inset -1px -1px var(--shadow); background-position: 9px 9px; }
+  ::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M8 5l4 4H4z' fill='%23000'/%3E%3C/svg%3E"); }
+  ::-webkit-scrollbar-button:single-button:vertical:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M4 6h8l-4 4z' fill='%23000'/%3E%3C/svg%3E"); }
+  ::-webkit-scrollbar-button:single-button:horizontal:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M5 8l4-4v8z' fill='%23000'/%3E%3C/svg%3E"); }
+  ::-webkit-scrollbar-button:single-button:horizontal:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M6 4l4 4-4 4z' fill='%23000'/%3E%3C/svg%3E"); }
+  :root[data-theme="dark"] ::-webkit-scrollbar-button:single-button:vertical:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M8 5l4 4H4z' fill='%23e6e6e6'/%3E%3C/svg%3E"); }
+  :root[data-theme="dark"] ::-webkit-scrollbar-button:single-button:vertical:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M4 6h8l-4 4z' fill='%23e6e6e6'/%3E%3C/svg%3E"); }
+  :root[data-theme="dark"] ::-webkit-scrollbar-button:single-button:horizontal:decrement { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M5 8l4-4v8z' fill='%23e6e6e6'/%3E%3C/svg%3E"); }
+  :root[data-theme="dark"] ::-webkit-scrollbar-button:single-button:horizontal:increment { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M6 4l4 4-4 4z' fill='%23e6e6e6'/%3E%3C/svg%3E"); }
+  /* Firefox has no scroll bar parts to draw; give it the colours at least */
+  @supports not selector(::-webkit-scrollbar) {
+    * { scrollbar-color: var(--face) var(--light); }
+  }
+}
+
+/* ===============================================================
    SYNTAX (rouge)
    =============================================================== */
 .highlight .c, .highlight .c1, .highlight .cm, .highlight .cs { color: #008000; }
@@ -904,6 +928,7 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
   .task { flex-basis: 110px; }
   .statusline .meter { width: 60px; }
   .start-menu { right: 2px; }
+  .sm-items { overflow-y: auto; overflow-x: hidden; }
   .grip { display: none; }
   .icons .dicon[data-app="bin"] { position: static; }
   .bootscreen .post-logo { display: none; }
