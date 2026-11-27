@@ -5,5 +5,6 @@
     <a href="{{ '/' | relative_url }}"{% if include.here == 'home' %} aria-current="page"{% endif %}>Posts</a>
     <a href="{{ '/about/' | relative_url }}"{% if include.here == 'about' %} aria-current="page"{% endif %}>About</a>
     <a href="{{ '/feed.xml' | relative_url }}" data-ext>RSS</a>
+    <button type="button" class="site-find" title="Search every post (/)" hidden>Search</button>
   </nav>
 </header>

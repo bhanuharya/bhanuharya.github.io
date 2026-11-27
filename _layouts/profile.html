@@ -13,6 +13,18 @@ layout: default
         <div class="post-content">
           {{ content }}
         </div>
+        {% if page.experience %}
+        <h2>Experience</h2>
+        <ul class="plain">
+          {% for p in page.experience %}<li>{{ p }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+        {% if page.education %}
+        <h2>Education</h2>
+        <ul class="plain">
+          {% for p in page.education %}<li>{{ p }}</li>{% endfor %}
+        </ul>
+        {% endif %}
         {% if page.background %}
         <h2>Background</h2>
         <ul class="plain">

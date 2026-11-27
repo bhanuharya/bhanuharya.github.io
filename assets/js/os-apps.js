@@ -113,11 +113,13 @@
             '<label for="lo-user"><u>U</u>ser name:</label><input class="field sunken" id="lo-user" name="u" value="guest" maxlength="16" spellcheck="false" autocapitalize="off">' +
             '<label for="lo-pass"><u>P</u>assword:</label><input class="field sunken" id="lo-pass" type="password" disabled placeholder="(no password)">' +
           '</div>' +
+          '<label class="logon-quick"><input type="checkbox" data-quick> Skip the start-up next time</label>' +
           '<p class="logon-note" aria-live="polite"></p>' +
           '<div class="logon-btns"><button class="btn" type="submit">OK</button><button class="btn" type="button" data-cancel>Cancel</button><button class="btn" type="button" data-off>Shut Down…</button></div>' +
         '</form>' +
       '</div>';
     var form = $('form', b), input = $('#lo-user', b), note = $('.logon-note', b);
+    try { $('[data-quick]', b).checked = !!localStorage.getItem('os-quick'); } catch (x) {}
     var pick = function (name) {
       input.value = name;
       $$('[data-u]', b).forEach(function (t) { t.setAttribute('aria-checked', String(t.getAttribute('data-u') === name)); });
@@ -147,6 +149,7 @@
           OS.sound('error');
         }
         setUser(name);
+        try { if ($('[data-quick]', b).checked) localStorage.setItem('os-quick', name); else localStorage.removeItem('os-quick'); } catch (x) {}
         try { sessionStorage.setItem('os-logon', String(Date.now())); } catch (x) {}
         $$('button, input', form).forEach(function (x) { x.disabled = true; });
         wait(joked ? 750 : 200).then(function () { return loggingOn(name); }).then(resolve);
@@ -179,7 +182,7 @@
   var TIPS = [
     ['Right-click the desktop, icons and title bars for menus.', 'Press and hold the desktop, icons and title bars for menus.'],
     ['Drag a window to the top or a side of the screen to snap it.', 'The button next to Start shows the desktop.'],
-    'Packet Capture lists every request this computer makes.',
+    'Packet Capture lists every HTTP request this page makes.',
     ['Press / to search.', 'Start, then Find, searches the web pages here.'],
     'The shield in the tray opens Security Center.',
     'Settings, then System Properties, shows this device\'s hardware.',

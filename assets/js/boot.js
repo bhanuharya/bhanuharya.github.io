@@ -37,6 +37,11 @@
 
   // first visit in this tab boots; search engines and link previews go straight in
   var user = get('sessionStorage', 'os-user');
+  // "Skip the start-up next time" (ticked at log on) remembers the name in this browser
+  if (!user && get('localStorage', 'os-quick')) {
+    user = get('localStorage', 'os-quick');
+    try { sessionStorage.setItem('os-user', user); } catch (e) {}
+  }
   var bot = /bot|crawl|spider|slurp|lighthouse|facebookexternalhit|embedly|whatsapp|telegram|discord|preview/i.test(navigator.userAgent);
   if (!user && !bot) {
     root.classList.add('boot-pending');
