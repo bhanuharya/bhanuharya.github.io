@@ -147,12 +147,13 @@ a.btn:visited { color: var(--text); }
 
 /* ---------- windows ---------- */
 .window { position: absolute; display: flex; flex-direction: column; padding: 3px; pointer-events: auto; min-width: 260px; min-height: 120px; }
-.win-app[data-app="capture"] { left: 104px; top: 14px; width: min(1060px, calc(100% - 124px)); height: calc(100% - 28px); }
-.win-app[data-app="browser"] { left: 136px; top: 22px; width: min(1000px, calc(100% - 156px)); height: calc(100% - 40px); }
-.win-app[data-app="about"] { left: max(104px, calc(50% - 240px)); top: 46px; width: min(480px, calc(100% - 20px)); height: auto; max-height: calc(100% - 60px); }
-.win-app[data-app="notepad"] { left: max(104px, calc(50% - 300px)); top: 64px; width: min(600px, calc(100% - 124px)); height: min(460px, calc(100% - 90px)); }
-.win-app[data-app="terminal"] { left: max(104px, calc(50% - 400px)); top: 40px; width: min(800px, calc(100% - 124px)); height: min(500px, calc(100% - 70px)); }
-.win-app[data-app="bin"] { left: max(104px, calc(50% - 200px)); top: 120px; width: min(400px, calc(100% - 124px)); height: 240px; }
+.win-app[data-app="capture"] { left: var(--dock, 104px); top: 14px; width: min(1060px, calc(100% - var(--dock, 104px) - 20px)); height: calc(100% - 28px); }
+.win-app[data-app="browser"] { left: calc(var(--dock, 104px) + 32px); top: 22px; width: min(1000px, calc(100% - var(--dock, 104px) - 52px)); height: calc(100% - 40px); }
+.win-app[data-app="about"] { left: max(var(--dock, 104px), calc(50% - 240px)); top: 46px; width: min(480px, calc(100% - 20px)); height: auto; max-height: calc(100% - 60px); }
+.win-app[data-app="notepad"] { left: max(var(--dock, 104px), calc(50% - 300px)); top: 64px; width: min(600px, calc(100% - var(--dock, 104px) - 20px)); height: min(460px, calc(100% - 90px)); }
+.win-app[data-app="terminal"] { left: max(var(--dock, 104px), calc(50% - 400px)); top: 40px; width: min(800px, calc(100% - var(--dock, 104px) - 20px)); height: min(500px, calc(100% - 70px)); }
+.win-app[data-app="snake"], .win-app[data-app="pong"], .win-app[data-app="hack"] { left: max(var(--dock, 104px), calc(50% - 260px)); top: 50px; width: min(520px, calc(100% - var(--dock, 104px) - 20px)); height: min(460px, calc(100% - 70px)); }
+.win-app[data-app="bin"] { left: max(var(--dock, 104px), calc(50% - 200px)); top: 120px; width: min(400px, calc(100% - var(--dock, 104px) - 20px)); height: 240px; }
 .window.maximized { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; }
 .window.minimized { display: none; }
 
@@ -573,8 +574,8 @@ textarea.notepad-text.nowrap { white-space: pre; }
 /* ===============================================================
    MEDIA PLAYER, FIREWALL
    =============================================================== */
-.win-app[data-app="player"] { left: max(104px, calc(100% - 470px)); top: 30px; width: min(440px, calc(100% - 124px)); height: auto; max-height: calc(100% - 40px); }
-.win-app[data-app="firewall"] { left: max(104px, calc(50% - 300px)); top: 24px; width: min(600px, calc(100% - 124px)); height: min(560px, calc(100% - 40px)); }
+.win-app[data-app="player"] { left: max(var(--dock, 104px), calc(100% - 470px)); top: 30px; width: min(440px, calc(100% - var(--dock, 104px) - 20px)); height: auto; max-height: calc(100% - 40px); }
+.win-app[data-app="firewall"] { left: max(var(--dock, 104px), calc(50% - 300px)); top: 24px; width: min(600px, calc(100% - var(--dock, 104px) - 20px)); height: min(560px, calc(100% - 40px)); }
 .win-app[data-app="untitled"] { left: max(124px, calc(50% - 260px)); top: 90px; width: min(520px, calc(100% - 144px)); height: min(380px, calc(100% - 110px)); }
 .player-body { display: flex; flex-direction: column; gap: 6px; padding: 6px 4px 4px; overflow: hidden; }
 .player-screen { position: relative; height: 110px; flex: none; background: #000; box-shadow: inset 1px 1px var(--shadow), inset -1px -1px var(--hilite), inset 2px 2px var(--dkshadow); }
@@ -735,7 +736,7 @@ html.boot-pending body > :not(.bootscreen):not(.bios) { visibility: hidden; }
 /* ===============================================================
    SECURITY CENTER, FIND, EVENT VIEWER
    =============================================================== */
-.win-app[data-app="security"] { left: max(104px, calc(50% - 310px)); top: 20px; width: min(620px, calc(100% - 124px)); height: min(680px, calc(100% - 34px)); }
+.win-app[data-app="security"] { left: max(var(--dock, 104px), calc(50% - 310px)); top: 20px; width: min(620px, calc(100% - var(--dock, 104px) - 20px)); height: min(680px, calc(100% - 34px)); }
 .win-app[data-app="find"] { left: max(124px, calc(50% - 290px)); top: 48px; width: min(580px, calc(100% - 144px)); height: min(540px, calc(100% - 70px)); }
 .win-app[data-app="events"] { left: max(124px, calc(50% - 370px)); top: 36px; width: min(740px, calc(100% - 144px)); height: min(540px, calc(100% - 56px)); }
 .sc-body { display: grid; gap: 10px; align-content: start; padding: 8px 6px 10px; }
@@ -888,7 +889,7 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 :root[data-theme="dark"] .stream .res { color: #8ab4ff; }
 .stat-table { margin-top: 8px; font-size: 12px; }
 .stat-types { margin: 8px 0 0; font-size: 12px; }
-.win-app[data-app="system"] { left: max(104px, calc(50% - 260px)); top: 36px; width: min(520px, calc(100% - 20px)); height: auto; max-height: calc(100% - 50px); }
+.win-app[data-app="system"] { left: max(var(--dock, 104px), calc(50% - 260px)); top: 36px; width: min(520px, calc(100% - 20px)); height: auto; max-height: calc(100% - 50px); }
 .sysprops .tab-panel dl { margin-top: 4px; }
 .sysprops .ping { margin: 6px 0 0; padding: 6px 8px; font-size: 12px; white-space: pre-wrap; }
 .small { font-size: 12px; }

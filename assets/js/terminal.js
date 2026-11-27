@@ -659,7 +659,7 @@
     addLine('sound ' + v);
   }
 
-  function runGame(name) {
+  function runGame(name, done) {
     var g = window.TerminalGames;
     var starter = g && (name === 'snake' ? g.startSnake : name === 'pong' ? g.startPong : name === 'hack' ? g.startHack : null);
     if (!starter) { addLine(name + ': game module unavailable', 'err'); return; }
@@ -671,6 +671,7 @@
     if (il) il.hidden = true;
     starter(host, function (score) {
       state.gameActive = false;
+      if (done) { done(score); return; }
       if (il) il.hidden = false;
       if (typeof score === 'number') addLine(name + ' finished · score ' + score, 'dim');
       else addLine(name + ' closed.', 'dim');
@@ -965,7 +966,21 @@
     }
   });
 
-  boot();
+  /* /terminal/?game=snake: a game window from the desktop runs just that game.
+     Leaving it closes the window (or, on its own, shows the terminal). */
+  var SOLO = '';
+  try { SOLO = (new URLSearchParams(window.location.search).get('game') || '').toLowerCase(); } catch (e) {}
+  if (/^(snake|pong|hack)$/.test(SOLO)) {
+    restorePrefs();
+    document.documentElement.classList.add('solo');
+    runGame(SOLO, function () {
+      if (EMBED) { tellOS({ type: 'os-close-game' }); return; }
+      document.documentElement.classList.remove('solo');
+      var il = document.getElementById('inputline');
+      if (il) il.hidden = false;
+      boot();
+    });
+  } else boot();
 
   /* debug and screenshot hook: /terminal/?cmd=help;posts */
   try {

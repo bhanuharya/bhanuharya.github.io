@@ -138,8 +138,15 @@
 
     var controls = document.createElement('div');
     controls.className = 'game-controls-help';
-    controls.innerHTML = '<span>Controls: <b>↑↓←→</b> or <b>WASD</b></span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
+    controls.innerHTML = '<span>Controls: <b>↑↓←→</b>, <b>WASD</b> or swipe</span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
     gameBox.appendChild(controls);
+
+    // on-screen buttons, shown on touch screens
+    var pad = document.createElement('div');
+    pad.className = 'game-pad dpad';
+    pad.innerHTML = '<button type="button" data-d="up" aria-label="Up">▲</button><button type="button" data-d="left" aria-label="Left">◀</button>' +
+      '<button type="button" data-d="down" aria-label="Down">▼</button><button type="button" data-d="right" aria-label="Right">▶</button>';
+    gameBox.appendChild(pad);
 
     var exitBtn = document.createElement('button');
     exitBtn.type = 'button';
@@ -339,6 +346,37 @@
     exitBtn.addEventListener('click', exit);
     document.addEventListener('keydown', handleKey);
 
+    // touch: swipe on the board to turn, tap it to restart after a game over
+    var tp = null;
+    canvas.style.touchAction = 'none';
+    canvas.addEventListener('pointerdown', function (e) { tp = { x: e.clientX, y: e.clientY, moved: false }; });
+    canvas.addEventListener('pointermove', function (e) {
+      if (!tp || isGameOver) return;
+      var dx = e.clientX - tp.x, dy = e.clientY - tp.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0 && dir.x !== -1) nextDir = { x: 1, y: 0 };
+        else if (dx < 0 && dir.x !== 1) nextDir = { x: -1, y: 0 };
+      } else if (dy > 0 && dir.y !== -1) nextDir = { x: 0, y: 1 };
+      else if (dy < 0 && dir.y !== 1) nextDir = { x: 0, y: -1 };
+      tp = { x: e.clientX, y: e.clientY, moved: true };
+      Sound.click();
+    });
+    canvas.addEventListener('pointerup', function () { if (tp && !tp.moved && isGameOver) restart(); tp = null; });
+    canvas.addEventListener('pointercancel', function () { tp = null; });
+    pad.addEventListener('pointerdown', function (e) {
+      var bt = e.target.closest('[data-d]');
+      if (!bt) return;
+      e.preventDefault();
+      if (isGameOver) { restart(); return; }
+      var d = bt.getAttribute('data-d');
+      if (d === 'up' && dir.y !== 1) nextDir = { x: 0, y: -1 };
+      else if (d === 'down' && dir.y !== -1) nextDir = { x: 0, y: 1 };
+      else if (d === 'left' && dir.x !== 1) nextDir = { x: -1, y: 0 };
+      else if (d === 'right' && dir.x !== -1) nextDir = { x: 1, y: 0 };
+      Sound.click();
+    });
+
     spawnFood();
     draw();
     intervalId = setInterval(step, 85);
@@ -373,8 +411,14 @@
 
     var controls = document.createElement('div');
     controls.className = 'game-controls-help';
-    controls.innerHTML = '<span>Paddle: <b>↑ / ↓</b> or <b>W / S</b></span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
+    controls.innerHTML = '<span>Paddle: <b>↑ / ↓</b>, <b>W / S</b> or drag</span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
     gameBox.appendChild(controls);
+
+    // on-screen buttons, shown on touch screens: hold to move
+    var pad = document.createElement('div');
+    pad.className = 'game-pad updown';
+    pad.innerHTML = '<button type="button" data-d="up" aria-label="Paddle up">▲</button><button type="button" data-d="down" aria-label="Paddle down">▼</button>';
+    gameBox.appendChild(pad);
 
     var exitBtn = document.createElement('button');
     exitBtn.type = 'button';
@@ -531,6 +575,27 @@
     exitBtn.addEventListener('click', exit);
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
+
+    // touch or mouse: drag on the table to move your paddle
+    canvas.style.touchAction = 'none';
+    function aim(e) {
+      if (e.pointerType === 'mouse' && !e.buttons) return;
+      var r = canvas.getBoundingClientRect();
+      var y = (e.clientY - r.top) * canvas.height / r.height;
+      p1Y = Math.max(0, Math.min(canvas.height - paddleH, y - paddleH / 2));
+    }
+    canvas.addEventListener('pointerdown', aim);
+    canvas.addEventListener('pointermove', aim);
+    pad.addEventListener('pointerdown', function (e) {
+      var bt = e.target.closest('[data-d]');
+      if (!bt) return;
+      e.preventDefault();
+      keyState.up = bt.getAttribute('data-d') === 'up';
+      keyState.down = !keyState.up;
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+      pad.addEventListener(t, function () { keyState.up = false; keyState.down = false; });
+    });
 
     animId = requestAnimationFrame(loop);
 

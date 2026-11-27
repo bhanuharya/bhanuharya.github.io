@@ -249,3 +249,25 @@ pre.blob {
   background: var(--sel);
   border-color: var(--fg);
 }
+
+/* a game in its own window (/terminal/?game=...) */
+.solo .terminal-game-box { margin: 4px auto; }
+.solo #inputline { display: none; }
+
+/* on-screen game buttons, for touch screens */
+.game-pad { display: none; }
+@media (pointer: coarse), (hover: none) {
+  .game-pad { display: grid; justify-content: center; gap: 6px; margin: 10px 0 2px; }
+  .game-pad.dpad { grid-template-columns: repeat(3, 64px); grid-template-areas: ". up ." "left down right"; }
+  .game-pad.updown { grid-template-columns: repeat(2, 96px); }
+  .game-pad [data-d="up"] { grid-area: up; }
+  .game-pad [data-d="left"] { grid-area: left; }
+  .game-pad [data-d="down"] { grid-area: down; }
+  .game-pad [data-d="right"] { grid-area: right; }
+  .game-pad.updown [data-d] { grid-area: auto; }
+  .game-pad button {
+    height: 52px; font-family: inherit; font-size: 20px; line-height: 1; color: var(--fg); background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--fg); border-radius: 6px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .game-pad button:active { background: var(--sel); }
+}
