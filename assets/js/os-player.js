@@ -178,13 +178,14 @@
   }
 
   /* ---------------- player state ---------------- */
-  var list = SONGS.map(function (s) { var c = compile(s); return { t: s.t, by: 'obscuraOS', synth: s, ev: c.ev, dur: c.dur }; });
-  (OS.data.songs || []).forEach(function (s) { list.push({ t: s.t, by: 'assets/music', url: s.u, dur: 0 }); });
-  var first = 0, firstVid = -1;
+  // playlist order: your videos (in _data/videos.yml order), then music, then YouTube
+  var list = [], first = 0, firstVid = -1;
   (OS.data.videos || []).forEach(function (v) {
     list.push({ t: v.t, by: v.by || 'assets/video', vid: v.u, dur: 0 });
     if (v.d && firstVid === -1) firstVid = list.length - 1; // _data/videos.yml: default: true
   });
+  SONGS.forEach(function (s) { var c = compile(s); list.push({ t: s.t, by: 'obscuraOS', synth: s, ev: c.ev, dur: c.dur }); });
+  (OS.data.songs || []).forEach(function (s) { list.push({ t: s.t, by: 'assets/music', url: s.u, dur: 0 }); });
   (OS.data.yt || []).forEach(function (v) {
     if (!/^[\w-]{11}$/.test(v.id || '')) return;
     list.push({ t: v.t || 'YouTube video', by: v.by || 'YouTube', yt: v.id, dur: 0 });

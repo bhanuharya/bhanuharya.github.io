@@ -1,13 +1,15 @@
-# Titles for the videos in assets/video. Without an entry here, a video's
-# file name is its title. default: true makes Media Player open on it right
-# after log on and start playing.
-- file: yellow-magic-tong-poo.mp4
-  title: "Yellow Magic (Tong Poo)"
-  by: "Yellow Magic Orchestra"
-  default: true
+# The videos in assets/video, in playlist order. Media Player lists these
+# first (music comes after them), opens on the one marked default: true
+# right after log on, starts it, and goes on down the list.
+# Videos in the folder that aren't listed here come after these, titled by
+# their file name.
 - file: indonesia-6-fatamorgana.mp4
   title: "Fatamorgana (TVRI, 1989)"
   by: "Indonesia 6"
-  - file: hari-dea-senandung-dibatas-mimpi.mp4
+  default: true
+- file: yellow-magic-tong-poo.mp4
+  title: "Yellow Magic (Tong Poo)"
+  by: "Yellow Magic Orchestra"
+- file: hari-dea-senandung-dibatas-mimpi.mp4
   title: "Senandung Dibatas Mimpi"
   by: "Hari Dea"
