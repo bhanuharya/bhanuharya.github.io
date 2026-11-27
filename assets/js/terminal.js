@@ -303,11 +303,27 @@
       return r.text();
     }).then(function (html) {
       var doc = new DOMParser().parseFromString(html, 'text/html');
-      var main = doc.querySelector('article.profile, .post-content, .page-content, article, main') || doc.body;
-      var junk = main.querySelectorAll('nav, .site-head, .page-prompt, .post-nav, .post-meta, .post-tags, .post-card-cta, .tag-filter-bar, script, style');
+      var main = doc.querySelector('article.profile') ||
+        doc.querySelector('.post-content') ||
+        doc.querySelector('.page-content') ||
+        doc.querySelector('article') ||
+        doc.querySelector('main') || doc.body;
+      var junk = main.querySelectorAll('nav, .site-head, .page-prompt, .post-nav, .post-meta, .post-tags, .post-card-cta, .tag-filter-bar, .code-copy-btn, .h-anchor, script, style');
       Array.prototype.forEach.call(junk, function (n) { n.remove(); });
       Array.prototype.forEach.call(main.querySelectorAll('br'), function (b) { b.replaceWith('\n'); });
-      var text = (main.textContent || '').replace(/\n{3,}/g, '\n\n').replace(/[ \t]+\n/g, '\n').trim();
+      Array.prototype.forEach.call(main.querySelectorAll('.exp-focus'), function (el) { el.insertBefore(doc.createTextNode('\n'), el.firstChild); });
+      var pres = [];
+      Array.prototype.forEach.call(main.querySelectorAll('pre'), function (el) {
+        var idx = pres.length;
+        pres.push((el.textContent || '').replace(/^\n+|\n+$/g, ''));
+        el.textContent = '\n\u0000PRE' + idx + '\u0000\n';
+      });
+      Array.prototype.forEach.call(main.querySelectorAll('h1, h2, h3, h4, p, li, blockquote'), function (el) {
+        el.appendChild(doc.createTextNode('\n'));
+      });
+      var raw = main.textContent || '';
+      var lines = raw.split('\n').map(function (l) { return l.replace(/^[ \t]+|[ \t]+$/g, ''); });
+      var text = lines.join('\n').replace(/\n{3,}/g, '\n\n').replace(/\u0000PRE(\d+)\u0000/g, function (_, i) { return pres[+i]; }).trim();
       done(text);
     }).catch(function () {
       addLine('cat: read error: could not load ' + path, 'err');
@@ -380,6 +396,7 @@
     'linkedin   https://www.linkedin.com/in/wishnumurti',
     'rss        https://bhanuharya.github.io/feed.xml',
     'posts      https://bhanuharya.github.io/',
+    'projects   https://bhanuharya.github.io/projects/',
     'about      https://bhanuharya.github.io/about/'
   ].join('\n');
 
@@ -577,11 +594,12 @@
       ['github.com/bhanuharya', 'https://github.com/bhanuharya'],
       ['linkedin.com/in/wishnumurti', 'https://www.linkedin.com/in/wishnumurti'],
       ['posts', '/'],
+      ['/projects/', '/projects/'],
       ['/about/', '/about/'],
       ['rss', '/feed.xml']
     ];
     items.forEach(function (it) {
-      addHTML(pad(it[0], 26) + '<a href="' + it[1] + '">' + it[1] + '</a>');
+      addHTML(pad(it[0], 30) + '<a href="' + it[1] + '">' + it[1] + '</a>');
     });
   }
 

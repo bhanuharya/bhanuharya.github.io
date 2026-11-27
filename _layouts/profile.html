@@ -18,7 +18,8 @@ layout: default
         <ul class="plain exp">
           {% for p in page.experience %}
           {%- if p.role -%}
-          <li><span class="exp-head"><span><b>{{ p.role | escape }}</b>{% if p.org %}, {{ p.org | escape }}{% endif %}</span> <span class="exp-years">{{ p.years | escape }}</span></span>{% if p.focus %}<span class="exp-focus">{{ p.focus | escape }}</span>{% endif %}</li>
+          <li><span class="exp-head"><span><b>{{ p.role | escape }}</b>{% if p.org %}, {{ p.org | escape }}{% endif %}</span> <span class="exp-years">{{ p.years | escape }}</span></span>{% if p.focus %}
+            <span class="exp-focus">{{ p.focus | escape }}</span>{% endif %}</li>
           {%- else -%}
           <li>{{ p }}</li>
           {%- endif %}
@@ -46,7 +47,9 @@ layout: default
         </ul>
         <h2>Recent posts</h2>
         <ul class="plain recent">
-          {% for post in site.posts limit: 3 %}<li><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a> <span class="dim">{{ post.date | date: '%b %-d, %Y' }}</span></li>{% endfor %}
+          {% for post in site.posts limit: 3 %}
+          <li><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a> <span class="dim">{{ post.date | date: '%b %-d, %Y' }}</span></li>
+          {% endfor %}
         </ul>
       </article>
     </div>

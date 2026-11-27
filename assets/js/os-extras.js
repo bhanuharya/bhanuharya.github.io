@@ -1212,12 +1212,21 @@
       if (t && t._tocToggle) t._tocToggle();
     });
   });
+  function siteFind(pane) {
+    var sf = $('.site-find', pane);
+    if (!sf || !OS.apps.find) return;
+    sf.hidden = false;
+    if (sf.dataset.findWired) return;
+    sf.dataset.findWired = '1';
+    sf.addEventListener('click', function () { OS.apps.find(); });
+  }
   OS.on('browser-page', function (w, tab) {
     if (w._pageSeen) OS.log('info', 'Browser', 4101, 'Navigated to ' + (tab.title || tab.url) + ' (' + tab.url + ').');
     w._pageSeen = true;
     wayback(w, tab);
     contents(w, tab);
     notFound(w, tab);
+    siteFind(tab ? tab.pane : w.el);
     if (!w.browser || w.browser.active === tab) {
       syncTocButton(w, tab);
       syncStar(w);
@@ -1238,11 +1247,8 @@
   OS.on('ready', function () {
     if (window.OSBlocked && window.OSBlocked.length) OS.log('warn', 'Security', 4957, 'Content Security Policy blocked ' + window.OSBlocked.length + ' request(s) while the page loaded.');
   });
-  // the website's own Search link opens Find
+  // fallback for any non-browser window that renders .site-find
   OS.on('register', function (w) {
-    var sf = w.el.querySelector('.site-find');
-    if (!sf || !OS.apps.find) return;
-    sf.hidden = false;
-    sf.addEventListener('click', function () { OS.apps.find(); });
+    if (!w.browser) siteFind(w.el);
   });
 })();
