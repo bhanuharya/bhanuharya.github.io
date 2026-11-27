@@ -579,7 +579,23 @@
   // a YouTube one waits for Play, since it asks before loading.
   // compact: a small floating player with the video and the main buttons;
   // drag it by its title bar (phones too)
-  var full = null;
+  var full = null, sideBr = null;
+  function releaseSideBr() {
+    if (!sideBr) return;
+    if (!sideBr.hasAttribute('data-pinned') && !sideBr.classList.contains('maximized')) sideBr.style.width = '';
+    sideBr = null;
+  }
+  function fitBesideBrowser(allowCompact) {
+    if (!win || OS.phone.matches || win.el.classList.contains('compact')) return;
+    releaseSideBr();
+    var br = document.querySelector('.win-app[data-app="browser"]:not(.minimized)');
+    var r1 = br && br.getBoundingClientRect(), r2 = win.el.getBoundingClientRect();
+    if (r1 && r2.left < r1.right && r2.right > r1.left && r2.top < r1.bottom && r2.bottom > r1.top && !br.classList.contains('maximized') && !br.hasAttribute('data-pinned')) {
+      var room = Math.floor(r2.left - 8 - r1.left);
+      if (room >= 640) { br.style.width = room + 'px'; sideBr = br; }
+      else if (allowCompact) setCompact(true);
+    }
+  }
   // keep the compact player on screen when its video area changes size
   function fitCompact() {
     if (!win || !win.el.classList.contains('compact')) return;
@@ -593,6 +609,7 @@
     var el = win.el, desk = document.getElementById('desktop');
     if (on === el.classList.contains('compact')) return;
     if (on) {
+      releaseSideBr();
       full = { l: el.style.left, t: el.style.top, w: el.style.width, h: el.style.height, p: el.getAttribute('data-pinned') };
       el.classList.remove('maximized');
       el.classList.add('compact');
@@ -604,28 +621,21 @@
       el.classList.remove('compact');
       el.style.left = full ? full.l : ''; el.style.top = full ? full.t : ''; el.style.width = full ? full.w : ''; el.style.height = full ? full.h : '';
       if (!full || !full.p) el.removeAttribute('data-pinned');
+      fitBesideBrowser(false);
     }
     var b = el.querySelector('[data-p="mini"]');
     if (b) { b.textContent = on ? 'Full' : 'Mini'; b.setAttribute('aria-pressed', String(on)); b.title = on ? 'Full player' : 'Compact player'; }
   }
   OS.player.compact = setCompact;
-  window.addEventListener('resize', fitCompact);
+  window.addEventListener('resize', function () { fitCompact(); fitBesideBrowser(false); });
   OS.on('login', function () {
     setTimeout(function () {
       if (win) return;
       cur = first;
       OS.apps.player();
-      // phones get the small floating player; on a desktop the full one, and the Browser
-      // narrows to sit beside it when there is room to read (at least 560px)
+      // phones get the small floating player; desktops open full when Browser keeps >=640px beside it, else compact
       if (OS.phone.matches) setCompact(true);
-      else {
-        var br = document.querySelector('.win-app[data-app="browser"]:not(.minimized)');
-        var r1 = br && br.getBoundingClientRect(), r2 = win.el.getBoundingClientRect();
-        if (r1 && r2.left < r1.right && r2.right > r1.left && r2.top < r1.bottom && r2.bottom > r1.top && !br.classList.contains('maximized')) {
-          var room = Math.floor(r2.left - 8 - r1.left);
-          if (room >= 560) br.style.width = room + 'px';
-        }
-      }
+      else fitBesideBrowser(true);
       if (list[cur] && list[cur].vid) play(0);
     }, 1200);
   });
@@ -744,9 +754,10 @@
   };
   OS.on('close', function (w) {
     if (!win || w !== win) return;
+    win = null;
+    releaseSideBr();
     stop();
     cancelAnimationFrame(raf);
-    win = null;
     ui = {};
     vid = null;
   });
