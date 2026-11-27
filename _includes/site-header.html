@@ -1,8 +1,9 @@
-{%- comment -%} The website's own header, inside the Browser's page. include.here: home, about or post {%- endcomment -%}
+{%- comment -%} The website's own header, inside the Browser's page. include.here: home, projects, about or post {%- endcomment -%}
 <header class="site-head">
   <a class="site-name" href="{{ '/' | relative_url }}">Harya</a>
   <nav class="site-nav" aria-label="Site">
     <a href="{{ '/' | relative_url }}"{% if include.here == 'home' %} aria-current="page"{% endif %}>Posts</a>
+    <a href="{{ '/projects/' | relative_url }}"{% if include.here == 'projects' %} aria-current="page"{% endif %}>Projects</a>
     <a href="{{ '/about/' | relative_url }}"{% if include.here == 'about' %} aria-current="page"{% endif %}>About</a>
     <a href="{{ '/feed.xml' | relative_url }}" data-ext>RSS</a>
     <button type="button" class="site-find" title="Search every post (/)" hidden>Search</button>

@@ -894,6 +894,7 @@
     var opts = [
       ['/web/', 'The Web (Home)'],
       ['/', 'Harya — Posts'],
+      ['/projects/', 'Harya — Projects'],
       ['/about/', 'About Harya']
     ];
     posts.forEach(function (p) { opts.push([p.u, p.t]); });
@@ -961,6 +962,7 @@
         { sep: true },
         { label: 'Home (The Web)', act: function () { OS.open('/web/'); } },
         { label: 'Harya', act: function () { OS.open('/'); } },
+        { label: 'Projects', act: function () { OS.open('/projects/'); } },
         { label: 'About', act: function () { OS.open('/about/'); } }
       ];
       if (custom.length) {

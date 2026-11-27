@@ -710,7 +710,7 @@
         var raw = input.value.trim();
         if (!raw) return;
         var low = raw.toLowerCase();
-        var shortcuts = { home: '/web/', web: '/web/', harya: '/', posts: '/', blog: '/', about: '/about/' };
+        var shortcuts = { home: '/web/', web: '/web/', harya: '/', posts: '/', blog: '/', projects: '/projects/', about: '/about/' };
         if (shortcuts[low]) { open(shortcuts[low]); return; }
         // allow "google.com 1999" shorthand for Wayback time travel
         var explicitYear = 0;

@@ -277,7 +277,7 @@
     var c = cmd.trim(), l = c.toLowerCase();
     if (!c) return true;
     OS.log('info', 'Shell', 4688, 'Run: ' + c.slice(0, 120));
-    var map = { home: '/web/', browser: '/web/', web: '/web/', harya: '/', posts: '/', about: '/about/', help: '/readme/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/', snake: '/terminal/?cmd=snake', pong: '/terminal/?cmd=pong', hack: '/terminal/?cmd=hack' };
+    var map = { home: '/web/', browser: '/web/', web: '/web/', harya: '/', posts: '/', projects: '/projects/', about: '/about/', help: '/readme/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/', snake: '/terminal/?cmd=snake', pong: '/terminal/?cmd=pong', hack: '/terminal/?cmd=hack' };
     if (map[l]) { OS.open(map[l]); return true; }
     var appAlias = { virus: 'virus', notavirus: 'virus', 'notavirus.exe': 'virus', capture: 'capture', pcap: 'capture', packets: 'capture', system: 'system', winver: 'system', ver: 'system', sysinfo: 'system', find: 'find', search: 'find', grep: 'find', events: 'events', eventvwr: 'events', log: 'events', logs: 'events', security: 'security', wscui: 'security', csp: 'security', setup: 'setup', bios: 'setup', settings: 'setup', notepad: 'newtext', 'notepad.exe': 'newtext', edit: 'newtext', player: 'player', music: 'player', mplayer: 'player', firewall: 'firewall', game: 'firewall', bin: 'bin', trash: 'bin', calendar: 'calendar', date: 'calendar', screensaver: 'screensaver' };
     if (appAlias[l] && OS.apps[appAlias[l]]) { OS.apps[appAlias[l]](); return true; }

@@ -821,6 +821,7 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .site-name, .site-name:visited { font-family: Georgia, "Times New Roman", serif; font-size: 26px; font-weight: bold; letter-spacing: -0.3px; color: var(--text); text-decoration: none; }
 .site-nav { display: flex; gap: 18px; font-family: var(--read); font-size: 14px; }
 .site-nav a[aria-current="page"] { color: var(--text); font-weight: bold; text-decoration: none; }
+.site-intro p { margin: 0; }
 .site-intro { margin: 0 0 18px; font-family: Georgia, "Times New Roman", serif; font-size: 18px; line-height: 1.5; color: var(--dim); }
 .tag-pill-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 14px; padding: 5px 10px; font-size: 13px; background: var(--face); border: 1px solid var(--shadow); box-shadow: inset 1px 1px var(--hilite); }
 .topic-bar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
@@ -848,6 +849,10 @@ mark.find-hit.cur { outline: 2px solid var(--new); }
 .plain { list-style: none; margin: 0; padding: 0; font: 15px/1.6 var(--read); }
 .plain li { padding: 4px 0; }
 .plain .dim { font-size: 13px; }
+.proj-list { list-style: none; margin: 0; padding: 0; }
+.proj { padding: 14px 0; border-bottom: 1px solid var(--light); }
+.proj-repo { display: block; margin-top: 2px; font: 12px var(--mono); color: var(--dim); overflow-wrap: anywhere; }
+.proj-tag { color: var(--dim); }
 
 /* ===============================================================
    PACKET CAPTURE (real), FOLLOW STREAM, SYSTEM PROPERTIES
