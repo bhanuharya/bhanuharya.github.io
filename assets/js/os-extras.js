@@ -773,9 +773,9 @@
     b.addEventListener('click', function () {
       var r = b.getBoundingClientRect();
       var items = [
-        { label: 'Home', act: function () { OS.open('/'); } },
+        { label: 'Home (The Web)', act: function () { OS.open('/web/'); } },
+        { label: 'Harya', act: function () { OS.open('/'); } },
         { label: 'About', act: function () { OS.open('/about/'); } },
-        { label: 'The Web (2001)', act: function () { OS.open('/web/'); } },
         { sep: true }
       ].concat(posts.slice(0, 12).map(function (p) { return { label: p.t, act: function () { OS.open(p.u); } }; }))
         .concat([{ sep: true }, { label: 'RSS feed', act: function () { window.open('/feed.xml', '_blank', 'noopener'); } }]);

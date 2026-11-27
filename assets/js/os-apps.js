@@ -268,7 +268,7 @@
     var c = cmd.trim(), l = c.toLowerCase();
     if (!c) return true;
     OS.log('info', 'Shell', 4688, 'Run: ' + c.slice(0, 120));
-    var map = { home: '/', browser: '/', web: '/', posts: '/', about: '/about/', help: '/readme/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/' };
+    var map = { home: '/web/', browser: '/web/', web: '/web/', harya: '/', posts: '/', about: '/about/', help: '/readme/', readme: '/readme/', 'readme.txt': '/readme/', terminal: '/terminal/', cmd: '/terminal/', sh: '/terminal/', bash: '/terminal/' };
     if (map[l]) { OS.open(map[l]); return true; }
     var appAlias = { virus: 'virus', notavirus: 'virus', 'notavirus.exe': 'virus', capture: 'capture', pcap: 'capture', packets: 'capture', system: 'system', winver: 'system', ver: 'system', sysinfo: 'system', find: 'find', search: 'find', grep: 'find', events: 'events', eventvwr: 'events', log: 'events', logs: 'events', security: 'security', wscui: 'security', csp: 'security', setup: 'setup', bios: 'setup', settings: 'setup', notepad: 'newtext', 'notepad.exe': 'newtext', edit: 'newtext', player: 'player', music: 'player', mplayer: 'player', firewall: 'firewall', game: 'firewall', bin: 'bin', trash: 'bin', calendar: 'calendar', date: 'calendar', screensaver: 'screensaver' };
     if (appAlias[l] && OS.apps[appAlias[l]]) { OS.apps[appAlias[l]](); return true; }
@@ -433,7 +433,6 @@
   OS.apps.screensaver = function () {
     if (saver || OS.reduce.matches) return;
     OS.log('info', 'Display', 7, 'Screen saver started.');
-    OS.emit('discover', 'saver');
     saver = document.createElement('canvas');
     saver.className = 'saver';
     saver.setAttribute('aria-hidden', 'true');
@@ -441,43 +440,57 @@
     var ctx = saver.getContext('2d'), W, H, dpr = Math.min(window.devicePixelRatio || 1, 2);
     var size = function () { W = saver.width = innerWidth * dpr; H = saver.height = innerHeight * dpr; };
     size();
-    var COLORS = { sec: '#c9c4ff', ai: '#b7dcff', game: '#b6f09a', misc: '#e8e8e8' };
-    var names = [];
-    try {
-      performance.getEntriesByType('resource').slice(-80).forEach(function (e) {
-        var u = new URL(e.name);
-        names.push({ p: (e.initiatorType || 'get').toUpperCase().slice(0, 6), f: u.origin === location.origin ? 'ai' : 'game', t: u.host + u.pathname });
-      });
-    } catch (e) {}
-    if (!names.length) names = [{ p: 'GET', f: 'misc', t: location.host + '/' }];
-    var pk = [];
-    var spawn = function (x) {
-      var p = names[Math.floor(Math.random() * names.length)], z = 0.35 + Math.random() * 0.9;
-      return { x: x === undefined ? -300 * dpr : x, y: Math.random() * H, z: z, p: p, v: (0.6 + Math.random()) * z * dpr };
-    };
-    for (var i = 0; i < 26; i++) pk.push(spawn(Math.random() * W));
-    var last = performance.now(), start = last, raf;
-    var frame = function (t) {
-      var dt = Math.min(50, t - last) / 16.7; last = t;
-      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-      pk.sort(function (a, b) { return a.z - b.z; });
-      pk.forEach(function (o, i) {
-        o.x += o.v * dt * 1.6;
-        var fs = Math.round(12 * o.z * dpr), h = fs * 2, lab = 54 * o.z * dpr;
-        ctx.font = fs + 'px "Lucida Console", monospace';
-        var w = lab + 12 * o.z * dpr + ctx.measureText(o.p.t).width + 10 * o.z * dpr;
-        ctx.globalAlpha = 0.25 + o.z * 0.6;
-        ctx.fillStyle = COLORS[o.p.f] || COLORS.misc;
-        ctx.fillRect(o.x, o.y, w, h);
-        ctx.fillStyle = '#0a246a'; ctx.fillRect(o.x, o.y, lab, h);
-        ctx.fillStyle = '#fff'; ctx.font = 'bold ' + fs + 'px Tahoma, Verdana, sans-serif'; ctx.textBaseline = 'middle';
-        ctx.fillText(o.p.p, o.x + 6 * o.z * dpr, o.y + h / 2);
-        ctx.fillStyle = '#000'; ctx.font = fs + 'px "Lucida Console", monospace';
-        ctx.fillText(o.p.t, o.x + lab + 8 * o.z * dpr, o.y + h / 2);
-        if (o.x > W + 20) pk[i] = spawn();
-      });
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = '#555'; ctx.font = (12 * dpr) + 'px "Lucida Console", monospace'; ctx.textBaseline = 'alphabetic';
+    // a pulsar's stacked pulses: each line a few bumps in the middle, drawn back to front
+    var LINES = 64, PTS = 120, rnd = function (k) { var x = Math.sin(k * 127.1) * 43758.5453; return x - Math.floor(x); };
+    var bumps = [];
+    for (var i = 0; i < LINES; i++) {
+      var b = [];
+      for (var j = 0; j < 4; j++) b.push({ c: 0.42 + rnd(i * 9 + j) * 0.16, w: 0.015 + rnd(i * 7 + j + 50) * 0.03, a: 0.3 + rnd(i * 13 + j + 99) * 0.7, s: 0.3 + rnd(i + j * 31) * 0.9 });
+      bumps.push(b);
+    }
+    var start = performance.now(), raf;
+    var frame = function (now) {
+      var t = (now - start) / 1000;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+      var plotW = Math.min(W * 0.62, H * 0.9), left = (W - plotW) / 2, top = H * 0.16, gap = (H * 0.7) / LINES, amp = gap * 7.5;
+      ctx.lineWidth = Math.max(1, 1.4 * dpr);
+      ctx.strokeStyle = '#f2f2f2';
+      for (var i = 0; i < LINES; i++) {
+        var base = top + i * gap;
+        ctx.beginPath();
+        for (var p = 0; p <= PTS; p++) {
+          var u = p / PTS, h = 0;
+          bumps[i].forEach(function (k) {
+            var c = k.c + Math.sin(t * 0.25 * k.s + i * 0.3) * 0.02;
+            var d = (u - c) / k.w;
+            h += k.a * (0.75 + 0.25 * Math.sin(t * k.s + i)) * Math.exp(-d * d);
+          });
+          h += 0.05 * Math.sin(u * 90 + t * 3 + i * 1.7) * Math.exp(-Math.pow((u - 0.5) / 0.22, 2));
+          var x = left + u * plotW, y = base - h * amp;
+          if (p) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+        }
+        ctx.lineTo(left + plotW, base + gap * 30);
+        ctx.lineTo(left, base + gap * 30);
+        ctx.closePath();
+        ctx.fillStyle = '#000';
+        ctx.fill();
+        ctx.beginPath();
+        for (var q = 0; q <= PTS; q++) {
+          var u2 = q / PTS, h2 = 0;
+          bumps[i].forEach(function (k) {
+            var c = k.c + Math.sin(t * 0.25 * k.s + i * 0.3) * 0.02;
+            var d = (u2 - c) / k.w;
+            h2 += k.a * (0.75 + 0.25 * Math.sin(t * k.s + i)) * Math.exp(-d * d);
+          });
+          h2 += 0.05 * Math.sin(u2 * 90 + t * 3 + i * 1.7) * Math.exp(-Math.pow((u2 - 0.5) / 0.22, 2));
+          var x2 = left + u2 * plotW, y2 = base - h2 * amp;
+          if (q) ctx.lineTo(x2, y2); else ctx.moveTo(x2, y2);
+        }
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#666';
+      ctx.font = (12 * dpr) + 'px "Lucida Console", monospace';
       ctx.fillText('obscuraOS · ' + new Date().toLocaleTimeString('en-GB'), 20 * dpr, H - 20 * dpr);
       raf = requestAnimationFrame(frame);
     };
@@ -504,7 +517,6 @@
     IDLE = mins * 60000;
     idleTimer = setTimeout(function () {
       var t = OS.top();
-      if (t && (t.app === 'browser' || t.app === 'terminal' || t.app === 'untitled')) { poke(); return; }
       if (!document.getElementById('bootscreen') && !document.hidden && !$('.modal-bg') && !(OS.player && OS.player.playing())) OS.apps.screensaver();
     }, IDLE);
   }
