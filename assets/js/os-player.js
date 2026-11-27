@@ -318,6 +318,7 @@
   function screenFor(s) {
     if (!ui.video) return;
     ui.screen.classList.toggle('video', !!(s.yt || s.vid));
+    fitCompact();
     if (s.vid) { vidFor(s); return; }
     if (!s.yt) return;
     if (yt.frame && yt.id === s.yt) return;
@@ -576,8 +577,17 @@
   // right after log on, Media Player opens on the default track. Your own
   // video starts playing (the log-on click lets the browser allow sound);
   // a YouTube one waits for Play, since it asks before loading.
-  // compact: a small bar with the main buttons; drag it by its title bar (phones too)
+  // compact: a small floating player with the video and the main buttons;
+  // drag it by its title bar (phones too)
   var full = null;
+  // keep the compact player on screen when its video area changes size
+  function fitCompact() {
+    if (!win || !win.el.classList.contains('compact')) return;
+    var el = win.el, desk = document.getElementById('desktop');
+    var maxL = desk.clientWidth - el.offsetWidth - 8, maxT = desk.clientHeight - el.offsetHeight - 8;
+    if (el.offsetLeft > maxL) el.style.left = Math.max(0, maxL) + 'px';
+    if (el.offsetTop > maxT) el.style.top = Math.max(0, maxT) + 'px';
+  }
   function setCompact(on) {
     if (!win) return;
     var el = win.el, desk = document.getElementById('desktop');
@@ -599,12 +609,13 @@
     if (b) { b.textContent = on ? 'Full' : 'Mini'; b.setAttribute('aria-pressed', String(on)); b.title = on ? 'Full player' : 'Compact player'; }
   }
   OS.player.compact = setCompact;
+  window.addEventListener('resize', fitCompact);
   OS.on('login', function () {
     setTimeout(function () {
       if (win) return;
       cur = first;
       OS.apps.player();
-      // phones get the compact bar; on a desktop the video shows, and the Browser
+      // phones get the small floating player; on a desktop the full one, and the Browser
       // narrows to sit beside it when there is room to read (at least 640px)
       if (OS.phone.matches) setCompact(true);
       else {
