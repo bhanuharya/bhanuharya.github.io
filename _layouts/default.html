@@ -23,8 +23,9 @@
   <meta property="og:url" content="{{ page.url | absolute_url }}">
   <meta property="og:image" content="{{ '/assets/og-image.png' | absolute_url }}">
   <meta name="twitter:card" content="summary_large_image">
-  <script src="{{ '/assets/js/boot.js' | relative_url }}"></script>
-  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  {%- assign asset_v = site.time | date: '%s' -%}
+  <script src="{{ '/assets/js/boot.js' | relative_url }}?v={{ asset_v }}"></script>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}?v={{ asset_v }}">
   {% if page.layout == 'post' %}
   <script type="application/ld+json">
   {
@@ -115,13 +116,13 @@
  "videos": [{% assign vlisted = "" %}{% assign vcomma = false %}{% for v in site.data.videos %}{% assign vf = site.static_files | where: "name", v.file | first %}{% if vf and vf.path contains '/assets/video/' %}{% if vcomma %},{% endif %}{% assign vcomma = true %}{% assign vlisted = vlisted | append: "|" | append: v.file | append: "|" %}{"t": {{ v.title | default: vf.basename | jsonify }}, "by": {{ v.by | default: 'assets/video' | jsonify }}, "u": {{ vf.path | relative_url | jsonify }}{% if v.default %}, "d": true{% endif %}}{% endif %}{% endfor %}{% for f in site.static_files %}{% if f.path contains '/assets/video/' %}{% assign ext = f.extname | downcase %}{% assign key = "|" | append: f.name | append: "|" %}{% if ext == '.mp4' or ext == '.webm' or ext == '.m4v' %}{% unless vlisted contains key %}{% if vcomma %},{% endif %}{% assign vcomma = true %}{"t": {{ f.basename | replace: '_', ' ' | replace: '-', ' ' | jsonify }}, "by": "assets/video", "u": {{ f.path | relative_url | jsonify }}}{% endunless %}{% endif %}{% endif %}{% endfor %}],
  "songs": [{% assign first_song = true %}{% for f in site.static_files %}{% if f.path contains '/assets/music/' %}{% assign ext = f.extname | downcase %}{% if ext == '.mp3' or ext == '.ogg' or ext == '.m4a' or ext == '.wav' or ext == '.opus' or ext == '.flac' %}{% unless first_song %},{% endunless %}{% assign first_song = false %}{"t": {{ f.basename | replace: '_', ' ' | replace: '-', ' ' | jsonify }}, "u": {{ f.path | relative_url | jsonify }}}{% endif %}{% endif %}{% endfor %}]}
 </script>
-<script defer src="{{ '/assets/js/pages.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/js/os.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/js/os-apps.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/js/os-player.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/js/os-extras.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/js/os-capture.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/js/os-virus.js' | relative_url }}"></script>
-<script defer src="{{ '/assets/js/visits.js' | relative_url }}"></script>
+<script defer src="{{ '/assets/js/pages.js' | relative_url }}?v={{ asset_v }}"></script>
+<script defer src="{{ '/assets/js/os.js' | relative_url }}?v={{ asset_v }}"></script>
+<script defer src="{{ '/assets/js/os-apps.js' | relative_url }}?v={{ asset_v }}"></script>
+<script defer src="{{ '/assets/js/os-player.js' | relative_url }}?v={{ asset_v }}"></script>
+<script defer src="{{ '/assets/js/os-extras.js' | relative_url }}?v={{ asset_v }}"></script>
+<script defer src="{{ '/assets/js/os-capture.js' | relative_url }}?v={{ asset_v }}"></script>
+<script defer src="{{ '/assets/js/os-virus.js' | relative_url }}?v={{ asset_v }}"></script>
+<script defer src="{{ '/assets/js/visits.js' | relative_url }}?v={{ asset_v }}"></script>
 </body>
 </html>
