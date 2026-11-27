@@ -110,6 +110,11 @@
 
   var activeGame = null;
 
+  // phones and tablets have no Space or Esc: show touch wording there instead
+  var TOUCH = false;
+  try { TOUCH = window.matchMedia('(pointer: coarse), (hover: none)').matches; } catch (e) {}
+  function keyLabel(text, key) { return TOUCH ? text : text + ' [' + key + ']'; }
+
   function stopActiveGame() {
     if (activeGame && typeof activeGame.cleanup === 'function') {
       activeGame.cleanup();
@@ -138,7 +143,8 @@
 
     var controls = document.createElement('div');
     controls.className = 'game-controls-help';
-    controls.innerHTML = '<span>Controls: <b>↑↓←→</b>, <b>WASD</b> or swipe</span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
+    controls.innerHTML = TOUCH ? '<span>Swipe on the board or use the buttons</span>' :
+      '<span>Controls: <b>↑↓←→</b>, <b>WASD</b> or swipe</span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
     gameBox.appendChild(controls);
 
     // on-screen buttons, shown on touch screens
@@ -151,7 +157,7 @@
     var exitBtn = document.createElement('button');
     exitBtn.type = 'button';
     exitBtn.className = 'game-exit-btn';
-    exitBtn.textContent = 'Exit Game [ESC]';
+    exitBtn.textContent = keyLabel('Exit Game', 'ESC');
     gameBox.appendChild(exitBtn);
 
     targetContainer.appendChild(gameBox);
@@ -238,7 +244,7 @@
         ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 10);
         ctx.fillStyle = '#ffffff';
         ctx.font = '12px monospace';
-        ctx.fillText('Press SPACE to Restart or ESC to Exit', canvas.width / 2, canvas.height / 2 + 15);
+        ctx.fillText(TOUCH ? 'Tap the board to play again' : 'Press SPACE to Restart or ESC to Exit', canvas.width / 2, canvas.height / 2 + 15);
       }
     }
 
@@ -411,7 +417,8 @@
 
     var controls = document.createElement('div');
     controls.className = 'game-controls-help';
-    controls.innerHTML = '<span>Paddle: <b>↑ / ↓</b>, <b>W / S</b> or drag</span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
+    controls.innerHTML = TOUCH ? '<span>Drag on the table or hold the buttons</span>' :
+      '<span>Paddle: <b>↑ / ↓</b>, <b>W / S</b> or drag</span> · <span>Exit: <b>Q</b> or <b>ESC</b></span>';
     gameBox.appendChild(controls);
 
     // on-screen buttons, shown on touch screens: hold to move
@@ -423,7 +430,7 @@
     var exitBtn = document.createElement('button');
     exitBtn.type = 'button';
     exitBtn.className = 'game-exit-btn';
-    exitBtn.textContent = 'Exit Game [ESC]';
+    exitBtn.textContent = keyLabel('Exit Game', 'ESC');
     gameBox.appendChild(exitBtn);
 
     targetContainer.appendChild(gameBox);
@@ -636,7 +643,7 @@
 
     var logView = document.createElement('div');
     logView.className = 'hack-log-view';
-    logView.innerHTML = '<p class="dim">&gt; CLICK A MEMORY BLOCK TO TEST LIKENESS:</p>';
+    logView.innerHTML = '<p class="dim">&gt; ' + (TOUCH ? 'TAP' : 'CLICK') + ' A MEMORY BLOCK TO TEST LIKENESS:</p>';
     gameBox.appendChild(logView);
 
     var memGrid = document.createElement('div');
@@ -662,14 +669,14 @@
     var againBtn = document.createElement('button');
     againBtn.type = 'button';
     againBtn.className = 'game-exit-btn';
-    againBtn.textContent = 'Play Again [ENTER]';
+    againBtn.textContent = keyLabel('Play Again', 'ENTER');
     againBtn.hidden = true;
     btnRow.appendChild(againBtn);
 
     var exitBtn = document.createElement('button');
     exitBtn.type = 'button';
     exitBtn.className = 'game-exit-btn';
-    exitBtn.textContent = 'Exit Hack [ESC]';
+    exitBtn.textContent = keyLabel('Exit Hack', 'ESC');
     btnRow.appendChild(exitBtn);
 
     gameBox.appendChild(btnRow);
